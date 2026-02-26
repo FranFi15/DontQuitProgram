@@ -1,0 +1,173 @@
+/* client/src/pages/RegisterPage.css */
+
+.register-container {
+  background-image: url(../assets/ro/fondo.jpeg);
+  background-size: 110%;
+  background-repeat: no-repeat;
+  background-position: left;
+  display: flex;  
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.register-box {
+  background-color: #0000008a; /* Sin fondo o fondo muy sutil */
+  padding: 3rem;
+  width: 100%;
+  max-width: 450px;
+  border-radius: 15px;
+  margin-left: 5%;
+}
+
+.register-title {
+  font-size: 3rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  text-align: center;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.register-form  {
+   display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #FAF3EF; 
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  color:#FAF3EF;
+}
+
+.register-input, .register-select {
+  padding: 1rem;
+  font-size: 1rem;
+  background-color: transparent;
+  border: 2px solid var(--text-color); /* Borde negro */
+  border-radius: 5px;
+  outline: none;
+  font-family: var(--font-main);
+  transition: border-color 0.3s ease;
+  width: 100%; /* Asegurar que ocupen el ancho */
+  box-sizing: border-box; /* Para que el padding no rompa el ancho */
+  color: var(--text-color);
+}
+
+.register-input:focus, .register-select:focus {
+  border-color: #ada8a5;
+  
+}
+
+/* Estilo específico para el select */
+.register-select {
+  appearance: none; /* Quitar estilo por defecto del navegador */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem top 50%;
+  background-size: 0.65rem auto;
+  cursor: pointer;
+}
+
+.input-error {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-weight: bold;
+}
+
+.register-button {
+  background-color: var(--accent-color);
+  color: rgb(0, 0, 0);
+  font-size: 1.2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  margin-top: 1rem;
+  border-radius: 5px;
+}
+
+.register-button:hover {
+  background-color: #ada8a5;
+}
+
+.register-button:active {
+  transform: scale(0.98);
+}
+
+.login-link-container {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.login-link {
+  color: var(--text-color);
+  text-decoration: underline;
+}
+
+-login-link:hover {
+  color: #ada8a5;
+}
+
+
+.footer-logo img {
+  width: 350px;
+  height: 200px;
+  object-fit: cover;
+}
+
+.register-input {
+  /* ... tus estilos actuales ... */
+  background-color: transparent; /* O el color que uses */
+}
+
+/* Estilo específico para el select para que las opciones se vean bien */
+select.register-input option {
+  background-color: #000; /* O blanco, dependiendo de tu tema oscuro/claro */
+  color: #fff; /* O negro */
+}
+
+@media (max-width: 768px) {
+  .register-container {
+    margin: 0; 
+    padding: 1rem;
+    justify-content: center; 
+    height: 80vh;
+  }
+
+  .register-box {
+    padding: 2rem 1.5rem;
+    width: 100%;
+    height: auto;
+  
+  }
+
+  .register-title {
+    font-size: 2rem;
+  }
+  
+  .footer-logo img {
+    width: 200px;
+    height: 100px;
+  }
+}

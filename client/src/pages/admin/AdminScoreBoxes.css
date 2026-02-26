@@ -1,0 +1,99 @@
+/* client/src/pages/admin/AdminScoreBoxes.css */
+
+.admin-page-container {
+   padding: 2rem 3rem;
+  animation: fadeIn 0.5s ease-out;
+  width: 100%;
+  box-sizing: border-box;
+  height: 100vh; 
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.admin-header h1 {
+   font-size: 2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0;
+  letter-spacing: -1px;
+  color: #fffafa;
+}
+
+.subtitle {
+  color: #64748b;
+  margin-top: 5px;
+  font-size: 0.95rem;
+}
+
+.header-with-back {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.back-btn-circle {
+  width: 45px; height: 45px;
+  border-radius: 50%;
+  border: 1px solid #cbd5e1;
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.back-btn-circle:hover { background: #f1f5f9; transform: translateX(-3px); }
+
+/* Grid de Planes */
+.plans-grid-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.plan-card-item {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.plan-card-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  border-color: #000;
+}
+
+.plan-icon {
+  width: 50px; height: 50px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: #334155;
+}
+
+.plan-details { flex: 1; }
+.plan-details h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+.plan-details span { font-size: 0.8rem; color: #94a3b8; }
+
+.arrow-indicator { color: #cbd5e1; }
+.plan-card-item:hover .arrow-indicator { color: #000; }
+
+/* Animación simple */
+.fade-in { animation: fadeIn 0.3s ease-in; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Contenedor del Manager */
+.manager-container {
+  margin-top: 2rem;
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}

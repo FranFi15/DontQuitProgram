@@ -1,0 +1,22 @@
+.ps-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(2px); padding: 1rem; box-sizing: border-box; }
+.ps-modal-content { background-color: #fff; width: 100%; max-width: 800px; max-height: 85vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; }
+.ps-modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid #e5e5e5; display: flex; justify-content: space-between; align-items: flex-start; position: sticky; top: 0; background: white; z-index: 10; border-radius: 12px 12px 0 0; }
+.ps-plan-badge { font-size: 0.7rem; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block; }
+.ps-modal-header h2 { margin: 0; font-size: 1.4rem; font-weight: 900; color: #111; text-transform: uppercase; }
+.ps-close-btn { background: none; border: none; cursor: pointer; color: #9ca3af; }
+.ps-close-btn:hover { color: #000; }
+.ps-modal-body { padding: 0; }
+.ps-loading, .ps-empty { padding: 3rem; text-align: center; color: #6b7280; font-weight: 500; }
+.ps-table { width: 100%; border-collapse: collapse; }
+.ps-table th { background: #f9fafb; padding: 1rem; text-align: left; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #6b7280; border-bottom: 1px solid #e5e7eb; }
+.ps-table td { padding: 1rem; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; color: #374151; vertical-align: middle; }
+.ps-table tr:last-child td { border-bottom: none; }
+.ps-table tr:hover { background: #fdfdfd; }
+.ps-name-cell strong { color: #111; font-weight: 700; }
+.ps-contact-cell { display: flex; flex-direction: column; gap: 4px; }
+.ps-phone { font-size: 0.8rem; color: #9ca3af; }
+.ps-date-cell { display: flex; align-items: center; gap: 6px; font-weight: 600; color: #059669; }
+.ps-btn-cancel-sub { background: white; border: 1px solid #fecaca; color: #ef4444; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
+.ps-btn-cancel-sub:hover { background: #fef2f2; }
+.animate-enter { animation: slideUpFade 0.3s ease-out; }
+@keyframes slideUpFade { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

@@ -1,0 +1,20 @@
+.fw-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(4px); padding: 1rem; box-sizing: border-box; }
+.fw-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 20px; position: relative; padding: 2rem 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; }
+.fw-close-btn { position: absolute; top: 15px; right: 15px; background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6b7280; cursor: pointer; transition: 0.2s;}
+.fw-close-btn:hover { background: #e5e7eb; color: #111; }
+.fw-header { margin-bottom: 1.5rem; }
+.fw-icon-wrapper { background: #fff0eb; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; }
+.fw-header h2 { margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 900; color: #111; text-transform: uppercase;}
+.fw-header p { margin: 0; color: #6b7280; font-size: 0.95rem; }
+.fw-score-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 5px; }
+.fw-score-btn { width: 45px; height: 45px; border-radius: 12px; border: 2px solid #e5e7eb; background: white; font-size: 1.1rem; font-weight: 800; color: #4b5563; cursor: pointer; transition: all 0.2s ease;}
+.fw-score-btn:hover { border-color: #000; color: #000; }
+.fw-score-btn.selected { background: #000; border-color: #000; color: white; transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+.fw-score-labels { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; margin-bottom: 1.5rem; padding: 0 5px;}
+.fw-notes-container { text-align: left; margin-bottom: 1.5rem; }
+.fw-notes-container label { display: block; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #374151; margin-bottom: 8px; }
+.fw-notes-container textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px; height: 100px; resize: none; font-family: inherit; font-size: 0.95rem; outline: none; box-sizing: border-box; background: #fdfdfd;}
+.fw-notes-container textarea:focus { border-color: #000; background: #fff; }
+.fw-submit-btn { width: 100%; background: #000; color: white; padding: 1rem; border: none; border-radius: 14px; font-size: 1rem; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.2s;}
+.fw-submit-btn:active { transform: scale(0.96); }
+.fw-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }

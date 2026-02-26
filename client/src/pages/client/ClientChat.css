@@ -1,0 +1,246 @@
+/* 1. CONTENEDOR PRINCIPAL */
+.chat-page-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px);
+  background-color: #f4f4f5; /* Un fondo gris muy claro, más moderno */
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- NUEVO: HEADER FIJO --- */
+.chat-header {
+  background: white;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.chat-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.chat-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.online-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background-color: #10b981; /* Verde esmeralda */
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+.chat-title-box h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #111;
+  line-height: 1.2;
+}
+
+.chat-title-box p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #10b981; /* Verde haciendo match con el punto */
+  font-weight: 600;
+}
+
+/* 2. ZONA DE MENSAJES */
+.messages-scroll-area {
+  flex: 1; 
+  overflow-y: auto; 
+  -webkit-overflow-scrolling: touch; 
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  gap: 8px; 
+  padding-bottom: 30px; /* Espacio extra abajo */
+}
+
+.empty-chat-msg {
+  text-align: center;
+  margin: auto;
+  background: #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+/* 3. FILAS Y BURBUJAS */
+.message-row {
+  display: flex;
+  width: 100%;
+}
+.row-mine { justify-content: flex-end; }
+.row-theirs { justify-content: flex-start; }
+
+.message-bubble {
+  max-width: 75%;
+  padding: 8px 12px;
+  border-radius: 18px;
+  position: relative;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ESTILO MÍO (Cliente) */
+.bubble-mine {
+  background: #111; /* Negro suave, no puro */
+  color: white;
+  border-bottom-right-radius: 4px; /* Cola de diálogo */
+}
+.bubble-mine .msg-time { color: rgba(255,255,255,0.6); }
+
+/* ESTILO ADMIN (Coach) */
+.bubble-theirs {
+  background: white;
+  color: #1f2937;
+  border-bottom-left-radius: 4px;
+}
+.bubble-theirs .msg-time { color: #9ca3af; }
+
+/* 5. MULTIMEDIA REDISEÑADA */
+.media-container {
+  margin: -4px -8px 4px -8px; /* Hace que la imagen toque los bordes de la burbuja */
+  overflow: hidden;
+  border-radius: 14px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-media-img {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.chat-media-video {
+  width: 100%;
+  max-width: 280px;
+  display: block;
+  background: black;
+}
+
+/* TEXTOS Y HORA */
+.msg-text { 
+  margin: 0; 
+  white-space: pre-wrap; 
+}
+
+.msg-time { 
+  display: block; 
+  font-size: 0.65rem; 
+  text-align: right; 
+  margin-top: 4px; 
+  font-weight: 500;
+}
+
+/* BURBUJA DE CARGA */
+.uploading-bubble {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.8;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+
+.chat-input-wrapper {
+  background: transparent;
+  padding: 10px 15px 20px 15px; /* Padding bottom extra para iPhone */
+  flex-shrink: 0; 
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center; /* Mantiene la barra centrada en pantallas anchas */
+}
+
+.chat-input-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 6px 6px 6px 12px;
+  border-radius: 99px; /* Forma de píldora continua */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06); /* Sombra más elegante */
+  border: 1px solid #e5e7eb;
+  width: 100%;
+  max-width: 800px; /* Tope de ancho para que no se deforme en PC */
+}
+
+/* BOTONES ADJUNTAR SIN FONDO BLANCO */
+.attach-icon-btn {
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  cursor: pointer; 
+  color: #9ca3af; 
+  transition: all 0.2s;
+  padding: 4px;
+}
+.attach-icon-btn:hover { color: #111; transform: scale(1.1); }
+.attach-icon-btn.disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* CAMPO DE TEXTO (OCUPA EL CENTRO) */
+.text-input-field {
+  flex: 1; /* Esto hace que el input empuje a los costados y se adueñe del medio */
+  border: none; 
+  background: transparent;
+  font-size: 0.95rem; 
+  outline: none; 
+  color: #111;
+  padding: 8px 4px;
+}
+.text-input-field::placeholder { color: #9ca3af; }
+
+/* BOTÓN ENVIAR */
+.send-msg-btn {
+  width: 36px; height: 36px; 
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: #9ca3af; 
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: default; 
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+/* Se prende de negro cuando hay texto */
+.send-msg-btn.active {
+  background: #111;
+  color: white;
+  cursor: pointer;
+}
+.send-msg-btn.active:active { transform: scale(0.95); }
+
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

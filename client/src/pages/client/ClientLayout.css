@@ -1,0 +1,18 @@
+/* client/src/layouts/ClientLayout.css */
+
+.client-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Usamos dvh para móviles (descarta la barra de URL del navegador) */
+  width: 100%;
+  overflow: hidden;
+  background-color: #f3f4f6;
+}
+
+.client-main-content {
+  flex: 1;
+  overflow: hidden; /* Bloqueamos scroll aquí */
+  position: relative;
+  /* IMPORTANTE: Si tu BottomNav es position:fixed, no necesitas padding aquí.
+     Si tu BottomNav ocupa espacio en el flujo (flex), el contenido se ajusta solo. */
+}

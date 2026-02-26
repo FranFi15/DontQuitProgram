@@ -1,0 +1,172 @@
+/* client/src/pages/LoginPage.css */
+
+.login-container {
+  background-image: url(../assets/ro/fondo.jpeg);
+  background-size: cover; /* Cambiado a cover para que se adapte sin deformarse */
+  background-repeat: no-repeat;
+  background-position: center left;
+  display: flex;  
+  flex-direction: column;
+  align-items: flex-start; /* En PC se alinea a la izquierda */
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+  color: #FAF3EF;
+}
+
+.login-box {
+  background-color: rgba(0, 0, 0, 0.75); /* Transparencia para que se lea el texto */
+  padding: 3rem;
+  width: 100%;
+  max-width: 450px;
+  border-radius: 16px;
+  margin-left: 5%; /* Margen para PC */
+  box-sizing: border-box;
+}
+
+.login-title {
+  font-size: 3rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  text-align: center;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.error-message {
+  background-color: #e74c3c;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
+.login-label-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  color: #FAF3EF !important;
+}
+
+.login-input {
+  padding: 1rem;
+  font-size: 1rem;
+  background-color: transparent;
+  border: 2px solid #FAF3EF; /* Borde visible */
+  border-radius: 8px;
+  color: #FAF3EF;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.login-input:focus {
+  border-color: #ada8a5;
+}
+
+.input-error {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-weight: bold;
+}
+
+.login-button {
+  background-color: var(--accent-color, #FAF3EF); /* Usa tu variable o blanco por defecto */
+  color: rgb(0, 0, 0);
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.login-button:hover {
+  background-color: #ada8a5;
+}
+
+.login-button:active {
+  transform: scale(0.98);
+}
+
+.register-link-container {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.register-link {
+  color: #FAF3EF;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.register-link:hover {
+  color: #ada8a5;
+}
+
+.footer-logo {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.footer-logo img {
+  width: 100%;
+  max-width: 250px; /* Ancho máximo adaptable */
+  height: auto;
+  object-fit: contain;
+}
+
+/* --- RESPONSIVE MOBILE --- */
+@media (max-width: 768px) {
+  .login-container {
+    background-position: center; /* Centra el fondo */
+    align-items: center; /* Centra la caja negra */
+    padding: 1rem;
+    min-height: 100dvh; /* dvh evita cortes con las barras del navegador móvil */
+  }
+
+  .login-box {
+    margin-left: 0; /* Anulamos el margen de PC para que quede en el centro */
+    padding: 2rem 1.5rem; 
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .login-title {
+    font-size: 2.2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-logo img {
+    max-width: 180px; /* Achicamos el logo proporcionalmente */
+  }
+}

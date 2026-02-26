@@ -1,0 +1,96 @@
+.client-score-viewer {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 0;
+  width: 900px;
+}
+
+/* HEADER DE LA TABLA */
+.score-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  padding: 12px 16px;
+  background: #f9fafb; /* Gris muy suave para diferenciar cabecera */
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.score-table-header span {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #333; /* Texto oscuro para mejor lectura */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* FILAS */
+.score-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  align-items: center;
+  transition: background 0.1s;
+  background: white;
+}
+
+.score-row:last-child { border-bottom: none; }
+.score-row:hover { background-color: #f3f4f6; }
+
+/* CELDAS */
+/* Nombre */
+.td-name { display: flex; flex-direction: column; gap: 2px; }
+
+.test-name {
+  font-weight: 700;
+  color: #111; /* Negro puro */
+  font-size: 0.9rem;
+}
+
+.test-unit {
+  font-size: 0.7rem;
+  color: #666; /* Gris medio */
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Valor */
+.td-val {
+  font-weight: 800;
+  color: #111; /* Negro puro */
+  font-size: 1rem;
+}
+
+.val-empty {
+  color: #e5e7eb;
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 0.8;
+}
+
+/* Fecha */
+.td-date {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 500;
+}
+
+/* MENSAJES DE ESTADO */
+.loader-mini {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.no-data-txt {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  background: #f9fafb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-style: italic;
+  border: 1px dashed #e5e7eb;
+}

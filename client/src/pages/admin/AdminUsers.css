@@ -1,0 +1,180 @@
+/* client/src/pages/admin/AdminUsers.css */
+
+.users-container {
+  padding: 2rem 3rem;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.users-title {
+  font-size: 2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0;
+  color: #fffafa; 
+}
+
+.new-user-btn {
+  background-color: #000;
+  color: #fff;
+  padding: 0.75rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+.new-user-btn:hover { background-color: #333; }
+
+/* BARRA DE BÚSQUEDA */
+.users-toolbar { margin-bottom: 1.5rem; }
+
+.search-bar-users {
+  position: relative;
+  max-width: 400px;
+}
+.search-bar-users .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+.search-bar-users input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 2.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+.search-bar-users input:focus { border-color: #000; }
+
+/* TABLA */
+.users-table-container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow-x: auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.users-table th {
+  background-color: #f9fafb;
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  letter-spacing: 0.05em;
+}
+
+.users-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.95rem;
+  color: #1f2937;
+  vertical-align: middle;
+}
+
+.users-table tr:hover { background-color: #f9fafb; }
+.users-table tr:last-child td { border-bottom: none; }
+
+/* ESTILOS DE CELDAS */
+.fw-bold { font-weight: 700; color: #111; }
+.text-gray { color: #6b7280; font-size: 0.9rem; }
+
+/* Nombre y Plan Tag */
+.user-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plan-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #059669; /* Verde oscuro */
+  background-color: #d1fae5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+/* BADGES DE ESTADO (AL DÍA / INACTIVO) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.status-active {
+  background-color: #dcfce7; /* Fondo verde suave */
+  color: #166534; /* Texto verde fuerte */
+}
+
+.status-inactive {
+  background-color: #fee2e2; /* Fondo rojo suave */
+  color: #991b1b; /* Texto rojo fuerte */
+}
+
+/* ACCIONES */
+.actions-cell { text-align: right; white-space: nowrap; }
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: 0.2rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.action-btn.edit { color: #2563eb; }
+.action-btn.edit:hover { background-color: #eff6ff; }
+
+.action-btn.delete { color: #dc2626; }
+.action-btn.delete:hover { background-color: #fef2f2; }
+
+.action-btn.scores {
+  background-color: #eff6ff;
+  color: #3b82f6; /* Azul */
+}
+
+.action-btn.scores:hover {
+  background-color: #3b82f6;
+  color: white;
+}

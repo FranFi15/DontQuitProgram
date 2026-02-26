@@ -1,0 +1,114 @@
+/* EL CONTENEDOR PRINCIPAL DEL MODAL (CONTENIDO) */
+.large-modal {
+  max-width: 1000px;
+  width: 95%;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff; /* <--- BLANCO (Antes era rgba oscuro) */
+  border-radius: 12px;    /* Agregado borde redondeado para consistencia */
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.modal-title-input {
+  font-size: 1.4rem;
+  font-weight: 800;
+  border: none;
+  border-bottom: 2px solid #e5e7eb;
+  width: 100%;
+  outline: none;
+  padding: 5px 0;
+  background: transparent;
+  margin-top: 5px;
+  color: #111; /* Texto negro */
+}
+.modal-title-input:focus { border-color: #000; }
+
+.header-meta {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6b7280;
+  letter-spacing: 1px;
+}
+
+/* ÁREA DE SCROLL */
+.modal-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  background: #f9fafb; /* Gris muy clarito de fondo para diferenciar */
+  scrollbar-width: none;
+  color: #333;
+}
+
+/* TARJETA DE BLOQUE */
+.workout-block {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  overflow: hidden;
+}
+
+.block-header {
+  padding: 0.8rem 1rem;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.block-title-input {
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 700;
+  width: 100%;
+  outline: none;
+  color: #111;
+}
+
+/* EDITOR */
+.editor-container .ql-toolbar {
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+/* FOOTER ACTIONS */
+.modal-footer-actions {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: white;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.save-btn {
+  background: #000; /* Botón negro para consistencia */
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.save-btn:hover { background: #333; }
+
+.cancel-btn {
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #333;
+}
+.cancel-btn:hover { background: #f3f4f6; }

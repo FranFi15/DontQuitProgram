@@ -1,0 +1,227 @@
+// server/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- NUEVO: TIPOS DE PLAN (CATEGORÍAS) ---
+model PlanType {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique // Ej: "Cross", "Running", "Funcional"
+  description String? // Ej: "Entrenamientos de alta intensidad..."
+  
+  plans       Plan[]  // Relación: Un tipo tiene muchos planes
+}
+
+// --- USUARIOS ---
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?  
+  role      String   @default("ATLETA") 
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  phone     String?
+  birthDate DateTime?
+  sex       String?  
+
+  // Relaciones
+  subscriptions    Subscription[]
+  personalRecords  PersonalRecord[]
+  workoutResults   WorkoutResult[]
+  payments Payment[]
+   
+  // Chat
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  scoreEntries     ScoreEntry[]
+  wallPosts        WallPost[]
+}
+
+// --- PLANES ---
+model Plan {
+  id                 Int      @id @default(autoincrement())
+  title              String
+  description        String?
+  
+  // Precios
+  price              Float    // Precio en ARS
+  internationalPrice Float    @default(0) // Precio en USD
+  transferDiscount   Int      @default(0)
+  
+  duration           Int      @default(1) // Duración en semanas
+  isActive           Boolean  @default(true)
+  levelDefinitions   String?  @default("[]") 
+  hasFollowUp        Boolean  @default(false)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relación con Tipo de Plan
+  planTypeId         Int?     
+  planType           PlanType? @relation(fields: [planTypeId], references: [id])
+
+  // Relaciones existentes
+  scoreBoxes         ScoreBox[]
+  workouts           Workout[]
+  subscriptions      Subscription[]
+  wallPosts          WallPost[]
+  payments Payment[]
+}
+
+// --- CONFIGURACIÓN DEL SISTEMA ---
+model SystemSetting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique // Ej: "max_followup_slots"
+  value String // Ej: "50"
+}
+
+// --- RUTINAS ---
+model Workout {
+  id         Int      @id @default(autoincrement())
+  planId     Int
+  weekNumber Int
+  dayNumber  Int
+  title      String?
+  blocks     String   @default("[]") 
+
+  plan       Plan     @relation(fields: [planId], references: [id])
+  results    WorkoutResult[]
+
+  @@unique([planId, weekNumber, dayNumber])
+}
+
+//--- SCORES ---
+model ScoreBox {
+  id          Int      @id @default(autoincrement())
+  name        String   
+  measureUnit String   
+   
+  planId      Int
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+   
+  entries     ScoreEntry[] 
+}
+
+//--- ENTRADAS DE SCORES ---
+model ScoreEntry {
+  id          Int      @id @default(autoincrement())
+  value       String   
+  date        DateTime @default(now())
+
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+
+  scoreBoxId  Int
+  scoreBox    ScoreBox @relation(fields: [scoreBoxId], references: [id], onDelete: Cascade)
+}
+
+// --- GLOSARIO ---
+model ExerciseLibrary {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  videoUrl    String
+  description String?
+  category    String?  
+}
+
+// --- SUSCRIPCIONES ---
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  planId    Int
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  isActive  Boolean  @default(true)
+
+  user      User     @relation(fields: [userId], references: [id])
+  plan      Plan     @relation(fields: [planId], references: [id])
+}
+
+// --- CHAT ---
+model Message {
+  id         Int      @id @default(autoincrement())
+   
+  content    String?   
+   
+  mediaUrl   String?  
+  mediaType  String?  
+
+  createdAt  DateTime @default(now())
+  isRead     Boolean  @default(false)
+
+  senderId   Int
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+
+  receiverId Int
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+// --- RMs ---
+model PersonalRecord {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+   
+  exercise  String   
+  weight    Float    
+  reps      Int      @default(1)
+   
+  oneRM     Float    
+  date      DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// --- RESULTADOS (FEEDBACK) ---
+model WorkoutResult {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  workoutId  Int      
+  comment    String?  
+  rpe        Int?     
+  date       DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  workout    Workout  @relation(fields: [workoutId], references: [id])
+}
+
+// --- MURO SOCIAL ---
+model WallPost {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  status    String   @default("PENDING") // "PENDING", "APPROVED", "REJECTED"
+
+  planId    Int
+  plan      Plan     @relation(fields: [planId], references: [id])
+   
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// --- PAGOS / TRANSACCIONES ---
+model Payment {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  planId        Int
+  
+  amount        Float    // Monto final que pagó (con el descuento aplicado)
+  currency      String   @default("ARS") // "ARS" o "USD"
+  method        String   // "TRANSFERENCIA", "MERCADOPAGO", "STRIPE"
+  status        String   @default("PENDING") // "PENDING", "APPROVED", "REJECTED"
+  receiptUrl    String?  // Foto del comprobante subida a Cloudinary
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id])
+  plan          Plan     @relation(fields: [planId], references: [id])
+}

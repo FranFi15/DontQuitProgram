@@ -1,0 +1,361 @@
+/* client/src/pages/admin/AdminPlanDetail.css */
+
+.plan-detail-container {
+  padding: 2rem;
+  width: 100%;
+  animation: fadeIn 0.5s ease-out;
+  box-sizing: border-box;
+}
+
+/* --- Botón Volver --- */
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: color 0.3s;
+}
+
+.back-btn:hover {
+  color: #000;
+}
+
+/* --- Encabezado del Plan --- */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 2px solid #000; /* Línea negra gruesa característica */
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.plan-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -1px;
+  line-height: 1;
+  color: #fffaff;
+}
+
+.plan-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #d0d2d4;
+}
+
+.plan-price {
+  color: #16a34a; /* Verde dinero */
+  font-size: 0.9rem;
+  
+}
+
+/* --- Badges de Niveles --- */
+.levels-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.level-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* --- Placeholder de Rutinas (Estado Vacío) --- */
+.weeks-placeholder {
+  background-color: #fff;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 4rem 2rem;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.placeholder-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #9ca3af;
+  margin-bottom: 1.5rem;
+}
+
+.add-week-btn {
+  background-color: #000;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s;
+}
+
+.add-week-btn:hover {
+  background-color: #333;
+}
+.weeks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.week-card {
+  background-color: #f9fafb; /* Fondo gris muy suave */
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+}
+
+.week-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0;
+  color: #111;
+}
+
+.week-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.week-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.week-action-btn.edit:hover { background: #e0e7ff; color: #3730a3; border-color: #3730a3; }
+.week-action-btn.add:hover { background: #000; color: white; border-color: #000; }
+.week-action-btn.delete:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
+
+/* --- Grid de Días --- */
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.day-card {
+position: relative;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.day-card:hover {
+  transform: translateY(-2px);
+  border-color: #000;
+}
+
+.day-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Centrado verticalmente */
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.day-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.day-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+}
+
+.edit-day-btn {
+  margin-top: auto; /* Empuja el botón al fondo */
+  background-color: #000;
+  color: white;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.edit-day-btn:hover {
+  background-color: #333;
+}
+.day-number {
+  /* Aseguramos que el texto no se rompa */
+  white-space: nowrap;
+}
+
+/* Botón pequeño de editar número (Lápiz) */
+.edit-day-num-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #818285; /* Gris muy claro por defecto */
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.edit-day-num-btn:hover {
+  color: #000; /* Negro al pasar el mouse */
+  background-color: #f3f4f6;
+}
+
+/* Indicador Verde (Status) */
+.day-status {
+  font-size: 0.8rem;
+}
+
+.add-next-week-btn {
+  background-color: transparent;
+  border: 2px dashed #ccc;
+  color: #666;
+  padding: 1.5rem;
+  border-radius: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+}
+
+.add-next-week-btn:hover {
+  border-color: #000;
+  color: #000;
+  background-color: #fff;
+}
+.delete-day-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: transparent;
+  border: none;
+  color: #e5e7eb; /* Gris muy claro por defecto */
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.day-card:hover .delete-day-btn {
+  color: #ef4444; /* Rojo al pasar el mouse por la tarjeta */
+  background-color: #fee2e2;
+}
+
+.delete-day-btn:hover {
+  transform: scale(1.1);
+}
+.day-blocks-preview {
+  display: flex;
+  flex-direction: column; /* Lista vertical para que se lea mejor */
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+  flex-grow: 1; /* Esto hace que empuje el botón "Editar" hacia abajo */
+}
+
+.block-preview-tag {
+  background-color: #f3f4f6; /* Gris muy suave */
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  border-left: 3px solid #000; /* Detalle estético "Don't Quit" */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Si el nombre es muy largo, pone "..." */
+}
+
+.no-blocks-text {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+.max-weeks-reached {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background-color: #fff1f2; /* Rojo muy suave */
+  color: #be123c; /* Rojo oscuro */
+  border: 1px dashed #be123c;
+  border-radius: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .plan-title {
+    font-size: 2rem;
+  }
+}

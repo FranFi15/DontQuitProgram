@@ -1,0 +1,201 @@
+/* CONTENEDOR PRINCIPAL (Igual a .users-container) */
+.admin-wall-container {
+  padding: 2rem 3rem; /* Margen exacto del admin */
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+/* HEADER (Igual a .users-header) */
+.admin-wall-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-wall-header h1 {
+  font-size: 2rem;       /* Igual a .users-title */
+  font-weight: 900;      /* Negrita extrema */
+  text-transform: uppercase;
+  margin: 0;
+  color: #fffafa;
+}
+
+.admin-wall-header p {
+  color: #6b7280;        /* Gris texto */
+  margin: 5px 0 0 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.header-icon-admin { color: #9ca3af; }
+
+/* TABS (Estilo Toolbar) */
+.wall-tabs-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem; /* Espacio antes del chat */
+  scrollbar-width: none;
+}
+.wall-tabs-container::-webkit-scrollbar { display: none; }
+
+.wall-tab-pill {
+  white-space: nowrap;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #6b7280;
+  font-weight: 700;        /* Bold como en admin */
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  text-transform: uppercase; /* Uppercase consistente */
+  letter-spacing: 0.02em;
+}
+
+.wall-tab-pill:hover {
+  background-color: #f9fafb;
+  color: #111;
+}
+
+.wall-tab-pill.active {
+  background: #000;     /* Negro Admin */
+  color: white;
+  border-color: #000;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+/* CAJA DE CHAT (Igual a .users-table-container) */
+.admin-chat-box {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;    /* Radio de 10px como la tabla */
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 600px; /* Altura fija para que el scroll sea interno */
+}
+
+/* ÁREA DE MENSAJES (Cuerpo) */
+.messages-area {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: #fff; /* Fondo blanco limpio */
+}
+
+/* BURBUJAS DE CHAT */
+.chat-bubble-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  max-width: 70%;
+}
+
+.chat-bubble-row.mine {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-bubble-row.theirs {
+  align-self: flex-start;
+}
+
+/* Avatar circular */
+.avatar-circle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  color: #374151;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: 1px solid #e5e7eb;
+}
+
+.chat-bubble {
+  padding: 12px 16px;
+  border-radius: 12px;
+  position: relative;
+  background: #f9fafb; /* Gris muy suave para otros */
+  border: 1px solid #e5e7eb;
+}
+
+/* Burbuja del Admin (YO) */
+.admin-bubble {
+  background: #000; /* Negro Admin */
+  color: white;
+  border-color: #000;
+}
+.admin-bubble .bubble-text { color: white; }
+.admin-bubble .bubble-time { color: #9ca3af; }
+
+.bubble-author {
+  font-size: 0.75rem;
+  font-weight: 800; /* Extra bold */
+  color: #000;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.bubble-text { margin: 0; font-size: 0.95rem; line-height: 1.5; color: #1f2937; }
+.bubble-time { display: block; font-size: 0.7rem; color: #9ca3af; margin-top: 5px; text-align: right; }
+
+/* INPUT AREA (Footer del box) */
+.chat-input-wrapper {
+  padding: 1.5rem;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.chat-form {
+  display: flex;
+  gap: 10px;
+  max-width: 100%;
+}
+
+.chat-form input {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  font-size: 0.95rem;
+  background: #fff;
+  color: #111;
+}
+.chat-form input:focus { border-color: #000; }
+
+.send-btn-admin {
+  background-color: #000; /* Botón Negro Admin */
+  color: white;
+  width: 46px;
+  border: none;
+  border-radius: 6px; /* Igual a .new-user-btn */
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background-color 0.2s;
+}
+.send-btn-admin:hover { background-color: #333; }
+.send-btn-admin:disabled { background-color: #e5e7eb; cursor: not-allowed; }
+
+/* ESTADOS VACÍOS / CARGA */
+.loading-txt, .empty-chat-state {
+  text-align: center;
+  color: #9ca3af;
+  margin-top: 4rem;
+  font-weight: 500;
+}
+.empty-chat-state p { margin-top: 10px; font-size: 0.9rem; }

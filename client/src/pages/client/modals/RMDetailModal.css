@@ -1,0 +1,230 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6); 
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end; 
+  backdrop-filter: blur(3px); 
+}
+
+.modal-content-bottom {
+  background: white;
+  width: 100%;
+  max-height: 90vh; 
+  overflow-y: auto;
+  padding: 1.5rem;
+  padding-bottom: 2rem;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+}
+
+/* Animación de entrada */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- HEADER DEL MODAL --- */
+.detail-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #111;
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+/* Botones de Acción (Editar, Borrar, Volver) */
+.icon-action-btn {
+  width: 42px; 
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.icon-action-btn:active { transform: scale(0.9); }
+
+.icon-action-btn.delete { color: #ef4444; background: #fee2e2; }
+.icon-action-btn.edit { color: #2563eb; background: #eff6ff; }
+
+/* --- SECCIÓN VISUAL (VER DATOS) --- */
+
+/* Hero Card (Tarjeta Negra Superior) */
+.one-rm-hero-compact {
+  background: #111;
+  color: white;
+  border-radius: 16px;
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 20px -5px rgba(0,0,0,0.4);
+}
+
+.hero-left { display: flex; flex-direction: column; gap: 4px; }
+.hero-label { font-size: 0.65rem; font-weight: 800; color: #9ca3af; letter-spacing: 1px; text-transform: uppercase; }
+.hero-sub { font-size: 0.8rem; color: #d1d5db; font-weight: 500; }
+
+.hero-right .hero-value { font-size: 2.5rem; line-height: 1; font-weight: 900; letter-spacing: -1px; }
+.hero-right small { font-size: 1rem; font-weight: 700; color: #6b7280; margin-left: 4px; }
+
+/* Título de la Lista */
+.list-title {
+  font-size: 0.8rem; font-weight: 800; color: #4b5563; margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 6px; text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; letter-spacing: 0.5px;
+}
+
+/* Lista de Porcentajes */
+.percentages-list-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+}
+
+.pct-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 1rem;
+}
+
+/* Fila destacada (100%) */
+.row-100 {
+  background: #f0fdf4; /* Verde muy suave para el 100% */
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 10px;
+  margin: 6px 0;
+  border: 1px solid #dcfce7;
+}
+.row-100 .pct-badge { background: #16a34a; color: white; }
+.row-100 .pct-weight-val { color: #15803d; font-size: 1.2rem; }
+
+/* Badge del Porcentaje (Píldora gris) */
+.pct-badge {
+  width: 55px;
+  text-align: center;
+  background: #f3f4f6;
+  color: #374151;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 6px 0;
+  border-radius: 8px;
+}
+
+/* Línea punteada conectora */
+.pct-line {
+  flex: 1;
+  height: 1px;
+  /* Crea el efecto de puntos o guiones */
+  background: repeating-linear-gradient(to right, #e5e7eb 0, #e5e7eb 4px, transparent 4px, transparent 8px);
+  margin: 0 15px;
+}
+
+/* Valor del Peso */
+.pct-weight-val {
+  font-weight: 900;
+  color: #111;
+  font-size: 1.1rem;
+  min-width: 60px; /* Ancho fijo para alinear a la derecha */
+  text-align: right;
+}
+
+.pct-weight-val small {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-left: 3px;
+}
+
+/* Botón Cerrar (Gris grande abajo) */
+.close-detail-btn {
+  width: 100%;
+  padding: 1.2rem;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 16px;
+  font-weight: 800;
+  color: #374151;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: background 0.2s;
+}
+.close-detail-btn:active { background: #e5e7eb; }
+
+/* --- MODO EDICIÓN (FORMULARIO) --- */
+.rm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.row-inputs {
+  display: flex;
+  gap: 1rem;
+}
+
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.input-group.full-width { width: 100%; }
+
+.input-group label {
+  font-size: 0.7rem; font-weight: 800; color: #9ca3af;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.input-group input {
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1.1rem; font-weight: 700; color: #111;
+  background: #f9fafb;
+  outline: none;
+}
+.input-group input:focus { border-color: #000; background: #fff; }
+
+.save-rm-btn {
+  background: #000;
+  color: white;
+  border: none;
+  padding: 1.2rem;
+  border-radius: 16px;
+  font-size: 1rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  margin-top: 1rem;
+}
+.save-rm-btn:disabled { opacity: 0.7; cursor: not-allowed; }

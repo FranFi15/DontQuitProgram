@@ -1,0 +1,45 @@
+/* client/src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap'); /* Ejemplo de fuente similar */
+
+:root {
+  --bg-color: #131314; 
+  --text-color: #FAF3EF; 
+  --accent-color: #FAF3EF; 
+  --font-main: 'Montserrat', sans-serif; 
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+
+
+/* Estilo para el logo "Don't Quit." al pie */
+.footer-logo {
+  font-family: cursive; /* O buscar una fuente de firma específica */
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.2rem;
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px); /* Empieza 20px más abajo */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0); /* Termina en su lugar original */
+  }
+}
+
+.animate-enter {
+  animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0; /* Empieza invisible hasta que arranca la animación */
+}
+
+/* Retrasos para crear efecto "escalera" (uno después del otro) */
+.delay-100 { animation-delay: 0.2s; }
+.delay-200 { animation-delay: 0.4s; }
+.delay-300 { animation-delay: 0.5s; }

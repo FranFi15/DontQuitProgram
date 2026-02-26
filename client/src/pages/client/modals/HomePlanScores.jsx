@@ -1,0 +1,88 @@
+import { useState, useEffect } from 'react';
+import axios from '../../../api/axios';
+import { ClipboardList, Edit2, Target } from 'lucide-react'; // Agregamos Target
+import ScoreBoxModal from '../modals/ScoreBoxModal'
+import './HomePlanScores.css';
+
+function HomePlanScores({ planId, planName, userId }) {
+  const [boxes, setBoxes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchBoxes = async () => {
+    try {
+      const res = await axios.get(`/scoreboxes/plan/${planId}?userId=${userId}`);
+      setBoxes(res.data);
+    } catch (error) {
+      console.error("Error cargando scores", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBoxes();
+  }, [planId, userId]);
+
+  if (!loading && boxes.length === 0) return null;
+
+  return (
+    <>
+      <div className="home-score-card">
+        <div className="score-card-header">
+          <div className="header-left">
+            <ClipboardList size={18} className="score-icon-main"/>
+            <span className="score-plan-name">{planName}</span>
+          </div>
+          <button className="edit-score-btn" onClick={() => setIsModalOpen(true)}>
+            <Edit2 size={14} /> Editar
+          </button>
+        </div>
+
+        {/* CAMBIAMOS A FORMATO LISTA */}
+        <div className="score-list">
+          {boxes.map(box => {
+            const entry = box.entries && box.entries.length > 0 ? box.entries[0] : null;
+            return (
+              <div key={box.id} className="score-list-item">
+                
+                {/* Lado Izquierdo: Icono y Nombre */}
+                <div className="score-item-left">
+                  <div className="score-icon-box">
+                    <Target size={16} className="score-target-icon" />
+                  </div>
+                  <span className="score-label">{box.name}</span>
+                </div>
+
+                {/* Lado Derecho: Valor y Unidad */}
+                <div className="score-item-right">
+                  {entry ? (
+                    <span className="score-value filled">
+                      {entry.value} <small>{box.measureUnit}</small>
+                    </span>
+                  ) : (
+                    <span className="score-value empty">- -</span>
+                  )}
+                </div>
+
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {isModalOpen && (
+        <ScoreBoxModal 
+          planId={planId}
+          userId={userId}
+          onClose={() => {
+            setIsModalOpen(false);
+            fetchBoxes();
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+export default HomePlanScores;

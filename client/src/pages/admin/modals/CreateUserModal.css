@@ -1,0 +1,188 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background-color: #fff; /* Blanco */
+  width: 95%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+/* HEADER */
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 4px;
+}
+.close-btn:hover { color: #000; }
+
+/* FORM */
+.modal-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-groupcreate{
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333; 
+}
+
+.modal-input {
+  padding: 0.7rem;
+  border: 1px solid #d1d5db; /* Gris suave */
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  color: #111;
+  background: #fff;
+}
+.modal-input:focus { border-color: #000; }
+
+/* Corrección para Selects */
+.modal-input option { background-color: #fff; color: #333; }
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.cancel-btn {
+  padding: 0.7rem 1.2rem;
+  background: transparent;
+  color: #6b7280;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+.cancel-btn:hover { color: #000; background: #f3f4f6; border-radius: 6px;}
+
+.save-btn {
+  padding: 0.7rem 1.5rem;
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.save-btn:hover { background-color: #333; }
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-input-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.custom-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  margin-top: 4px;
+  padding: 0;
+  list-style: none;
+  z-index: 100;
+}
+
+.custom-dropdown li {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+  color: #333
+}
+
+.custom-dropdown li:hover {
+  background-color: #f9fafb;
+}
+
+.custom-dropdown li.no-results {
+  color: #9ca3af;
+  text-align: center;
+  cursor: default;
+}
+
+.custom-dropdown li.no-results:hover {
+  background-color: white;
+}
+
+.dropdown-badge {
+  background-color: #f3f4f6;
+  color: #374151;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Permitir que el dropdown se salga del modal si es necesario */
+.modal-content[style*="overflow: visible"] {
+    overflow: visible !important;
+}
+
+@media (max-width: 600px) {
+  .modal-content { width: 100%; height: 100%; border-radius: 0; }
+  .form-row { grid-template-columns: 1fr; }
+}

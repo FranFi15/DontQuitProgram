@@ -1,0 +1,148 @@
+/* client/src/pages/admin/AdminLayout.css */
+
+/* El contenedor principal que envuelve Sidebar + Contenido */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #161616; /* Fondo general gris suave */
+}
+
+/* --- SIDEBAR (Barra Lateral) --- */
+.admin-sidebar {
+  width: 260px; /* Ancho fijo */
+  height: 100vh; /* Altura completa */
+  background-color: #000; /* Negro (Identidad de marca) */
+  color: #fff;
+  position: fixed; /* Se queda fija al hacer scroll */
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100; /* Por encima del contenido */
+  box-shadow: 4px 0 10px rgba(0,0,0,0.05);
+}
+
+.brand-logo {
+  height: 250px;
+  display: flex;
+  align-items: center;
+}
+
+/* Header del Sidebar (Logo) */
+.sidebar-brand {
+  height: 70px;
+  display: flex;
+  align-items: center;
+
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: white;
+  text-transform: uppercase;
+}
+
+/* Navegación */
+.sidebar-nav {
+  flex: 1;
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 1.5rem;
+  color: #9ca3af; /* Gris claro */
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover {
+  background-color: #111;
+  color: #fff;
+}
+
+.sidebar-link.active {
+  background-color: #1a1a1a;
+  color: #fff;
+  border-left-color: #fff; /* Indicador blanco activo */
+}
+
+/* Footer del Sidebar (Cerrar Sesión) */
+.sidebar-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #333;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: #ef4444; /* Rojo suave */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover {
+  background: #2a0a0a;
+}
+
+/* --- ÁREA DE CONTENIDO (Derecha) --- */
+.admin-content {
+  flex: 1;
+  margin-left: 260px; /* IMPORTANTE: Mismo ancho que el sidebar */
+  width: calc(100% - 260px);
+  min-height: 100vh;
+  box-sizing: border-box;
+  /* El padding lo manejan las páginas internas (AdminChat, AdminPlanDetail, etc.) */
+}
+
+.icon-with-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-bubble {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background-color: #ef4444; 
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #111; /* Cambia este #111 por el color de fondo de tu sidebar si es distinto */
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+/* Responsive: En celulares el Admin Sidebar se esconde (Opcional por ahora) */
+@media (max-width: 768px) {
+  .admin-sidebar { display: none; } 
+  .admin-content { margin-left: 0; width: 100%; }
+}

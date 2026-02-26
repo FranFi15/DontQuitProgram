@@ -1,0 +1,114 @@
+.home-score-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+.score-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px; /* Un poco más de margen inferior */
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 12px;
+}
+
+.header-left { display: flex; align-items: center; gap: 8px; }
+.score-icon-main { color: #4b5563; }
+.score-plan-name { font-weight: 800; font-size: 0.95rem; color: #1f2937; text-transform: uppercase; }
+
+.edit-score-btn {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 6px 12px;
+  border-radius: 99px; /* Botón más redondeado */
+  font-size: 0.75rem;
+  color: #111;
+  display: flex; align-items: center; gap: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.edit-score-btn:active {
+  transform: scale(0.95);
+  background: #e5e7eb;
+}
+
+/* --- NUEVA LISTA DE METRICAS --- */
+.score-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Separación entre cada ítem */
+}
+
+.score-list-item {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+}
+
+/* Lado Izquierdo */
+.score-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-icon-box {
+  background: #e0e7ff; /* Azul muy suave */
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-target-icon {
+  color: #4f46e5; /* Índigo oscuro */
+}
+
+.score-label {
+  font-size: 0.95rem;
+  color: #1f2937;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+/* Lado Derecho */
+.score-item-right {
+  text-align: right;
+  border-left: 1px solid #f3f4f6;
+  padding-left: 1rem;
+}
+
+.score-value { 
+  display: block;
+  font-weight: 900; 
+  font-size: 1.2rem; 
+  color: #000; 
+  line-height: 1;
+}
+
+.score-value small { 
+  font-size: 0.7rem; 
+  color: #6b7280; 
+  font-weight: 800; 
+  text-transform: uppercase; 
+  margin-left: 2px;
+}
+
+.score-value.empty { 
+  color: #cbd5e1; 
+  letter-spacing: 2px; 
+}

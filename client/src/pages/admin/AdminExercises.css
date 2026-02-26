@@ -1,0 +1,144 @@
+/* client/src/pages/admin/AdminExercises.css */
+
+.admin-container {
+  padding: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.new-btn {
+  background-color: #000;
+  color: #fff;
+  padding: 0.75rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+}
+.new-btn:hover { background-color: #333; }
+
+.toolbar { margin-bottom: 1.5rem; }
+
+.search-bar {
+  position: relative;
+  max-width: 400px;
+}
+.search-bar .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+.search-bar input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 2.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+.search-bar input:focus { border-color: #000; }
+
+/* TABLE */
+.table-container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow-x: auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.admin-table th {
+  background-color: #f9fafb;
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.95rem;
+  color: #1f2937;
+  vertical-align: middle;
+}
+
+.fw-bold { font-weight: 700; }
+.text-gray { color: #9ca3af; font-size: 0.9rem; }
+.desc-cell { max-width: 300px; color: #4b5563; font-size: 0.9rem; }
+.empty-msg { text-align: center; padding: 2rem; color: #9ca3af; }
+
+/* Icon Box para la mancuerna */
+.icon-box {
+  background-color: #f3f4f6;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+/* Link de Video */
+.video-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #eff6ff;
+  transition: background 0.2s;
+}
+.video-link:hover { background-color: #dbeafe; }
+
+/* Acciones */
+.actions-cell { text-align: right; white-space: nowrap; }
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: 0.2rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.action-btn.edit { color: #2563eb; }
+.action-btn.edit:hover { background-color: #eff6ff; }
+.action-btn.delete { color: #dc2626; }
+.action-btn.delete:hover { background-color: #fef2f2; }

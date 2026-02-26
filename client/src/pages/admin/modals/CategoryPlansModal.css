@@ -1,0 +1,20 @@
+/* client/src/pages/admin/modals/CategoryPlansModal.css */
+.cat-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px); }
+.cat-modal-content { background: white; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+.cat-modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: flex-start; position: sticky; top: 0; background: white; z-index: 10; border-radius: 12px 12px 0 0;}
+.cat-badge { font-size: 0.7rem; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block; }
+.cat-modal-header h2 { margin: 0; font-size: 1.3rem; font-weight: 900; color: #111; text-transform: uppercase; }
+.cat-close-btn { background: none; border: none; cursor: pointer; color: #9ca3af; padding: 4px; }
+.cat-close-btn:hover { color: #000; }
+.cat-modal-body { padding: 1.5rem 2rem; }
+.cat-loading, .cat-empty { text-align: center; color: #6b7280; padding: 2rem 0; font-weight: 500;}
+.cat-plans-list { display: flex; flex-direction: column; gap: 10px; }
+.cat-plan-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fdfdfd; transition: 0.2s;}
+.cat-plan-item:hover { border-color: #d1d5db; background: #f9fafb;}
+.cat-plan-info { display: flex; flex-direction: column; gap: 4px; }
+.cat-plan-title { font-weight: 700; color: #111; font-size: 0.95rem; text-transform: uppercase;}
+.cat-plan-status { font-size: 0.7rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; align-self: flex-start;}
+.cat-plan-status.active { background: #dcfce7; color: #16a34a; }
+.cat-plan-status.paused { background: #f3f4f6; color: #6b7280; }
+.cat-btn-link { background: none; border: none; color: #2563eb; cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: 600; font-size: 0.85rem; padding: 6px; border-radius: 4px;}
+.cat-btn-link:hover { background: #eff6ff; }

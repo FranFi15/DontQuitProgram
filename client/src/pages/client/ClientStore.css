@@ -1,0 +1,302 @@
+/* client/src/pages/client/ClientStore.css */
+
+.client-store-page {
+  padding: 1.5rem;
+  padding-bottom: 100px; /* Espacio para el BottomNav */
+  background-color: #f9fafb;
+  min-height: 100vh;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.store-header {
+  margin-bottom: 2rem;
+}
+
+.store-header h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #111;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.store-header p {
+  color: #6b7280;
+  font-weight: 500;
+  margin-top: 5px;
+  font-size: 0.95rem;
+}
+
+/* Grilla de Planes */
+.store-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.store-plan-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+  border: 1px solid #e5e7eb;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.discount-badge {
+  position: absolute;
+  top: -12px;
+  right: 15px;
+  background: #111;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.plan-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #111;
+  text-transform: uppercase;
+  margin: 0 0 5px 0;
+}
+
+.plan-duration {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4f46e5; /* Índigo sutil */
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+}
+
+.plan-desc {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+  flex: 1; /* Empuja el precio hacia abajo */
+}
+
+/* Caja de Precio */
+.plan-price-box {
+  background: #f3f4f6;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #9ca3af;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.new-price {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #111;
+  line-height: 1;
+  margin: 4px 0;
+}
+
+.price-note {
+  font-size: 0.7rem;
+  color: #10b981; /* Verde éxito */
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.buy-btn {
+  width: 100%;
+  background: #000;
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.buy-btn:active { transform: scale(0.98); }
+.buy-btn:hover { background: #222; }
+
+/* --- MODAL DE TRANSFERENCIA --- */
+.store-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.store-modal-content {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.store-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.store-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #111;
+}
+
+.close-modal-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+}
+.close-modal-btn:hover { color: #111; }
+
+.store-modal-body {
+  padding: 1.5rem;
+}
+
+/* Instrucciones */
+.instruction-step {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.step-num {
+  width: 24px; height: 24px;
+  background: #111;
+  color: white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.instruction-step p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.bank-data-box {
+  background: #f3f4f6;
+  border-left: 4px solid #111;
+  padding: 1rem;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 1.5rem;
+  margin-left: 36px; /* Alineado con el texto del paso 1 */
+}
+
+.bank-data-box p {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: #111;
+}
+.bank-data-box span { color: #6b7280; display: inline-block; width: 70px; }
+
+/* Upload box */
+.file-upload-box {
+  display: block;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  margin-left: 36px;
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+  background: #fafafa;
+}
+
+.file-upload-box:hover {
+  border-color: #111;
+  background: #f9fafb;
+}
+
+.file-prompt, .file-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-prompt span { color: #6b7280; font-size: 0.9rem; font-weight: 600; }
+.file-success span { color: #10b981; font-size: 0.9rem; font-weight: 700; word-break: break-all;}
+
+.info-warning {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #fffbeb;
+  color: #b45309;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.confirm-transfer-btn {
+  width: 100%;
+  background: #10b981; /* Verde éxito */
+  color: white;
+  border: none;
+  padding: 1.2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
+
+.confirm-transfer-btn:disabled {
+  background: #9ca3af;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
