@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
-import { Users, CreditCard, Dumbbell, AlertTriangle, TrendingUp, Calendar, DollarSign, ChevronRight, Activity } from 'lucide-react';
+import { Users, CreditCard, Dumbbell, AlertTriangle, TrendingUp, Calendar, DollarSign, ChevronRight, Activity, Wallet } from 'lucide-react';
 import './AdminDashboard.css';
 
 function AdminDashboard() {
@@ -15,7 +15,7 @@ function AdminDashboard() {
         const res = await axios.get('/dashboard');
         setStats(res.data);
       } catch (error) {
-        console.error(error);
+        console.error("Error cargando estadísticas:", error);
       } finally {
         setLoading(false);
       }
@@ -23,8 +23,8 @@ function AdminDashboard() {
     fetchStats();
   }, []);
 
-  // Formateador de moneda (ARS)
-  const formatCurrency = (amount) => {
+  // Formateadores de moneda
+  const formatARS = (amount) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
@@ -32,10 +32,18 @@ function AdminDashboard() {
     }).format(amount || 0);
   };
 
+  const formatUSD = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2
+    }).format(amount || 0);
+  };
+
   if (loading) return (
     <div className="dashboard-loading">
       <div className="spinner"></div>
-      <p>Cargando métricas...</p>
+      <p>Sincronizando métricas...</p>
     </div>
   );
 
@@ -45,8 +53,8 @@ function AdminDashboard() {
       {/* HEADER */}
       <div className="dashboard-header">
         <div>
-          <h1 className="dashboard-title">Resumen de Actividad</h1>
-          <p className="dashboard-subtitle">Hola Coach, así vienen los números de tu equipo hoy.</p>
+          <h1 className="dashboard-title">Panel de Control</h1>
+          <p className="dashboard-subtitle">Hola Coach, así progresa Gain Wellness hoy.</p>
         </div>
         <div className="date-badge">
           <Calendar size={16} /> 
@@ -54,25 +62,39 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* TARJETAS DE ESTADÍSTICAS (Ahora son 4) */}
+      {/* TARJETAS DE ESTADÍSTICAS */}
       <div className="stats-grid">
         
-        {/* Tarjeta de Ingresos (NUEVA) */}
+        {/* INGRESOS EN PESOS */}
         <div className="stat-card premium-card" onClick={() => navigate('/admin/payments')}>
-          <div className="stat-icon revenue"><DollarSign size={28} /></div>
+          <div className="stat-icon revenue-ars"><DollarSign size={28} /></div>
           <div className="stat-info">
-            <p>Ingresos del Mes</p>
-            <h3>{formatCurrency(stats?.monthlyRevenue || 0)}</h3>
+            <p>Ingresos Mensuales (ARS)</p>
+            <h3>{formatARS(stats?.monthlyRevenueARS || 0)}</h3>
+          </div>
+          {stats?.pendingPayments > 0 && (
+            <div className="stat-notification-badge">
+              {stats.pendingPayments} pendientes
+            </div>
+          )}
+        </div>
+
+        {/* INGRESOS EN DÓLARES (NUEVA) */}
+        <div className="stat-card intl-card" onClick={() => navigate('/admin/payments')}>
+          <div className="stat-icon revenue-usd"><Wallet size={24} /></div>
+          <div className="stat-info">
+            <p>Ingresos Globales (USD)</p>
+            <h3>{formatUSD(stats?.monthlyRevenueUSD || 0)}</h3>
           </div>
           <div className="stat-trend positive">
-            <TrendingUp size={14} /> +12%
+            <TrendingUp size={14} /> Global
           </div>
         </div>
 
         <div className="stat-card" onClick={() => navigate('/admin/subscriptions')}>
           <div className="stat-icon active-users"><Activity size={24} /></div>
           <div className="stat-info">
-            <p>Suscripciones Activas</p>
+            <p>Atletas Activos</p>
             <h3>{stats?.activeAthletes || 0}</h3>
           </div>
         </div>
@@ -80,16 +102,8 @@ function AdminDashboard() {
         <div className="stat-card" onClick={() => navigate('/admin/users')}>
           <div className="stat-icon users"><Users size={24} /></div>
           <div className="stat-info">
-            <p>Alumnos Registrados</p>
+            <p>Comunidad Total</p>
             <h3>{stats?.totalUsers || 0}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" onClick={() => navigate('/admin/exercises')}>
-          <div className="stat-icon gym"><Dumbbell size={24} /></div>
-          <div className="stat-info">
-            <p>Ejercicios (Glosario)</p>
-            <h3>{stats?.exercisesCount || 0}</h3>
           </div>
         </div>
 
@@ -102,18 +116,17 @@ function AdminDashboard() {
           <div className="section-header">
             <h2><AlertTriangle size={20} className="text-warning"/> Próximos Vencimientos</h2>
             <button className="view-all-btn" onClick={() => navigate('/admin/subscriptions')}>
-              Ver todos <ChevronRight size={16} />
+              Gestionar <ChevronRight size={16} />
             </button>
           </div>
           
           <div className="expiring-list">
             {!stats?.expiringSoon || stats.expiringSoon.length === 0 ? (
               <div className="empty-state-box">
-                <p>Todo tranquilo. Ningún plan vence en los próximos 7 días.</p>
+                <p>No hay planes por vencer esta semana. ¡Buen trabajo!</p>
               </div>
             ) : (
               stats.expiringSoon.map((sub, index) => {
-                // Calculamos cuántos días faltan para darle color rojo si es inminente
                 const daysLeft = Math.ceil((new Date(sub.endDate) - new Date()) / (1000 * 60 * 60 * 24));
                 const isUrgent = daysLeft <= 2;
 
@@ -136,10 +149,10 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: ACCESOS RÁPIDOS */}
+        {/* COLUMNA DERECHA: ACCIONES RÁPIDAS */}
         <div className="dashboard-section">
           <div className="section-header">
-            <h2>Acciones Rápidas</h2>
+            <h2>Acciones de Gestión</h2>
           </div>
           <div className="quick-actions-grid">
             <button className="quick-action-card" onClick={() => navigate('/admin/users')}>
@@ -148,15 +161,16 @@ function AdminDashboard() {
             </button>
             <button className="quick-action-card" onClick={() => navigate('/admin/plans')}>
               <div className="qa-icon"><Calendar size={24}/></div>
-              <span>Crear Plan</span>
+              <span>Planes</span>
             </button>
             <button className="quick-action-card" onClick={() => navigate('/admin/payments')}>
               <div className="qa-icon"><CreditCard size={24}/></div>
-              <span>Ver Cobros</span>
+              <span>Cobros</span>
+              {stats?.pendingPayments > 0 && <span className="qa-badge">{stats.pendingPayments}</span>}
             </button>
             <button className="quick-action-card" onClick={() => navigate('/admin/exercises')}>
               <div className="qa-icon"><Dumbbell size={24}/></div>
-              <span>Subir Video</span>
+              <span>Ejercicios</span>
             </button>
           </div>
         </div>
