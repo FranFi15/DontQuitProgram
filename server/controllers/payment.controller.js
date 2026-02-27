@@ -150,3 +150,22 @@ export const getAdminBadges = async (req, res) => {
     res.status(500).json({ error: 'Error contando notificaciones' });
   }
 };
+
+export const getPaymentHistory = async (req, res) => {
+  try {
+    const history = await prisma.payment.findMany({
+      where: {
+        status: { in: ['APPROVED', 'REJECTED'] }
+      },
+      include: {
+        user: { select: { name: true, email: true } },
+        plan: { select: { title: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(history);
+  } catch (error) {
+    console.error("Error obteniendo historial:", error);
+    res.status(500).json({ error: 'Error obteniendo historial de pagos' });
+  }
+};
