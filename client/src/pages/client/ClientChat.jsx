@@ -14,8 +14,10 @@ function ClientChat() {
   const messagesEndRef = useRef(null);
 
   const ADMIN_ID = 1; 
-  const CLOUD_NAME = "TU_CLOUD_NAME"; 
-  const UPLOAD_PRESET = "TU_UPLOAD_PRESET"; 
+  
+  // 👇 1. LEYENDO DESDE LAS VARIABLES DE ENTORNO 👇
+  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
+  const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET; 
 
   const fetchMessages = async () => {
     try {
@@ -73,13 +75,25 @@ function ClientChat() {
       formData.append('upload_preset', UPLOAD_PRESET);
 
       const resourceType = type === 'VIDEO' ? 'video' : 'image';
-      const cloudRes = await axios.post(
+      
+      // 👇 2. USAMOS FETCH NATIVO PARA EVITAR EL ERROR DE CORS 👇
+      const cloudRes = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, 
-        formData
+        {
+          method: 'POST',
+          body: formData
+        }
       );
       
-      const uploadedUrl = cloudRes.data.secure_url;
+      const cloudData = await cloudRes.json();
 
+      if (!cloudRes.ok) {
+         throw new Error(cloudData.error?.message || "Error al subir a Cloudinary");
+      }
+
+      const uploadedUrl = cloudData.secure_url;
+
+      // Una vez que subió a Cloudinary, le avisamos a nuestro backend
       await axios.post('/chat', {
         senderId: user.id,
         receiverId: ADMIN_ID,
@@ -94,7 +108,7 @@ function ClientChat() {
       if (error.response?.status === 403) {
         alert("⛔ " + error.response.data.error);
       } else {
-        console.error(error);
+        console.error("Error completo:", error);
         alert("Error al enviar el archivo.");
       }
     } finally {
@@ -106,7 +120,6 @@ function ClientChat() {
   return (
     <div className="chat-page-container">
       
-      {/* NUEVO HEADER */}
       <div className="chat-header">
         <div className="chat-header-info">
           <div className="chat-avatar">
@@ -120,7 +133,6 @@ function ClientChat() {
         </div>
       </div>
 
-      {/* ÁREA DE MENSAJES */}
       <div className="messages-scroll-area">
         {messages.length === 0 && !uploading && (
           <div className="empty-chat-msg">
@@ -134,7 +146,6 @@ function ClientChat() {
             <div key={msg.id} className={`message-row ${isMine ? 'row-mine' : 'row-theirs'}`}>
               <div className={`message-bubble ${isMine ? 'bubble-mine' : 'bubble-theirs'}`}>
                 
-                {/* Contenido Multimedia */}
                 {msg.mediaType === 'IMAGE' && (
                   <div className="media-container">
                     <img src={msg.mediaUrl} alt="adjunto" className="chat-media-img" />
@@ -146,7 +157,6 @@ function ClientChat() {
                   </div>
                 )}
 
-                {/* Contenido Texto */}
                 {msg.content && <p className="msg-text">{msg.content}</p>}
                 
                 <span className="msg-time">
@@ -157,7 +167,6 @@ function ClientChat() {
           );
         })}
 
-        {/* Indicador de "Subiendo..." visual como un mensaje temporal */}
         {uploading && (
            <div className="message-row row-mine">
              <div className="message-bubble bubble-mine uploading-bubble">
@@ -169,7 +178,6 @@ function ClientChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* INPUT REDISEÑADO */}
       <div className="chat-input-wrapper">
         <form className="chat-input-form" onSubmit={handleSendText}>
           
