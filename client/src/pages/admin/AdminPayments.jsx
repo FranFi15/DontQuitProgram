@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
-// 👇 AGREGADO 'Search' AQUÍ ABAJO
 import { Check, X, Eye, DollarSign, Loader2, Settings, Landmark, History, Clock, Search } from 'lucide-react';
 import './AdminPayments.css';
 
@@ -9,7 +8,6 @@ function AdminPayments() {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
-  
   const [activeTab, setActiveTab] = useState('pending'); 
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [bankData, setBankData] = useState({ alias: '', cbu: '', name: '' });
@@ -93,7 +91,6 @@ function AdminPayments() {
     }
   };
 
-  // --- LÓGICA DE FILTRADO ---
   const filteredPayments = payments.filter(pay => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -106,27 +103,34 @@ function AdminPayments() {
   return (
     <div className="admin-payments-container">
       
+      {/* SECCIÓN 1: TÍTULO Y CONFIGURACIÓN */}
       <div className="admin-p-header">
         <div className="header-titles">
           <h1>Gestión de Cobros</h1>
-          <p>Control de ingresos por Transferencia, Mercado Pago y PayPal.</p>
+          <p>Revisa transferencias y el historial de pagos automáticos.</p>
         </div>
         <button className="config-bank-btn" onClick={() => setIsBankModalOpen(true)}>
           <Settings size={18} /> Configurar CBU
         </button>
       </div>
 
-      <div className="admin-p-tabs">
-        <div className="tabs-left">
-            <button className={`p-tab ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
-              <Clock size={18} /> Pendientes
-            </button>
-            <button className={`p-tab ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
-              <History size={18} /> Historial
-            </button>
+      {/* SECCIÓN 2: BARRA DE HERRAMIENTAS (TABS + BUSCADOR) */}
+      <div className="admin-p-toolbar">
+        <div className="admin-p-tabs">
+          <button 
+            className={`p-tab ${activeTab === 'pending' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('pending')}
+          >
+            <Clock size={18} /> Pendientes
+          </button>
+          <button 
+            className={`p-tab ${activeTab === 'history' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('history')}
+          >
+            <History size={18} /> Historial
+          </button>
         </div>
 
-        {/* BUSCADOR INTEGRADO */}
         <div className="search-bar-container">
           <Search size={18} className="search-icon" />
           <input 
@@ -143,11 +147,10 @@ function AdminPayments() {
         <div className="admin-p-loader">Cargando información...</div>
       ) : (
         <div className="payments-grid">
-          {/* 👇 CAMBIADO: AHORA MAPEAMOS filteredPayments */}
           {filteredPayments.length === 0 ? (
             <div className="empty-payments">
               <DollarSign size={40} className="empty-icon" />
-              <p>No se encontraron registros para "{searchTerm}".</p>
+              <p>No se encontraron registros.</p>
             </div>
           ) : (
             filteredPayments.map(pay => (
@@ -193,7 +196,7 @@ function AdminPayments() {
 
                 {pay.status !== 'PENDING' && (
                   <div className={`status-footer ${pay.status.toLowerCase()}`}>
-                    {pay.status === 'APPROVED' ? 'PAGO APROBADO' : 'PAGO RECHAZADO'}
+                    {pay.status === 'APPROVED' ? 'APROBADO' : 'RECHAZADO'}
                   </div>
                 )}
               </div>
@@ -202,7 +205,7 @@ function AdminPayments() {
         </div>
       )}
 
-      {/* MODAL COMPROBANTE */}
+      {/* MODALES (SE MANTIENEN IGUAL QUE TU CÓDIGO) */}
       {selectedReceipt && (
         <div className="receipt-modal-overlay" onClick={() => setSelectedReceipt(null)}>
           <div className="receipt-modal-content" onClick={e => e.stopPropagation()}>
@@ -212,7 +215,6 @@ function AdminPayments() {
         </div>
       )}
 
-      {/* MODAL BANCO */}
       {isBankModalOpen && (
         <div className="bank-modal-overlay">
           <div className="bank-modal-content">
