@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import './LoginPage.css'; 
+import logo from '../assets/logob.png';
 
 function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -74,7 +75,7 @@ function LoginPage() {
         </p>
       </div>
       <div className="footer-logo animate-enter delay-300">
-        <img src="/src/assets/logob.png" alt="logo" />
+        <img src={logo} alt="logo" />
       </div>
     </div>
   </div>

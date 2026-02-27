@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import axios from '../api/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import './RegisterPage.css'; 
+import logo from '../assets/logob.png';
 
 function RegisterPage() {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -112,7 +113,7 @@ function RegisterPage() {
         </div>
         
         <div className="footer-logo animate-enter delay-300">
-          <img src="/src/assets/logob.png" alt="logo" />
+          <img src={logo} alt="logo" />
         </div>
       </div>
     </div>
