@@ -12,7 +12,7 @@ const generateAccessToken = async () => {
   return data.access_token;
 };
 
-// 2. CREAR ORDEN: El frontend llama a esta ruta justo cuando el cliente hace clic en "Pagar"
+// 2. CREAR ORDEN
 export const createOrder = async (req, res) => {
   try {
     const { price, title } = req.body;
@@ -30,7 +30,7 @@ export const createOrder = async (req, res) => {
           {
             description: `Plan: ${title}`,
             amount: { 
-              currency_code: "USD", // PayPal cobra en dólares
+              currency_code: "USD", 
               value: price 
             } 
           }
@@ -39,14 +39,14 @@ export const createOrder = async (req, res) => {
     });
 
     const data = await response.json();
-    res.json(data); // Le devolvemos el ID de la orden a React
+    res.json(data);
   } catch (error) {
     console.error("❌ Error creando orden PayPal:", error);
     res.status(500).json({ error: "Error al crear orden de PayPal" });
   }
 };
 
-// 3. CAPTURAR PAGO: El frontend llama a esta ruta cuando el cliente ya puso su tarjeta y aprobó
+// 3. CAPTURAR PAGO: Corregido para manejar la moneda USD
 export const captureOrder = async (req, res) => {
   try {
     const { orderID, userId, planId } = req.body;
@@ -62,25 +62,30 @@ export const captureOrder = async (req, res) => {
 
     const data = await response.json();
 
-    // Si el pago se completó con éxito, hacemos la magia en la base de datos
     if (data.status === "COMPLETED") {
-      
-      // Registramos el pago
+      // Extraemos los datos exactos del pago capturado
+      const capture = data.purchase_units[0].payments.captures[0];
+      const amountValue = parseFloat(capture.amount.value);
+      const currencyCode = capture.amount.currency_code; // Esto será "USD"
+
+      // Registramos el pago indicando explícitamente la moneda
       await prisma.payment.create({
         data: {
           userId: Number(userId),
           planId: Number(planId),
-          amount: parseFloat(data.purchase_units[0].payments.captures[0].amount.value),
+          amount: amountValue,
+          currency: currencyCode, // 👈 Aquí forzamos que guarde "USD"
           status: 'APPROVED',
           method: 'PAYPAL',
           receiptUrl: `PP-${orderID}`, 
         }
       });
 
-      // Le damos la suscripción al alumno
+      // Activamos la suscripción
       const plan = await prisma.plan.findUnique({ where: { id: Number(planId) } });
       const startDate = new Date();
       const endDate = new Date();
+      // Duración + 2 semanas de gracia
       endDate.setDate(endDate.getDate() + (plan.duration * 7) + 14); 
 
       await prisma.subscription.create({
@@ -93,7 +98,7 @@ export const captureOrder = async (req, res) => {
         }
       });
 
-      res.json({ success: true, message: "Pago procesado y suscripción activada." });
+      res.json({ success: true, message: "Pago procesado en USD y suscripción activada." });
     } else {
       res.status(400).json({ error: "El pago no se pudo completar." });
     }
