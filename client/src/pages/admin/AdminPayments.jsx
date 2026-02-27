@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
-import { Check, X, Eye, DollarSign, Loader2, Settings, Landmark, History, Clock } from 'lucide-react';
+// 👇 AGREGADO 'Search' AQUÍ ABAJO
+import { Check, X, Eye, DollarSign, Loader2, Settings, Landmark, History, Clock, Search } from 'lucide-react';
 import './AdminPayments.css';
 
 function AdminPayments() {
@@ -9,14 +10,12 @@ function AdminPayments() {
   const [processingId, setProcessingId] = useState(null);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   
-  // --- ESTADO PARA CONTROLAR LA PESTAÑA ---
-  const [activeTab, setActiveTab] = useState('pending'); // 'pending' o 'history'
-
+  const [activeTab, setActiveTab] = useState('pending'); 
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [bankData, setBankData] = useState({ alias: '', cbu: '', name: '' });
   const [savingBankData, setSavingBankData] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Traer todos los pagos (pendientes y aprobados/rechazados)
   const fetchPayments = async () => {
     setLoading(true);
     try {
@@ -42,9 +41,8 @@ function AdminPayments() {
   useEffect(() => { 
     fetchPayments(); 
     fetchBankSettings(); 
-  }, [activeTab]); // Se recarga cuando cambias de pestaña
+  }, [activeTab]);
 
-  // --- FORMATEO DINÁMICO DE MONEDA ---
   const formatAmount = (amount, currency, method) => {
     const curr = currency || (method === 'PAYPAL' ? 'USD' : 'ARS');
     return new Intl.NumberFormat('es-AR', { 
@@ -55,7 +53,7 @@ function AdminPayments() {
   };
 
   const handleApprove = async (id) => {
-    if (!window.confirm("¿Confirmas que recibiste el dinero? Esto le dará acceso inmediato al plan.")) return;
+    if (!window.confirm("¿Confirmas que recibiste el dinero?")) return;
     setProcessingId(id);
     try {
       await axios.put(`/payments/${id}/approve`);
@@ -95,6 +93,16 @@ function AdminPayments() {
     }
   };
 
+  // --- LÓGICA DE FILTRADO ---
+  const filteredPayments = payments.filter(pay => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      pay.user.name.toLowerCase().includes(searchLower) ||
+      pay.user.email.toLowerCase().includes(searchLower) ||
+      (pay.receiptUrl && pay.receiptUrl.toLowerCase().includes(searchLower))
+    );
+  });
+
   return (
     <div className="admin-payments-container">
       
@@ -108,33 +116,41 @@ function AdminPayments() {
         </button>
       </div>
 
-      {/* --- SELECTOR DE PESTAÑAS --- */}
       <div className="admin-p-tabs">
-        <button 
-          className={`p-tab ${activeTab === 'pending' ? 'active' : ''}`}
-          onClick={() => setActiveTab('pending')}
-        >
-          <Clock size={18} /> Pendientes Revisión
-        </button>
-        <button 
-          className={`p-tab ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          <History size={18} /> Historial de Pagos
-        </button>
+        <div className="tabs-left">
+            <button className={`p-tab ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
+              <Clock size={18} /> Pendientes
+            </button>
+            <button className={`p-tab ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
+              <History size={18} /> Historial
+            </button>
+        </div>
+
+        {/* BUSCADOR INTEGRADO */}
+        <div className="search-bar-container">
+          <Search size={18} className="search-icon" />
+          <input 
+            type="text" 
+            placeholder="Buscar por nombre, email o ticket..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
       </div>
 
       {loading ? (
         <div className="admin-p-loader">Cargando información...</div>
       ) : (
         <div className="payments-grid">
-          {payments.length === 0 ? (
+          {/* 👇 CAMBIADO: AHORA MAPEAMOS filteredPayments */}
+          {filteredPayments.length === 0 ? (
             <div className="empty-payments">
               <DollarSign size={40} className="empty-icon" />
-              <p>No hay registros para mostrar en esta sección.</p>
+              <p>No se encontraron registros para "{searchTerm}".</p>
             </div>
           ) : (
-            payments.map(pay => (
+            filteredPayments.map(pay => (
               <div key={pay.id} className={`payment-card ${pay.status.toLowerCase()}`}>
                 <div className="pay-card-header">
                   <div>
@@ -150,20 +166,19 @@ function AdminPayments() {
                   <p><strong>Plan:</strong> {pay.plan.title}</p>
                   <p><strong>Fecha:</strong> {new Date(pay.createdAt).toLocaleDateString()}</p>
                   
-                  {pay.method === 'TRANSFER' && pay.receiptUrl && (
+                  {pay.method === 'TRANSFERENCIA' && pay.receiptUrl && (
                     <button className="view-receipt-btn" onClick={() => setSelectedReceipt(pay.receiptUrl)}>
                       <Eye size={16} /> Ver Comprobante
                     </button>
                   )}
 
-                  {pay.method !== 'TRANSFER' && (
+                  {pay.method !== 'TRANSFERENCIA' && (
                     <div className="auto-pay-info">
                       <Check size={14} /> Pago Automático
                     </div>
                   )}
                 </div>
 
-                {/* Mostrar acciones solo si está pendiente */}
                 {pay.status === 'PENDING' && (
                   <div className="pay-card-actions">
                     <button className="pay-action-btn reject" onClick={() => handleReject(pay.id)} disabled={processingId === pay.id}>
@@ -176,7 +191,6 @@ function AdminPayments() {
                   </div>
                 )}
 
-                {/* Badge de estado para el historial */}
                 {pay.status !== 'PENDING' && (
                   <div className={`status-footer ${pay.status.toLowerCase()}`}>
                     {pay.status === 'APPROVED' ? 'PAGO APROBADO' : 'PAGO RECHAZADO'}
