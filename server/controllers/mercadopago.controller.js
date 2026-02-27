@@ -32,9 +32,9 @@ export const createPreference = async (req, res) => {
         ],
         // 👇 1. URLs ACTUALIZADAS A VERCEL (Tu Frontend) 👇
         back_urls: {
-          success: "https://dont-quit-program.vercel.app/client/store", 
-          failure: "https://dont-quit-program.vercel.app/client/store",
-          pending: "https://dont-quit-program.vercel.app/client/store"
+          success: "https://dont-quit-program.vercel.app/app/home", 
+          failure: "https://dont-quit-program.vercel.app/app/home",
+          pending: "https://dont-quit-program.vercel.app/app/home"
         },
         // 👇 2. VOLVEMOS A PRENDER EL RETORNO AUTOMÁTICO 👇
         auto_return: "approved",
