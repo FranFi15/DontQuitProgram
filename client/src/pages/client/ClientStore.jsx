@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe, Activity } from 'lucide-react'; // Agregamos Activity
+import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import './ClientStore.css';
@@ -35,13 +35,13 @@ function ClientStore() {
     const fetchData = async () => {
       try {
         const resPlans = await axios.get('/plans');
+        // Filtramos solo los activos
         const activePlans = resPlans.data.filter(p => p.isActive);
         setPlans(activePlans);
 
         const resBank = await axios.get('/settings/bank');
         setBankInfo(resBank.data);
 
-        // Extraemos las categorías únicas basadas en tu esquema de Prisma (planType)
         const uniqueCategories = [
           ...new Set(
             activePlans
@@ -69,12 +69,12 @@ function ClientStore() {
     return price - (price * (discount / 100));
   };
 
-  // --- FILTRADO CORREGIDO ---
+  // --- LÓGICA DE FILTRADO CORREGIDA ---
   const filteredPlans = plans.filter(plan => {
     const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (plan.description && plan.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // Leemos de planType según tu Prisma Schema
+    // 👈 CORRECCIÓN AQUÍ: Leemos de planType
     const planCategoryName = plan.planType?.name || 'Sin Categoría'; 
     const matchesCategory = selectedCategory === 'ALL' || planCategoryName === selectedCategory;
 
@@ -184,14 +184,14 @@ function ClientStore() {
               const finalPrice = getFinalPrice(plan.price, plan.transferDiscount);
 
               return (
-                <div key={plan.id} className="store-plan-card">
+                <div key={plan.id} className={`store-plan-card ${plan.hasFollowUp ? 'premium-border' : ''}`}>
                   {hasDiscount && (
                     <div className="discount-badge">
                       <Tag size={14} /> {plan.transferDiscount}% OFF
                     </div>
                   )}
                   
-                  {/* TAGS DE INFORMACIÓN DEL PLAN */}
+                  {/* TAGS DE INFORMACIÓN DEL PLAN (Categoría + Seguimiento) */}
                   <div className="plan-tags-row">
                     {plan.planType && <span className="plan-category-tag">{plan.planType.name}</span>}
                     {plan.hasFollowUp && (
