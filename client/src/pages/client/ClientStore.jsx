@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Info } from 'lucide-react';
+import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import './ClientStore.css';
@@ -10,17 +10,23 @@ function ClientStore() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Estados para el Modal de Pago por Transferencia
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  // --- NUEVOS ESTADOS PARA FILTROS ---
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+
+  // --- NUEVOS ESTADOS PARA PAGOS ---
+  const [planToBuy, setPlanToBuy] = useState(null); // Qué plan eligió comprar
+  const [paymentMethod, setPaymentMethod] = useState(null); // MP, PAYPAL o TRANSFER
+
+  // Estados Transferencia (se mantienen igual)
   const [receiptFile, setReceiptFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-
   const [bankInfo, setBankInfo] = useState({ alias: '', cbu: '', name: '' });
-  const [loadingMP, setLoadingMP] = useState(null);
+  const [loadingMP, setLoadingMP] = useState(false);
 
-  // Variables de Entorno
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET; 
   const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID;
@@ -33,6 +39,11 @@ function ClientStore() {
 
         const resBank = await axios.get('/settings/bank');
         setBankInfo(resBank.data);
+
+        // Si tu backend tiene /categories, podés traerlas. Por ahora extraemos las únicas de los planes:
+        const uniqueCategories = [...new Set(resPlans.data.filter(p => p.isActive && p.category).map(p => p.category.name))];
+        setCategories(uniqueCategories);
+
       } catch (error) {
         console.error("Error cargando la tienda", error);
       } finally {
@@ -43,16 +54,43 @@ function ClientStore() {
   }, []);
 
   const formatPriceARS = (price) => {
-    return new Intl.NumberFormat('es-AR', { 
-        style: 'currency', 
-        currency: 'ARS', 
-        maximumFractionDigits: 0 
-    }).format(price);
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(price);
   };
 
   const getFinalPrice = (price, discount) => {
     if (!discount) return price;
     return price - (price * (discount / 100));
+  };
+
+  // --- LÓGICA DE FILTRADO ---
+  const filteredPlans = plans.filter(plan => {
+    const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (plan.description && plan.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    // Asumimos que el plan tiene un objeto category: { name: '...' }
+    const planCategoryName = plan.category?.name || 'Sin Categoría'; 
+    const matchesCategory = selectedCategory === 'ALL' || planCategoryName === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
+
+  const handleMercadoPagoPayment = async () => {
+    setLoadingMP(true); 
+    try {
+      const res = await axios.post('/payments/mp/create_preference', {
+        title: planToBuy.title,
+        price: planToBuy.price, 
+        planId: planToBuy.id,
+        userId: user.id
+      });
+      window.location.href = res.data.init_point;
+    } catch (error) {
+      console.error(error);
+      alert("Error conectando con Mercado Pago.");
+    } finally {
+      setLoadingMP(false);
+    }
   };
 
   const handleConfirmTransfer = async (e) => {
@@ -74,18 +112,19 @@ function ClientStore() {
       if (!cloudRes.ok) throw new Error(cloudData.error?.message || "Error en Cloudinary");
       
       const uploadedUrl = cloudData.secure_url;
-      const finalPrice = getFinalPrice(selectedPlan.price, selectedPlan.transferDiscount);
+      const finalPrice = getFinalPrice(planToBuy.price, planToBuy.transferDiscount);
 
       await axios.post('/payments/transfer', {
         userId: user.id,
-        planId: selectedPlan.id,
+        planId: planToBuy.id,
         amount: finalPrice,
         receiptUrl: uploadedUrl
       });
 
       alert("¡Comprobante enviado! 🚀 Ro lo verificará pronto.");
       setReceiptFile(null);
-      setSelectedPlan(null);
+      setPlanToBuy(null);
+      setPaymentMethod(null);
     } catch (error) {
       console.error(error);
       alert("Error al procesar la transferencia.");
@@ -94,31 +133,11 @@ function ClientStore() {
     }
   };
 
-  const handleMercadoPagoPayment = async (plan) => {
-    setLoadingMP(plan.id); 
-    try {
-      const res = await axios.post('/payments/mp/create_preference', {
-        title: plan.title,
-        price: plan.price, 
-        planId: plan.id,
-        userId: user.id
-      });
-      window.location.href = res.data.init_point;
-    } catch (error) {
-      console.error(error);
-      alert("Error con Mercado Pago.");
-    } finally {
-      setLoadingMP(null);
-    }
-  };
 
-  if (loading) return <div className="store-loader">Cargando tienda...</div>;
+  if (loading) return <div className="store-loader">Cargando la mejor tienda del mundo...</div>;
 
   return (
-    <PayPalScriptProvider options={{ 
-      "client-id": PAYPAL_CLIENT_ID, 
-      currency: "USD" 
-    }}>
+    <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD" }}>
       <div className="client-store-page">
         
         <header className="store-header">
@@ -126,11 +145,36 @@ function ClientStore() {
           <p>Alcanza tu mejor versión con asesoría profesional.</p>
         </header>
 
+        {/* --- NUEVA BARRA DE FILTROS --- */}
+        <div className="store-filters-container">
+          <div className="store-search-box">
+            <Search size={18} className="search-icon" />
+            <input 
+              type="text" 
+              placeholder="Buscar plan..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <select 
+            className="store-category-select" 
+            value={selectedCategory} 
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="ALL">Todas las Categorías</option>
+            {categories.map((cat, idx) => (
+              <option key={idx} value={cat}>{cat}</option>
+            ))}
+            <option value="Sin Categoría">Sin Categoría</option>
+          </select>
+        </div>
+
         <div className="store-grid">
-          {plans.length === 0 ? (
-            <p className="empty-store-msg">No hay planes disponibles.</p>
+          {filteredPlans.length === 0 ? (
+            <p className="empty-store-msg">No hay planes que coincidan con tu búsqueda.</p>
           ) : (
-            plans.map(plan => {
+            filteredPlans.map(plan => {
               const hasDiscount = plan.transferDiscount > 0;
               const finalPrice = getFinalPrice(plan.price, plan.transferDiscount);
 
@@ -142,115 +186,135 @@ function ClientStore() {
                     </div>
                   )}
                   
+                  {plan.category && <span className="plan-category-tag">{plan.category.name}</span>}
+                  
                   <h2 className="plan-title">{plan.title}</h2>
                   <p className="plan-duration">Duración: {plan.duration} {plan.duration === 1 ? 'Semana' : 'Semanas'}</p>
-                  <p className="plan-desc">{plan.description || "Plan personalizado."}</p>
+                  <p className="plan-desc">{plan.description || "Plan personalizado para tus objetivos."}</p>
                   
                   <div className="plan-price-box">
                     {hasDiscount ? (
                       <>
                         <span className="old-price">{formatPriceARS(plan.price)}</span>
                         <span className="new-price">{formatPriceARS(finalPrice)}</span>
-                        <span className="price-note">ARS - Transferencia</span>
                       </>
                     ) : (
                       <span className="new-price">{formatPriceARS(plan.price)}</span>
                     )}
                     {plan.internationalPrice && (
-                        <span className="intl-price-tag">USD {plan.internationalPrice} (Internacional)</span>
+                        <span className="intl-price-tag">o USD {plan.internationalPrice}</span>
                     )}
                   </div>
 
-                  <div className="payment-buttons-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    
-                    {/* MERCADO PAGO */}
-                    <button 
-                      className="buy-btn mp-btn" 
-                      onClick={() => handleMercadoPagoPayment(plan)}
-                      disabled={loadingMP === plan.id}
-                      style={{ backgroundColor: '#009ee3', color: 'white' }}
-                    >
-                      {loadingMP === plan.id ? <Loader2 className="spin" size={18} /> : <ShoppingBag size={18} />} 
-                      Pagar con Mercado Pago (ARS)
-                    </button>
+                  {/* NUEVO BOTÓN UNIFICADO */}
+                  <button 
+                    className="buy-btn main-buy-btn" 
+                    onClick={() => { setPlanToBuy(plan); setPaymentMethod(null); }}
+                  >
+                    <ShoppingBag size={18} /> Comprar Ahora
+                  </button>
 
-                    {/* PAYPAL */}
-                    {plan.internationalPrice > 0 && (
-                        <div style={{ zIndex: 0, position: 'relative' }}>
-                        <PayPalButtons 
-                            style={{ layout: "horizontal", color: "gold", shape: "rect", height: 40 }}
-                            createOrder={async (data, actions) => {
-                                const res = await axios.post('/payments/paypal/create-order', {
-                                    title: plan.title,
-                                    price: plan.internationalPrice // Usamos el precio en USD directamente
-                                });
-                                return res.data.id; 
-                            }}
-                            onApprove={async (data, actions) => {
-                                try {
-                                    const res = await axios.post('/payments/paypal/capture-order', {
-                                        orderID: data.orderID,
-                                        userId: user.id,
-                                        planId: plan.id
-                                    });
-                                    if (res.data.success) {
-                                        alert("¡Pago exitoso! Acceso activado.");
-                                        navigate("/app/home");
-                                    }
-                                } catch (error) {
-                                    alert("Error al procesar pago PayPal.");
-                                }
-                            }}
-                        />
-                        </div>
-                    )}
-
-                    {/* TRANSFERENCIA */}
-                    <button 
-                      className="buy-btn transfer-btn" 
-                      onClick={() => setSelectedPlan(plan)}
-                      style={{ backgroundColor: '#111', color: 'white' }}
-                    >
-                      Transferencia Bancaria
-                    </button>
-                  </div>
                 </div>
               );
             })
           )}
         </div>
 
-        {/* MODAL TRANSFERENCIA */}
-        {selectedPlan && (
+        {/* ==============================================
+            MODAL DE COMPRA (SELECCIÓN DE MÉTODO)
+            ============================================== */}
+        {planToBuy && (
           <div className="store-modal-overlay">
             <div className="store-modal-content animate-slide-up">
+              
               <div className="store-modal-header">
-                <h3>Datos de Transferencia</h3>
-                <button onClick={() => { setSelectedPlan(null); setReceiptFile(null); }} className="close-modal-btn">
+                <h3>Elige tu método de pago</h3>
+                <button onClick={() => { setPlanToBuy(null); setPaymentMethod(null); }} className="close-modal-btn">
                   <X size={24} />
                 </button>
               </div>
 
               <div className="store-modal-body">
-                <div className="bank-data-box">
-                  <p><span>Alias:</span> <strong>{bankInfo.alias}</strong></p>
-                  <p><span>CBU:</span> <strong>{bankInfo.cbu}</strong></p>
-                  <p><span>Titular:</span> {bankInfo.name}</p>
-                  <p className="total-transfer">Total a transferir: <strong>{formatPriceARS(getFinalPrice(selectedPlan.price, selectedPlan.transferDiscount))}</strong></p>
-                </div>
+                
+                {/* SI NO ELIGIÓ MÉTODO AÚN, MOSTRAMOS LOS BOTONES */}
+                {!paymentMethod && (
+                  <div className="payment-options-grid">
+                    <p className="payment-plan-target">Adquiriendo: <strong>{planToBuy.title}</strong></p>
 
-                <label className="file-upload-box">
-                  <input type="file" accept="image/*" hidden onChange={(e) => setReceiptFile(e.target.files[0])} disabled={uploading} />
-                  {receiptFile ? (
-                    <div className="file-success"><CheckCircle size={24} /> {receiptFile.name}</div>
-                  ) : (
-                    <div className="file-prompt"><UploadCloud size={24} /> Subir comprobante</div>
-                  )}
-                </label>
+                    <button className="pay-option-btn mp" onClick={handleMercadoPagoPayment} disabled={loadingMP}>
+                      {loadingMP ? <Loader2 className="spin" size={20} /> : <CreditCard size={20} />}
+                      <div className="po-text">
+                        <strong>Mercado Pago</strong>
+                        <span>Tarjetas o dinero en cuenta (ARS)</span>
+                      </div>
+                    </button>
 
-                <button className="confirm-transfer-btn" onClick={handleConfirmTransfer} disabled={!receiptFile || uploading}>
-                  {uploading ? <Loader2 className="spin" /> : 'Confirmar envío'}
-                </button>
+                    <button className="pay-option-btn transfer" onClick={() => setPaymentMethod('TRANSFER')}>
+                      <Landmark size={20} />
+                      <div className="po-text">
+                        <strong>Transferencia Bancaria</strong>
+                        <span>{planToBuy.transferDiscount ? `¡${planToBuy.transferDiscount}% OFF Extra!` : 'Alias / CBU (ARS)'}</span>
+                      </div>
+                    </button>
+
+                    {planToBuy.internationalPrice > 0 && (
+                      <div className="pay-option-paypal">
+                        <div className="po-title"><Globe size={16}/> Internacional (USD)</div>
+                        <PayPalButtons 
+                            style={{ layout: "horizontal", color: "gold", shape: "rect", height: 45 }}
+                            createOrder={async () => {
+                                const res = await axios.post('/payments/paypal/create-order', {
+                                    title: planToBuy.title, price: planToBuy.internationalPrice 
+                                });
+                                return res.data.id; 
+                            }}
+                            onApprove={async (data) => {
+                                try {
+                                    const res = await axios.post('/payments/paypal/capture-order', {
+                                        orderID: data.orderID, userId: user.id, planId: planToBuy.id
+                                    });
+                                    if (res.data.success) {
+                                        alert("¡Pago exitoso! Acceso activado.");
+                                        setPlanToBuy(null);
+                                        navigate("/app/home");
+                                    }
+                                } catch (error) { alert("Error al procesar PayPal."); }
+                            }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* SI ELIGIÓ TRANSFERENCIA, MOSTRAMOS LOS DATOS Y UPLOAD */}
+                {paymentMethod === 'TRANSFER' && (
+                  <div className="transfer-flow-container animate-fade-in">
+                    <button className="back-pay-btn" onClick={() => setPaymentMethod(null)}>← Volver a métodos</button>
+                    
+                    <div className="bank-data-box">
+                      <p><span>Alias:</span> <strong>{bankInfo.alias}</strong></p>
+                      <p><span>CBU:</span> <strong>{bankInfo.cbu}</strong></p>
+                      <p><span>Titular:</span> {bankInfo.name}</p>
+                      <div className="transfer-total-highlight">
+                        Total: {formatPriceARS(getFinalPrice(planToBuy.price, planToBuy.transferDiscount))}
+                      </div>
+                    </div>
+
+                    <label className="file-upload-box">
+                      <input type="file" accept="image/*" hidden onChange={(e) => setReceiptFile(e.target.files[0])} disabled={uploading} />
+                      {receiptFile ? (
+                        <div className="file-success"><CheckCircle size={24} /> <span>{receiptFile.name}</span></div>
+                      ) : (
+                        <div className="file-prompt"><UploadCloud size={24} /> <span>Subir comprobante</span></div>
+                      )}
+                    </label>
+
+                    <button className="confirm-transfer-btn" onClick={handleConfirmTransfer} disabled={!receiptFile || uploading}>
+                      {uploading ? <Loader2 className="spin" /> : 'Confirmar envío'}
+                    </button>
+                  </div>
+                )}
+
               </div>
             </div>
           </div>
