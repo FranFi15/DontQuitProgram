@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe } from 'lucide-react';
+import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe, Activity } from 'lucide-react'; // Agregamos Activity
 import { useNavigate } from 'react-router-dom';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import './ClientStore.css';
@@ -13,15 +13,15 @@ function ClientStore() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // --- NUEVOS ESTADOS PARA FILTROS ---
+  // Filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
 
-  // --- NUEVOS ESTADOS PARA PAGOS ---
-  const [planToBuy, setPlanToBuy] = useState(null); // Qué plan eligió comprar
-  const [paymentMethod, setPaymentMethod] = useState(null); // MP, PAYPAL o TRANSFER
+  // Pagos
+  const [planToBuy, setPlanToBuy] = useState(null); 
+  const [paymentMethod, setPaymentMethod] = useState(null); 
 
-  // Estados Transferencia (se mantienen igual)
+  // Transferencia
   const [receiptFile, setReceiptFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [bankInfo, setBankInfo] = useState({ alias: '', cbu: '', name: '' });
@@ -35,13 +35,20 @@ function ClientStore() {
     const fetchData = async () => {
       try {
         const resPlans = await axios.get('/plans');
-        setPlans(resPlans.data.filter(p => p.isActive));
+        const activePlans = resPlans.data.filter(p => p.isActive);
+        setPlans(activePlans);
 
         const resBank = await axios.get('/settings/bank');
         setBankInfo(resBank.data);
 
-        // Si tu backend tiene /categories, podés traerlas. Por ahora extraemos las únicas de los planes:
-        const uniqueCategories = [...new Set(resPlans.data.filter(p => p.isActive && p.category).map(p => p.category.name))];
+        // Extraemos las categorías únicas basadas en tu esquema de Prisma (planType)
+        const uniqueCategories = [
+          ...new Set(
+            activePlans
+              .filter(p => p.planType && p.planType.name)
+              .map(p => p.planType.name)
+          )
+        ];
         setCategories(uniqueCategories);
 
       } catch (error) {
@@ -62,18 +69,17 @@ function ClientStore() {
     return price - (price * (discount / 100));
   };
 
-  // --- LÓGICA DE FILTRADO ---
+  // --- FILTRADO CORREGIDO ---
   const filteredPlans = plans.filter(plan => {
     const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (plan.description && plan.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // Asumimos que el plan tiene un objeto category: { name: '...' }
-    const planCategoryName = plan.category?.name || 'Sin Categoría'; 
+    // Leemos de planType según tu Prisma Schema
+    const planCategoryName = plan.planType?.name || 'Sin Categoría'; 
     const matchesCategory = selectedCategory === 'ALL' || planCategoryName === selectedCategory;
 
     return matchesSearch && matchesCategory;
   });
-
 
   const handleMercadoPagoPayment = async () => {
     setLoadingMP(true); 
@@ -133,8 +139,7 @@ function ClientStore() {
     }
   };
 
-
-  if (loading) return <div className="store-loader">Cargando la mejor tienda del mundo...</div>;
+  if (loading) return <div className="store-loader">Cargando la tienda de Gain Wellness...</div>;
 
   return (
     <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD" }}>
@@ -145,13 +150,13 @@ function ClientStore() {
           <p>Alcanza tu mejor versión con asesoría profesional.</p>
         </header>
 
-        {/* --- NUEVA BARRA DE FILTROS --- */}
+        {/* BARRA DE FILTROS */}
         <div className="store-filters-container">
           <div className="store-search-box">
             <Search size={18} className="search-icon" />
             <input 
               type="text" 
-              placeholder="Buscar plan..." 
+              placeholder="Buscar plan por nombre..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -186,7 +191,15 @@ function ClientStore() {
                     </div>
                   )}
                   
-                  {plan.category && <span className="plan-category-tag">{plan.category.name}</span>}
+                  {/* TAGS DE INFORMACIÓN DEL PLAN */}
+                  <div className="plan-tags-row">
+                    {plan.planType && <span className="plan-category-tag">{plan.planType.name}</span>}
+                    {plan.hasFollowUp && (
+                      <span className="plan-followup-tag">
+                        <Activity size={12}/> Seguimiento 1 a 1
+                      </span>
+                    )}
+                  </div>
                   
                   <h2 className="plan-title">{plan.title}</h2>
                   <p className="plan-duration">Duración: {plan.duration} {plan.duration === 1 ? 'Semana' : 'Semanas'}</p>
@@ -201,28 +214,24 @@ function ClientStore() {
                     ) : (
                       <span className="new-price">{formatPriceARS(plan.price)}</span>
                     )}
-                    {plan.internationalPrice && (
+                    {plan.internationalPrice > 0 && (
                         <span className="intl-price-tag">o USD {plan.internationalPrice}</span>
                     )}
                   </div>
 
-                  {/* NUEVO BOTÓN UNIFICADO */}
                   <button 
                     className="buy-btn main-buy-btn" 
                     onClick={() => { setPlanToBuy(plan); setPaymentMethod(null); }}
                   >
                     <ShoppingBag size={18} /> Comprar Ahora
                   </button>
-
                 </div>
               );
             })
           )}
         </div>
 
-        {/* ==============================================
-            MODAL DE COMPRA (SELECCIÓN DE MÉTODO)
-            ============================================== */}
+        {/* MODAL DE COMPRA */}
         {planToBuy && (
           <div className="store-modal-overlay">
             <div className="store-modal-content animate-slide-up">
@@ -236,7 +245,6 @@ function ClientStore() {
 
               <div className="store-modal-body">
                 
-                {/* SI NO ELIGIÓ MÉTODO AÚN, MOSTRAMOS LOS BOTONES */}
                 {!paymentMethod && (
                   <div className="payment-options-grid">
                     <p className="payment-plan-target">Adquiriendo: <strong>{planToBuy.title}</strong></p>
@@ -253,7 +261,7 @@ function ClientStore() {
                       <Landmark size={20} />
                       <div className="po-text">
                         <strong>Transferencia Bancaria</strong>
-                        <span>{planToBuy.transferDiscount ? `¡${planToBuy.transferDiscount}% OFF Extra!` : 'Alias / CBU (ARS)'}</span>
+                        <span>{planToBuy.transferDiscount ? `¡Aplica el ${planToBuy.transferDiscount}% OFF de descuento!` : 'Alias / CBU (ARS)'}</span>
                       </div>
                     </button>
 
@@ -286,7 +294,6 @@ function ClientStore() {
                   </div>
                 )}
 
-                {/* SI ELIGIÓ TRANSFERENCIA, MOSTRAMOS LOS DATOS Y UPLOAD */}
                 {paymentMethod === 'TRANSFER' && (
                   <div className="transfer-flow-container animate-fade-in">
                     <button className="back-pay-btn" onClick={() => setPaymentMethod(null)}>← Volver a métodos</button>
