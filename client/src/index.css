@@ -2,44 +2,56 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap'); 
 
 :root {
-  --bg-color: #131314; 
+  --bg-color: #000000; 
   --text-color: #FAF3EF; 
   --accent-color: #FAF3EF; 
   --font-main: 'Montserrat', sans-serif; 
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box
-}
-body {
-  margin: 0;
-  padding: 0;
 }
 
+/* 1. Reset Global y Fuente */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* Forzamos la fuente en todos los elementos, incluyendo botones e inputs */
+  font-family: var(--font-main) !important; 
+}
 
-/* Estilo para el logo "Don't Quit." al pie */
+html, body, #root {
+  width: 100vw;
+  height: 100vh;
+  /* El overflow hidden solo si querés que NADA tenga scroll, 
+     pero para el Dashboard quizás necesites scroll vertical */
+  overflow-x: hidden; 
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* 2. Estilo para el logo "Don't Quit." al pie */
 .footer-logo {
-  font-family: cursive; /* O buscar una fuente de firma específica */
+  font-family: cursive !important; /* Mantiene el estilo a mano solo aquí */
   text-align: center;
   margin-top: 2rem;
   font-size: 1.2rem;
 }
+
+/* 3. Animaciones */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px); /* Empieza 20px más abajo */
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0); /* Termina en su lugar original */
+    transform: translateY(0);
   }
 }
 
 .animate-enter {
   animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  opacity: 0; /* Empieza invisible hasta que arranca la animación */
+  opacity: 0;
 }
 
-/* Retrasos para crear efecto "escalera" (uno después del otro) */
 .delay-100 { animation-delay: 0.2s; }
 .delay-200 { animation-delay: 0.4s; }
 .delay-300 { animation-delay: 0.5s; }
