@@ -188,7 +188,7 @@
 
 .old-price { text-decoration: line-through; color: #9ca3af; font-weight: 700; font-size: 0.9rem; }
 .new-price { font-size: 1.8rem; font-weight: 900; color: #111; line-height: 1; margin: 4px 0; }
-.intl-price-tag { font-size: 0.75rem; color: #6b7280; font-weight: 700; margin-top: 4px; }
+.intl-price-tag { font-size: 1rem; color: #6b7280; font-weight: 700; margin-top: 4px; }
 
 /* Botón Comprar Único */
 .main-buy-btn {

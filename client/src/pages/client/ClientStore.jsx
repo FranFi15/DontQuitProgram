@@ -193,7 +193,7 @@ function ClientStore() {
                 <div key={plan.id} className={`store-plan-card ${plan.hasFollowUp ? 'premium-border' : ''}`}>
                   {hasDiscount && (
                     <div className="discount-badge">
-                      <Tag size={14} /> {plan.transferDiscount}% OFF
+                      <Tag size={14} /> {plan.transferDiscount}% OFF Trans
                     </div>
                   )}
                   
@@ -214,14 +214,13 @@ function ClientStore() {
                   <div className="plan-price-box">
                     {hasDiscount ? (
                       <>
-                        <span className="old-price">{formatPriceARS(plan.price)}</span>
-                        <span className="new-price">{formatPriceARS(finalPrice)}</span>
+                        <span className="new-price">{formatPriceARS(plan.price)}</span>
                       </>
                     ) : (
                       <span className="new-price">{formatPriceARS(plan.price)}</span>
                     )}
                     {plan.internationalPrice > 0 && (
-                        <span className="intl-price-tag">o USD {plan.internationalPrice}</span>
+                        <span className="intl-price-tag">o USD ${plan.internationalPrice}</span>
                     )}
                   </div>
 
