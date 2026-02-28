@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { MessageSquare, Send, Users } from 'lucide-react';
 import './ClientWall.css';
 
 function ClientWall() {
   const { user } = useAuth();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   
   const [plans, setPlans] = useState([]);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
@@ -24,14 +26,17 @@ function ClientWall() {
         }
       } catch (error) {
         console.error("Error cargando planes", error);
+        // 👈 3. ALERTA DE ERROR AL CARGAR PLANES
+        showAlert("Error al cargar tus planes.", "error");
       }
     };
     fetchPlans();
-  }, [user]);
+  }, [user, showAlert]);
 
   useEffect(() => {
     if (!selectedPlanId) return;
     fetchPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPlanId]);
 
   const fetchPosts = async () => {
@@ -41,6 +46,8 @@ function ClientWall() {
       setPosts(res.data);
     } catch (error) {
       console.error(error);
+      // 👈 4. ALERTA DE ERROR AL CARGAR MENSAJES
+      showAlert("Error al cargar los mensajes del muro.", "error");
     } finally {
       setLoadingPosts(false);
     }
@@ -58,8 +65,12 @@ function ClientWall() {
       });
       setNewMessage("");
       fetchPosts(); 
+      // Nota: No ponemos alerta de "éxito" aquí para no ser molestos cada vez que mandan un mensaje, 
+      // con ver que el mensaje aparece en la pantalla es suficiente feedback.
     } catch (error) {
       console.error(error);
+      // 👈 5. ALERTA DE ERROR AL ENVIAR
+      showAlert("Error al enviar el mensaje. Inténtalo de nuevo.", "error");
     }
   };
 

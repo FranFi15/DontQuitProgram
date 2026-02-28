@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
-import { createPortal } from 'react-dom'; // <--- 1. IMPORTAR PORTAL
+import { createPortal } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import { X, Save } from 'lucide-react';
 import './CreateCategoryModal.css';
 
 function CreateCategoryModal({ onClose, onSuccess, categoryToEdit }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
 
   useEffect(() => {
@@ -19,27 +21,29 @@ function CreateCategoryModal({ onClose, onSuccess, categoryToEdit }) {
     try {
       if (categoryToEdit) {
         await axios.put(`/plan-types/${categoryToEdit.id}`, data);
-        alert('✅ Categoría actualizada');
+        // 👈 3. ALERTA DE ACTUALIZACIÓN
+        showAlert('Categoría actualizada correctamente', 'success');
       } else {
         await axios.post(`/plan-types`, data);
-        alert('✅ Categoría creada');
+        // 👈 4. ALERTA DE CREACIÓN
+        showAlert('Nueva categoría creada', 'success');
       }
       onSuccess(); 
       onClose();   
     } catch (error) {
       console.error(error);
       if (error.response?.status === 400) {
-        alert("⚠️ " + error.response.data.error);
+        // 👈 5. ALERTA DE ERROR ESPECÍFICO (Ej: nombre duplicado)
+        showAlert(error.response.data.error, "error");
       } else {
-        alert('Error al guardar la categoría');
+        // 👈 6. ALERTA DE ERROR GENÉRICO
+        showAlert('Error al intentar guardar la categoría', 'error');
       }
     }
   };
 
-  // 2. ENVOLVER EL RETURN EN createPortal
   return createPortal(
     <div className="modal-overlay" onClick={onClose}>
-      {/* Añadimos stopPropagation para que hacer click dentro del modal no lo cierre */}
       <div 
         className="modal-content animate-enter" 
         onClick={(e) => e.stopPropagation()}
@@ -73,7 +77,6 @@ function CreateCategoryModal({ onClose, onSuccess, categoryToEdit }) {
           </div>
 
           <div className="modal-footer">
-            {/* Es vital que este botón sea type="button" para que no dispare el form por error */}
             <button type="button" onClick={onClose} className="cancel-btn">Cancelar</button>
             <button type="submit" className="save-btn">
               <Save size={16} style={{marginRight:5}}/> Guardar

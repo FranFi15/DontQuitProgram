@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { X, Edit3, Trash2, Save, ArrowLeft, Percent } from 'lucide-react';
 import './RMDetailModal.css';
 
 function RMDetailModal({ record, onClose, onUpdate }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [isEditing, setIsEditing] = useState(false);
   
   // Estados para edición
@@ -25,23 +27,31 @@ function RMDetailModal({ record, onClose, onUpdate }) {
         weight,
         reps
       });
-      onUpdate(); // Recargar datos en Home
+      // 👈 3. ALERTA DE ÉXITO AL ACTUALIZAR
+      showAlert("Récord actualizado correctamente", "success");
+      onUpdate(); 
       onClose();
     } catch (error) {
-      alert("Error al actualizar");
+      // 👈 4. ALERTA DE ERROR AL ACTUALIZAR
+      showAlert("Error al actualizar el récord.", "error");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if(!confirm("¿Borrar este récord?")) return;
+    // Mantenemos el confirm() nativo porque es la forma más segura de evitar borrados accidentales
+    if(!window.confirm("¿Seguro que deseas borrar este récord? Esta acción no se puede deshacer.")) return;
+    
     try {
       await axios.delete(`/records/${record.id}`);
+      // 👈 5. ALERTA DE ÉXITO AL BORRAR
+      showAlert("Récord eliminado.", "success");
       onUpdate();
       onClose();
     } catch (error) {
-      alert("Error al borrar");
+      // 👈 6. ALERTA DE ERROR AL BORRAR
+      showAlert("No pudimos borrar el récord. Inténtalo de nuevo.", "error");
     }
   };
 

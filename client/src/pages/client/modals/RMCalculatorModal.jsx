@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { X, Calculator, Save } from 'lucide-react';
 import './RMCalculatorModal.css';
 
 function RMCalculatorModal({ userId, onClose, onSuccess }) {
-  // Input de TEXTO LIBRE (ya no es un ID)
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  
+  // Input de TEXTO LIBRE 
   const [exercise, setExercise] = useState(''); 
   const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
@@ -36,15 +39,20 @@ function RMCalculatorModal({ userId, onClose, onSuccess }) {
     try {
       await axios.post('/records', {
         userId,
-        exercise, // Enviamos el texto directo
+        exercise, 
         weight,
         reps
       });
+      
+      // 👈 3. ALERTA DE ÉXITO (Opcional, pero queda bien como feedback)
+      showAlert("¡Nuevo récord guardado!", "success");
+      
       onSuccess(); // Recargar la lista en el Home
       onClose();   // Cerrar modal
     } catch (error) {
       console.error(error);
-      alert("Error al guardar el récord");
+      // 👈 4. ALERTA DE ERROR GLOBAL
+      showAlert("Error al guardar el récord. Inténtalo de nuevo.", "error");
     } finally {
       setSaving(false);
     }
@@ -61,7 +69,6 @@ function RMCalculatorModal({ userId, onClose, onSuccess }) {
 
         <form onSubmit={handleSave} className="rm-form">
           
-          {/* INPUT DE TEXTO LIBRE */}
           <div className="input-group full-width">
             <label>Nombre del Ejercicio</label>
             <input 

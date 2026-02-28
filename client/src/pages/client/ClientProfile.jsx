@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import axios from '../../api/axios';
 import { createPortal } from 'react-dom';
 import { User, Calendar, Phone, Save, LogOut, Lock, X, ShoppingBag } from 'lucide-react';
@@ -8,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 function ClientProfile() {
   const { user, logout, isAuthenticated } = useAuth();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -18,7 +20,7 @@ function ClientProfile() {
   });
   const [loading, setLoading] = useState(false);
   
-  // --- NUEVO: Estado para saber si es Activo ---
+  // Estado para saber si es Activo
   const [isSubActive, setIsSubActive] = useState(false);
   
   const [showPassModal, setShowPassModal] = useState(false);
@@ -34,16 +36,14 @@ function ClientProfile() {
         sex: user.sex || '',
         birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : ''
       });
-      checkSubscriptionStatus(); // Llamamos a la verificación
+      checkSubscriptionStatus();
     }
   }, [user]);
 
-  // --- NUEVO: Función que verifica si tiene planes activos ---
+  // Función que verifica si tiene planes activos
   const checkSubscriptionStatus = async () => {
     try {
-      // Usamos la misma ruta que usás en el Muro para ver sus planes
       const res = await axios.get(`/workouts/my-plans/${user.id}`);
-      // Si el array trae algo, significa que tiene al menos un plan activo hoy
       if (res.data && res.data.length > 0) {
         setIsSubActive(true);
       } else {
@@ -64,11 +64,18 @@ function ClientProfile() {
     setLoading(true);
     try {
       await axios.put(`/users/profile/${user.id}`, formData);
-      alert("✅ Perfil actualizado correctamente");
-      window.location.reload(); 
+      // 👈 3. ALERTA DE ÉXITO AL GUARDAR PERFIL
+      showAlert("Perfil actualizado correctamente", "success");
+      
+      // Hacemos el reload un poquito después para que el usuario llegue a leer la alerta
+      setTimeout(() => {
+          window.location.reload(); 
+      }, 1500);
+
     } catch (error) {
       console.error(error);
-      alert("Error al actualizar perfil");
+      // 👈 4. ALERTA DE ERROR AL GUARDAR PERFIL
+      showAlert("Error al actualizar el perfil", "error");
     } finally {
       setLoading(false);
     }
@@ -81,8 +88,14 @@ function ClientProfile() {
 
   const handleChangePass = async (e) => {
     e.preventDefault();
-    if (passData.new !== passData.confirm) return alert("Las contraseñas nuevas no coinciden");
-    if (passData.new.length < 6) return alert("La nueva contraseña debe tener al menos 6 caracteres");
+    
+    // 👈 5. ALERTAS DE VALIDACIÓN DE CONTRASEÑA
+    if (passData.new !== passData.confirm) {
+        return showAlert("Las contraseñas nuevas no coinciden", "error");
+    }
+    if (passData.new.length < 6) {
+        return showAlert("La nueva contraseña debe tener al menos 6 caracteres", "error");
+    }
 
     setPassLoading(true);
     try {
@@ -90,11 +103,13 @@ function ClientProfile() {
         currentPassword: passData.current,
         newPassword: passData.new
       });
-      alert("✅ ¡Contraseña cambiada exitosamente!");
+      // 👈 6. ALERTA DE ÉXITO AL CAMBIAR CONTRASEÑA
+      showAlert("¡Contraseña cambiada exitosamente!", "success");
       setShowPassModal(false);
       setPassData({ current: '', new: '', confirm: '' });
     } catch (error) {
-      alert(error.response?.data?.error || "Error al cambiar contraseña");
+      // 👈 7. ALERTA DE ERROR DE LA API (ej: contraseña actual incorrecta)
+      showAlert(error.response?.data?.error || "Error al cambiar contraseña", "error");
     } finally {
       setPassLoading(false);
     }
@@ -125,7 +140,6 @@ function ClientProfile() {
           <h2 className="user-fullname">{user.name}</h2>
           <p className="user-email">{user.email}</p>
           
-          {/* 👇 BADGE AHORA ES DINÁMICO 👇 */}
           <div className={`status-badge-profile ${isSubActive ? 'active' : 'inactive'}`}>
             {isSubActive ? 'Suscripción Activa' : 'Sin Suscripción'}
           </div>

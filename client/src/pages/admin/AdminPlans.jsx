@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import './AdminPlans.css';
 import CreatePlanModal from './modals/CreatePlanModal';
 import PlanStudentsModal from './modals/PlanStudentsModal';
@@ -9,6 +10,7 @@ import { Trash2, Search, Filter, Power, MessageCircle } from 'lucide-react';
 
 function AdminPlans() {
   const navigate = useNavigate();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -24,6 +26,7 @@ function AdminPlans() {
 
   useEffect(() => {
     fetchPlans();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPlans = async () => {
@@ -32,6 +35,8 @@ function AdminPlans() {
       setPlans(res.data);
     } catch (error) {
       console.error(error);
+      // 👈 3. ALERTA DE ERROR DE RED
+      showAlert("Error al cargar los planes.", "error");
     } finally {
       setLoading(false);
     }
@@ -58,25 +63,34 @@ function AdminPlans() {
     try {
       await axios.delete(`/plans/${id}`);
       fetchPlans();
-      alert("✅ Plan eliminado");
+      // 👈 4. ALERTA DE ÉXITO AL ELIMINAR
+      showAlert("Plan eliminado correctamente.", "success");
     } catch (error) { 
         if(error.response?.status === 400) {
-            alert("⚠️ " + error.response.data.error);
+            // 👈 5. ALERTA DE ERROR DEL BACKEND (Ej: Hay alumnos activos)
+            showAlert(error.response.data.error, "error");
         } else {
-            alert("Error al eliminar"); 
+            // 👈 6. ALERTA DE ERROR GENÉRICO
+            showAlert("Error al eliminar el plan.", "error"); 
         }
     }
   };
 
-  // NUEVO: TOGGLE STOCK (Activar/Pausar)
+  // TOGGLE STOCK (Activar/Pausar)
   const handleToggleStatus = async (plan) => {
     try {
        await axios.patch(`/plans/${plan.id}/toggle-status`);
-       fetchPlans(); // Recargar para ver cambio de color
+       fetchPlans(); 
+       
+       // 👈 7. ALERTA DE ÉXITO AL CAMBIAR ESTADO
+       const newStatus = !plan.isActive ? "activado" : "pausado";
+       showAlert(`El plan ha sido ${newStatus}.`, "success");
+       
     } catch (error) {
-       alert("Error al cambiar estado");
+       // 👈 8. ALERTA DE ERROR AL CAMBIAR ESTADO
+       showAlert("Error al cambiar el estado del plan.", "error");
     }
- };
+  };
 
   if (loading) return <div className="plans-container">Cargando...</div>;
 
@@ -161,7 +175,6 @@ function AdminPlans() {
               <p className="plan-desc">{plan.description || "Sin descripción"}</p>
               
               <div className="plan-stats">
-                {/* CAMBIO: Meses a Semanas */}
                 <span>📅 {plan.duration} Semanas (+2)</span>
                 <span className="plan-users" 
                   onClick={() => setSelectedPlanForStudents(plan)} 

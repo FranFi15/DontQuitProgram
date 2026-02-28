@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import { X, Info } from 'lucide-react';
 import './CreatePlanModal.css';
 
 function CreatePlanModal({ onClose, onSuccess, planToEdit }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
   
   // Estado para las categorías
@@ -22,6 +24,7 @@ function CreatePlanModal({ onClose, onSuccess, planToEdit }) {
         setPlanTypes(res.data);
       } catch (error) {
         console.error("Error cargando categorías");
+        // Opcional: showAlert("No se pudieron cargar las categorías.", "error");
       } finally {
         setLoadingTypes(false);
       }
@@ -58,17 +61,20 @@ function CreatePlanModal({ onClose, onSuccess, planToEdit }) {
     try {
       if (planToEdit) {
         await axios.put(`/plans/${planToEdit.id}`, payload);
-        alert('✅ Plan actualizado con éxito');
+        // 👈 3. ALERTA DE ÉXITO AL ACTUALIZAR
+        showAlert('Plan actualizado con éxito', 'success');
       } else {
         await axios.post('/plans', payload);
-        alert('✅ Plan creado con éxito');
+        // 👈 4. ALERTA DE ÉXITO AL CREAR
+        showAlert('Nuevo plan creado con éxito', 'success');
       }
       
       onSuccess();
       onClose();
     } catch (error) {
       console.error(error);
-      alert('Error al guardar el plan. Verifica que hayas elegido una categoría.');
+      // 👈 5. ALERTA DE ERROR
+      showAlert('Error al guardar el plan. Verifica que hayas elegido una categoría.', 'error');
     }
   };
 
@@ -108,7 +114,7 @@ function CreatePlanModal({ onClose, onSuccess, planToEdit }) {
                 className="modal-input"
                 placeholder="Ej: Crossfit Avanzado - Mes 1"
               />
-              {errors.title && <span className="error-text">Requerido</span>}
+              {errors.title && <span className="error-text">El nombre del plan es requerido</span>}
             </div>
 
             {/* 3. PRECIOS (ARS y USD) */}

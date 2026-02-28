@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { Search, UserPlus, Edit3, Trash2, ClipboardList } from 'lucide-react';
 import CreateUserModal from './modals/CreateUserModal';
 import AdminUserScoresModal from '../admin/modals/AdminUserScoresModal';
 import './AdminUsers.css';
 
 function AdminUsers() {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,12 +16,13 @@ function AdminUsers() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
 
-const [showScoresModal, setShowScoresModal] = useState(false);
+  const [showScoresModal, setShowScoresModal] = useState(false);
   const [selectedScoreUser, setSelectedScoreUser] = useState(null);
 
   // Carga inicial
   useEffect(() => {
     fetchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUsers = async () => {
@@ -28,6 +31,8 @@ const [showScoresModal, setShowScoresModal] = useState(false);
       setUsers(res.data);
     } catch (error) {
       console.error("Error cargando usuarios:", error);
+      // 👈 3. ALERTA SI FALLA LA CARGA
+      showAlert("Error al cargar la lista de atletas.", "error");
     } finally {
       setLoading(false);
     }
@@ -52,14 +57,18 @@ const [showScoresModal, setShowScoresModal] = useState(false);
 
   // Eliminar (Soft Delete de la cuenta)
   const handleDelete = async (id, name) => {
+    // Mantenemos el confirm nativo por seguridad crítica
     if(!window.confirm(`¿Estás segura de eliminar la cuenta de "${name}"?`)) return;
 
     try {
       await axios.delete(`/users/${id}`);
       fetchUsers();
+      // 👈 4. ALERTA DE ÉXITO AL ELIMINAR
+      showAlert("La cuenta ha sido eliminada correctamente.", "success");
     } catch (error) {
       console.error(error);
-      alert("Error al eliminar el usuario");
+      // 👈 5. ALERTA DE ERROR AL ELIMINAR
+      showAlert("Error al intentar eliminar al usuario.", "error");
     }
   };
 
@@ -113,7 +122,7 @@ const [showScoresModal, setShowScoresModal] = useState(false);
           <tbody>
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan="5" className="text-center py-4 text-gray-500">
+                <td colSpan="7" className="text-center py-4 text-gray-500">
                   {users.length === 0 ? "No hay atletas registrados." : "No se encontraron coincidencias."}
                 </td>
               </tr>
@@ -134,8 +143,6 @@ const [showScoresModal, setShowScoresModal] = useState(false);
                   <td className="text-gray">{user.phone || "-"}</td>
                   <td className="text-gray">{user.birthDate ? new Date(user.birthDate).toLocaleDateString() : "-"}</td>
                   <td className="text-gray">{user.sex || "-"}</td>
-
-
 
                   {/* ESTADO DE SUSCRIPCIÓN */}
                   <td>
@@ -181,7 +188,7 @@ const [showScoresModal, setShowScoresModal] = useState(false);
         </table>
       </div>
 
-      {/* MODAL */}
+      {/* MODALES */}
       {isModalOpen && (
         <CreateUserModal 
           userToEdit={userToEdit} 
@@ -192,12 +199,12 @@ const [showScoresModal, setShowScoresModal] = useState(false);
 
       {showScoresModal && selectedScoreUser && (
          <AdminUserScoresModal 
-           userId={selectedScoreUser.id}
-           userName={selectedScoreUser.name}
-           onClose={() => {
-             setShowScoresModal(false);
-             setSelectedScoreUser(null);
-           }} 
+            userId={selectedScoreUser.id}
+            userName={selectedScoreUser.name}
+            onClose={() => {
+              setShowScoresModal(false);
+              setSelectedScoreUser(null);
+            }} 
          />
        )}
     </div>

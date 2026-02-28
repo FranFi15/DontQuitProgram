@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { Check, X, Eye, DollarSign, Loader2, Settings, Landmark, History, Clock, Search } from 'lucide-react';
 import './AdminPayments.css';
 
 function AdminPayments() {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
@@ -22,6 +24,8 @@ function AdminPayments() {
       setPayments(res.data);
     } catch (error) {
       console.error("Error cargando pagos", error);
+      // 👈 3. ALERTA SI FALLA LA CARGA DE PAGOS
+      showAlert("Error al cargar la lista de pagos.", "error");
     } finally {
       setLoading(false);
     }
@@ -33,12 +37,14 @@ function AdminPayments() {
       setBankData(res.data);
     } catch (error) {
       console.error("Error cargando datos bancarios", error);
+      // Opcional: showAlert("Error al cargar tus datos bancarios.", "error");
     }
   };
 
   useEffect(() => { 
     fetchPayments(); 
     fetchBankSettings(); 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const formatAmount = (amount, currency, method) => {
@@ -55,10 +61,12 @@ function AdminPayments() {
     setProcessingId(id);
     try {
       await axios.put(`/payments/${id}/approve`);
-      alert("✅ Pago aprobado.");
+      // 👈 4. ALERTA DE ÉXITO AL APROBAR
+      showAlert("Pago aprobado exitosamente. Acceso otorgado.", "success");
       fetchPayments(); 
     } catch (error) {
-      alert("Error al aprobar");
+      // 👈 5. ALERTA DE ERROR AL APROBAR
+      showAlert("Error al aprobar el pago.", "error");
     } finally {
       setProcessingId(null);
     }
@@ -69,9 +77,12 @@ function AdminPayments() {
     setProcessingId(id);
     try {
       await axios.put(`/payments/${id}/reject`);
+      // 👈 6. ALERTA AL RECHAZAR (Usamos 'info' o 'success' para confirmar la acción)
+      showAlert("Pago rechazado correctamente.", "success");
       fetchPayments();
     } catch (error) {
-      alert("Error al rechazar");
+      // 👈 7. ALERTA DE ERROR AL RECHAZAR
+      showAlert("Error al rechazar el pago.", "error");
     } finally {
       setProcessingId(null);
     }
@@ -82,10 +93,12 @@ function AdminPayments() {
     setSavingBankData(true);
     try {
       await axios.put('/settings/bank', bankData);
-      alert('✅ Datos actualizados.');
+      // 👈 8. ALERTA DE ÉXITO AL GUARDAR DATOS BANCARIOS
+      showAlert("Datos bancarios actualizados correctamente.", "success");
       setIsBankModalOpen(false);
     } catch (error) {
-      alert('Error al guardar.');
+      // 👈 9. ALERTA DE ERROR AL GUARDAR
+      showAlert("Error al guardar los datos bancarios.", "error");
     } finally {
       setSavingBankData(false);
     }
@@ -205,7 +218,7 @@ function AdminPayments() {
         </div>
       )}
 
-      {/* MODALES (SE MANTIENEN IGUAL QUE TU CÓDIGO) */}
+      {/* MODALES */}
       {selectedReceipt && (
         <div className="receipt-modal-overlay" onClick={() => setSelectedReceipt(null)}>
           <div className="receipt-modal-content" onClick={e => e.stopPropagation()}>

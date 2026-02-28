@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import { X, Save } from 'lucide-react';
 import './CreateUserModal.css'; 
 
 function CreateUserModal({ onClose, onSuccess, userToEdit }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
 
-  
   useEffect(() => {
     if (userToEdit) {
       setValue('name', userToEdit.name); 
@@ -28,17 +29,20 @@ function CreateUserModal({ onClose, onSuccess, userToEdit }) {
       if (userToEdit) {
         // MODO EDICIÓN
         await axios.put(`/users/${userToEdit.id}`, data);
-        alert('Perfil actualizado con éxito');
+        // 👈 3. ALERTA DE ÉXITO AL ACTUALIZAR
+        showAlert('Perfil actualizado con éxito 👤', 'success');
       } else {
         // MODO CREACIÓN
         await axios.post('/users', data);
-        alert('Usuario creado correctamente');
+        // 👈 4. ALERTA DE ÉXITO AL CREAR
+        showAlert('Usuario creado correctamente 📧', 'success');
       }
       onSuccess(); // Recargar la tabla
       onClose();   // Cerrar modal
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.error || 'Error al guardar usuario');
+      // 👈 5. ALERTA DE ERROR (Usa el mensaje del backend o uno genérico)
+      showAlert(error.response?.data?.error || 'Error al guardar usuario', 'error');
     }
   };
 

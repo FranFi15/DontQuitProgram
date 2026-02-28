@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
@@ -8,6 +9,7 @@ import './ClientStore.css';
 
 function ClientStore() {
   const { user } = useAuth();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -53,12 +55,14 @@ function ClientStore() {
 
       } catch (error) {
         console.error("Error cargando la tienda", error);
+        // 👈 3. ALERTA SI FALLA LA CARGA INICIAL
+        showAlert("Error al cargar la tienda. Por favor, recarga la página.", "error");
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [showAlert]);
 
   const formatPriceARS = (price) => {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(price);
@@ -69,12 +73,10 @@ function ClientStore() {
     return price - (price * (discount / 100));
   };
 
-  // --- LÓGICA DE FILTRADO CORREGIDA ---
   const filteredPlans = plans.filter(plan => {
     const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (plan.description && plan.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // 👈 CORRECCIÓN AQUÍ: Leemos de planType
     const planCategoryName = plan.planType?.name || 'Sin Categoría'; 
     const matchesCategory = selectedCategory === 'ALL' || planCategoryName === selectedCategory;
 
@@ -93,7 +95,8 @@ function ClientStore() {
       window.location.href = res.data.init_point;
     } catch (error) {
       console.error(error);
-      alert("Error conectando con Mercado Pago.");
+      // 👈 4. ALERTA DE ERROR EN MERCADO PAGO
+      showAlert("Error conectando con Mercado Pago.", "error");
     } finally {
       setLoadingMP(false);
     }
@@ -101,7 +104,8 @@ function ClientStore() {
 
   const handleConfirmTransfer = async (e) => {
     e.preventDefault();
-    if (!receiptFile) return alert("Por favor, selecciona la foto del comprobante.");
+    // 👈 5. ALERTA DE VALIDACIÓN
+    if (!receiptFile) return showAlert("Por favor, selecciona la foto del comprobante.", "error");
 
     setUploading(true);
     try {
@@ -127,13 +131,15 @@ function ClientStore() {
         receiptUrl: uploadedUrl
       });
 
-      alert("¡Comprobante enviado! 🚀 Ro lo verificará pronto.");
+      // 👈 6. ALERTA DE ÉXITO EN TRANSFERENCIA
+      showAlert("¡Comprobante enviado! 🚀 Ro lo verificará pronto.", "success");
       setReceiptFile(null);
       setPlanToBuy(null);
       setPaymentMethod(null);
     } catch (error) {
       console.error(error);
-      alert("Error al procesar la transferencia.");
+      // 👈 7. ALERTA DE ERROR AL ENVIAR TRANSFERENCIA
+      showAlert("Error al procesar la transferencia.", "error");
     } finally {
       setUploading(false);
     }
@@ -282,11 +288,15 @@ function ClientStore() {
                                         orderID: data.orderID, userId: user.id, planId: planToBuy.id
                                     });
                                     if (res.data.success) {
-                                        alert("¡Pago exitoso! Acceso activado.");
+                                        // 👈 8. ALERTA DE ÉXITO EN PAYPAL
+                                        showAlert("¡Pago exitoso! Acceso activado.", "success");
                                         setPlanToBuy(null);
                                         navigate("/app/home");
                                     }
-                                } catch (error) { alert("Error al procesar PayPal."); }
+                                } catch (error) { 
+                                    // 👈 9. ALERTA DE ERROR EN PAYPAL
+                                    showAlert("Error al procesar PayPal.", "error"); 
+                                }
                             }}
                         />
                       </div>

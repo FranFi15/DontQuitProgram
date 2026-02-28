@@ -2,21 +2,25 @@
 import { useForm } from 'react-hook-form';
 import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useAlert } from '../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { useNavigate, Link } from 'react-router-dom';
-import { useState } from 'react';
 import './LoginPage.css'; 
 import logo from '../assets/logob.png';
 
 function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const { login } = useAuth();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const navigate = useNavigate();
-  const [loginError, setLoginError] = useState(null);
 
   const onSubmit = async (values) => {
     try {
       const res = await axios.post('/auth/login', values);
       login(res.data.user, res.data.token);
+      
+      // 👈 3. MENSAJE DE BIENVENIDA (Opcional, pero queda muy pro)
+      showAlert(`¡Bienvenido de vuelta, ${res.data.user.name?.split(' ')[0] || 'Atleta'}!`, "success");
+
       if (res.data.user.role === 'ADMIN') {
         navigate('/admin/dashboard');
       } else {
@@ -24,7 +28,8 @@ function LoginPage() {
       }
     } catch (error) {
       console.error(error);
-      setLoginError(error.response?.data?.error || "Error al iniciar sesión");
+      // 👈 4. REEMPLAZAMOS EL ESTADO LOCAL POR LA ALERTA GLOBAL
+      showAlert(error.response?.data?.error || "Error al iniciar sesión. Verifica tus datos.", "error");
     }
   };
 
@@ -34,11 +39,7 @@ function LoginPage() {
       {/* 1. El Título aparece primero */}
       <h1 className="login-title animate-enter">INICIAR SESIÓN</h1>
       
-      {loginError && (
-        <div className="error-message animate-enter delay-100">
-          {loginError}
-        </div>
-      )}
+      {/* ELIMINAMOS EL DIV DE LOGIN ERROR, YA NO HACE FALTA */}
 
       {/* 2. El Formulario aparece segundo */}
       <form onSubmit={handleSubmit(onSubmit)} className="login-form animate-enter delay-200">

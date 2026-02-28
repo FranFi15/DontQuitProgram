@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { Plus, Trash2, Save, X, Edit3 } from 'lucide-react';
 import './DayEditorModal.css';
 
 function DayEditorModal({ workout, onClose, onSuccess }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState(workout.title || '');
 
@@ -21,12 +23,12 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
     }
   });
 
-  // 2. CONFIGURACIÓN DE LA BARRA (Tus preferencias: colores, titulos, etc)
+  // 2. CONFIGURACIÓN DE LA BARRA
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, false] }],
       ['bold', 'italic', 'underline'],
-      [{ 'color': [] }, { 'background': [] }], // Colores habilitados
+      [{ 'color': [] }, { 'background': [] }],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
       ['clean']
     ],
@@ -39,8 +41,8 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
     setBlocks([
       ...blocks, 
       { 
-        title: `Bloque ${nextNum}`, // Título por defecto
-        content: '' // HTML vacío
+        title: `Bloque ${nextNum}`, 
+        content: '' 
       }
     ]);
   };
@@ -51,14 +53,12 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
     setBlocks(newBlocks);
   };
 
-  // Editar el Título del Bloque (Input libre)
   const updateBlockTitle = (index, value) => {
     const newBlocks = [...blocks];
     newBlocks[index].title = value;
     setBlocks(newBlocks);
   };
 
-  // Editar el Contenido (Quill)
   const updateBlockContent = (index, value) => {
     const newBlocks = [...blocks];
     newBlocks[index].content = value;
@@ -69,27 +69,29 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
   const handleSave = async () => {
     setLoading(true);
     
-    // Limpieza: Si el título quedó vacío, le ponemos un default
+    // Limpieza de títulos vacíos
     const cleanBlocks = blocks.map((b, i) => ({
       title: b.title.trim() === '' ? `Bloque ${i + 1}` : b.title,
       content: b.content
     }));
 
     try {
-      // Endpoint Upsert
       await axios.post(`/workouts/${workout.planId}`, {
         planId: workout.planId,
         weekNumber: workout.weekNumber,
         dayNumber: workout.dayNumber,
         title: title,
-        blocks: cleanBlocks // Enviamos array, el back lo stringifia
+        blocks: cleanBlocks 
       });
       
+      // 👈 3. ALERTA DE ÉXITO
+      showAlert("Rutina guardada correctamente.", "success");
       onSuccess(); 
       onClose();   
     } catch (error) {
       console.error(error);
-      alert("Error al guardar la rutina");
+      // 👈 4. ALERTA DE ERROR
+      showAlert("Hubo un problema al guardar la rutina.", "error");
     } finally {
       setLoading(false);
     }
@@ -128,7 +130,6 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
             {blocks.map((block, index) => (
               <div key={index} className="workout-block">
                 
-                {/* CABECERA DEL BLOQUE (Título editable) */}
                 <div className="block-header">
                   <div className="block-title-wrapper">
                     <Edit3 size={14} className="edit-icon-indicator"/>
@@ -144,7 +145,6 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
                   </button>
                 </div>
 
-                {/* EDITOR DE TEXTO ENRIQUECIDO */}
                 <div className="editor-container">
                   <ReactQuill 
                     theme="snow"

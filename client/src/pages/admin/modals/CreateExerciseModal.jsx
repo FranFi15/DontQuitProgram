@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import { X, Save, Video, FileText } from 'lucide-react';
 import './CreateUserModal.css'; 
 
 function CreateExerciseModal({ onClose, onSuccess, exerciseToEdit }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
 
   useEffect(() => {
@@ -19,16 +21,19 @@ function CreateExerciseModal({ onClose, onSuccess, exerciseToEdit }) {
     try {
       if (exerciseToEdit) {
         await axios.put(`/exercises/${exerciseToEdit.id}`, data);
-        alert('Ejercicio actualizado');
+        // 👈 3. ALERTA DE ACTUALIZACIÓN
+        showAlert('Ejercicio actualizado correctamente', 'success');
       } else {
         await axios.post('/exercises', data);
-        alert('Ejercicio creado');
+        // 👈 4. ALERTA DE CREACIÓN
+        showAlert('Nuevo ejercicio creado', 'success');
       }
       onSuccess();
       onClose();
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.error || 'Error al guardar');
+      // 👈 5. ALERTA DE ERROR
+      showAlert(error.response?.data?.error || 'Error al guardar el ejercicio', 'error');
     }
   };
 
@@ -51,7 +56,7 @@ function CreateExerciseModal({ onClose, onSuccess, exerciseToEdit }) {
               placeholder="Ej: Sentadilla Trasera (Back Squat)"
               autoFocus
             />
-            {errors.name && <span className="error-text">Requerido</span>}
+            {errors.name && <span className="error-text">El nombre es obligatorio</span>}
           </div>
 
           {/* VIDEO URL */}
@@ -64,7 +69,7 @@ function CreateExerciseModal({ onClose, onSuccess, exerciseToEdit }) {
               className="modal-input"
               placeholder="https://youtube.com/..."
             />
-            {errors.videoUrl && <span className="error-text">Requerido</span>}
+            {errors.videoUrl && <span className="error-text">El link del video es obligatorio</span>}
           </div>
 
           {/* DESCRIPCIÓN */}

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { Search, Plus, Edit3, Trash2, ExternalLink, Dumbbell } from 'lucide-react';
 import CreateExerciseModal from './modals/CreateExerciseModal';
 import './AdminExercises.css'; 
 
 function AdminExercises() {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,6 +16,7 @@ function AdminExercises() {
 
   useEffect(() => {
     fetchExercises();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchExercises = async () => {
@@ -22,18 +25,24 @@ function AdminExercises() {
       setExercises(res.data);
     } catch (error) {
       console.error(error);
+      // 👈 3. ALERTA SI FALLA LA CARGA
+      showAlert("Error al cargar el glosario de ejercicios.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id, name) => {
-    if(!window.confirm(`¿Eliminar "${name}" del glosario?`)) return;
+    // Mantenemos confirm() nativo
+    if(!window.confirm(`¿Seguro que deseas eliminar "${name}" del glosario?`)) return;
     try {
       await axios.delete(`/exercises/${id}`);
       fetchExercises();
+      // 👈 4. ALERTA DE ÉXITO
+      showAlert("Ejercicio eliminado correctamente.", "success");
     } catch (error) {
-      alert("Error al eliminar");
+      // 👈 5. ALERTA DE ERROR
+      showAlert("Error al eliminar el ejercicio.", "error");
     }
   };
 

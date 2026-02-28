@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { X, Save } from 'lucide-react';
 import './ScoreBoxModal.css';
 
 function ScoreBoxModal({ planId, userId, onClose }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [inputs, setInputs] = useState({});
-  const [savingAll, setSavingAll] = useState(false); // Estado para el botón principal
+  const [savingAll, setSavingAll] = useState(false); 
 
   const fetchBoxes = async () => {
     try {
@@ -34,6 +36,8 @@ function ScoreBoxModal({ planId, userId, onClose }) {
       setInputs(initialInputs);
     } catch (error) {
       console.error(error);
+      // Opcional: mostrar error si no carga (lo comento porque el padre ya tiene una alerta)
+      // showAlert("Error al cargar las métricas.", "error"); 
     } finally {
       setLoading(false);
     }
@@ -55,27 +59,22 @@ function ScoreBoxModal({ planId, userId, onClose }) {
   const handleSaveAll = async () => {
     setSavingAll(true);
     try {
-      // 1. Preparamos todas las peticiones (promesas) que tenemos que hacer al backend
       const savePromises = boxes.map(box => {
         const boxInputs = inputs[box.id] || {};
         const unitsArray = box.measureUnit ? box.measureUnit.split(',') : [];
         
-        // Armamos el texto final. Ej: "100 KG - 5 REPS"
         const finalStringParts = unitsArray.map(unit => {
           const val = boxInputs[unit.trim()];
           return val ? `${val} ${unit.trim()}` : null;
         }).filter(Boolean);
 
-        // Si el usuario dejó esta prueba vacía, la ignoramos
         if (finalStringParts.length === 0) return null;
 
         const finalStringToSave = finalStringParts.join(' - ');
         const existingEntry = box.entries && box.entries.length > 0 ? box.entries[0] : null;
 
-        // Si no cambió el valor respecto a la base de datos, no hacemos nada para ahorrar recursos
         if (existingEntry && existingEntry.value === finalStringToSave) return null;
 
-        // Si ya existía, actualizamos (PUT), si es nuevo, creamos (POST)
         if (existingEntry) {
           return axios.put(`/scoreboxes/entry/${existingEntry.id}`, {
             userId, value: finalStringToSave
@@ -85,20 +84,20 @@ function ScoreBoxModal({ planId, userId, onClose }) {
             userId, scoreBoxId: box.id, value: finalStringToSave
           });
         }
-      }).filter(p => p !== null); // Filtramos los nulos (los que no cambiaron)
+      }).filter(p => p !== null); 
 
-      // 2. Ejecutamos todas las peticiones en paralelo
       if (savePromises.length > 0) {
         await Promise.all(savePromises);
-        alert("¡Marcas actualizadas correctamente! 🏆");
+        // 👈 3. ALERTA DE ÉXITO 
+        showAlert("¡Marcas actualizadas correctamente! 🏆", "success");
       }
       
-      // Cerramos el modal
       onClose();
 
     } catch (error) {
       console.error(error);
-      alert("Hubo un error al guardar los resultados.");
+      // 👈 4. ALERTA DE ERROR
+      showAlert("Hubo un error al guardar los resultados.", "error");
     } finally {
       setSavingAll(false);
     }
@@ -155,7 +154,6 @@ function ScoreBoxModal({ planId, userId, onClose }) {
               )}
             </div>
 
-            {/* BOTÓN ÚNICO GIGANTE ABAJO */}
             {boxes.length > 0 && (
               <div className="sb-footer-sticky">
                 <button 

@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import { Plus, Trash2, Edit3, Save, X } from 'lucide-react';
 import './AdminScoreBoxManager.css';
 
 function AdminScoreBoxManager({ planId }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Estados para crear nuevo
   const [newName, setNewName] = useState('');
-  const [newUnitInput, setNewUnitInput] = useState(''); // Lo que está escribiendo
-  const [newUnitsList, setNewUnitsList] = useState([]); // Lista de unidades agregadas
+  const [newUnitInput, setNewUnitInput] = useState(''); 
+  const [newUnitsList, setNewUnitsList] = useState([]); 
 
   // Estado para editar existente
   const [editingId, setEditingId] = useState(null);
@@ -25,6 +27,7 @@ function AdminScoreBoxManager({ planId }) {
       setBoxes(res.data);
     } catch (error) {
       console.error(error);
+      showAlert("Error al cargar las métricas del plan.", "error");
     } finally {
       setLoading(false);
     }
@@ -32,9 +35,10 @@ function AdminScoreBoxManager({ planId }) {
 
   useEffect(() => {
     if (planId) fetchBoxes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId]);
 
-  // --- MANEJO DE UNIDADES (CREAR) ---
+  // --- MANEJO DE UNIDADES ---
   const handleAddUnit = (e) => {
     e.preventDefault();
     if (newUnitInput.trim() !== '') {
@@ -51,43 +55,46 @@ function AdminScoreBoxManager({ planId }) {
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     if (!newName || newUnitsList.length === 0) {
-      return alert("Ingresa un nombre y al menos una unidad de medida.");
+      // 👈 3. ALERTA DE VALIDACIÓN
+      return showAlert("Ingresa un nombre y al menos una unidad de medida.", "error");
     }
     try {
       await axios.post('/scoreboxes/definition', {
         planId,
         name: newName,
-        measureUnit: newUnitsList.join(',') // Guardamos como "KG,REPS,SEG"
+        measureUnit: newUnitsList.join(',') 
       });
       setNewName('');
       setNewUnitsList([]);
       fetchBoxes();
+      // 👈 4. ALERTA DE ÉXITO
+      showAlert("Métrica creada correctamente.", "success");
     } catch (error) {
-      alert("Error al crear");
+      showAlert("Error al crear la métrica.", "error");
     }
   };
 
   // --- BORRAR ---
   const handleDelete = async (id) => {
+    // Mantenemos confirm nativo por ser una acción destructiva
     if (!window.confirm("¿Seguro? Se borrarán los registros de los alumnos asociados a esta métrica.")) return;
     try {
       await axios.delete(`/scoreboxes/definition/${id}`);
       fetchBoxes();
+      showAlert("Métrica eliminada.", "success");
     } catch (error) {
-      alert("Error al borrar");
+      showAlert("Error al intentar borrar la métrica.", "error");
     }
   };
 
-  // --- INICIAR EDICIÓN ---
+  // --- EDICIÓN ---
   const startEdit = (box) => {
     setEditingId(box.id);
     setEditName(box.name);
-    // Convertimos el string guardado ("KG,REPS") de vuelta a array
     setEditUnitsList(box.measureUnit ? box.measureUnit.split(',') : []);
     setEditUnitInput('');
   };
 
-  // --- MANEJO DE UNIDADES (EDITAR) ---
   const handleEditAddUnit = (e) => {
     e.preventDefault();
     if (editUnitInput.trim() !== '') {
@@ -100,20 +107,20 @@ function AdminScoreBoxManager({ planId }) {
     setEditUnitsList(editUnitsList.filter((_, i) => i !== index));
   };
 
-  // --- GUARDAR EDICIÓN ---
   const saveEdit = async () => {
     if (!editName || editUnitsList.length === 0) {
-      return alert("El nombre y al menos una unidad son obligatorios.");
+      return showAlert("El nombre y al menos una unidad son obligatorios.", "error");
     }
     try {
       await axios.put(`/scoreboxes/definition/${editingId}`, {
         name: editName,
-        measureUnit: editUnitsList.join(',') // Guardamos el array como string
+        measureUnit: editUnitsList.join(',') 
       });
       setEditingId(null);
       fetchBoxes();
+      showAlert("Métrica actualizada.", "success");
     } catch (error) {
-      alert("Error al editar");
+      showAlert("Error al editar la métrica.", "error");
     }
   };
 
@@ -140,7 +147,7 @@ function AdminScoreBoxManager({ planId }) {
               value={newUnitInput}
               onChange={e => setNewUnitInput(e.target.value)}
               className="sb-input short"
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   handleAddUnit(e);
@@ -157,7 +164,6 @@ function AdminScoreBoxManager({ planId }) {
           </button>
         </div>
 
-        {/* Visualizador de etiquetas (chips) para las unidades agregadas */}
         {newUnitsList.length > 0 && (
           <div className="sb-unit-chips">
             <span className="chips-label">Unidades a guardar:</span>
@@ -174,13 +180,11 @@ function AdminScoreBoxManager({ planId }) {
       {/* LISTA DE CAJAS */}
       <div className="sb-list">
         {loading ? <p>Cargando...</p> : boxes.map(box => {
-          // Extraemos las unidades para mostrarlas visualmente
           const unitsArray = box.measureUnit ? box.measureUnit.split(',') : [];
 
           return (
             <div key={box.id} className="sb-row">
               {editingId === box.id ? (
-                // MODO EDICIÓN
                 <div className="sb-edit-mode-vertical">
                   <div className="sb-edit-inputs">
                     <input 
@@ -195,7 +199,7 @@ function AdminScoreBoxManager({ planId }) {
                         onChange={e => setEditUnitInput(e.target.value)} 
                         placeholder="Agregar unidad"
                         className="sb-input short"
-                        onKeyPress={(e) => {
+                        onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
                             handleEditAddUnit(e);
@@ -223,7 +227,6 @@ function AdminScoreBoxManager({ planId }) {
                   </div>
                 </div>
               ) : (
-                // MODO VISUALIZACIÓN
                 <>
                   <div className="sb-info">
                     <span className="name">{box.name}</span>

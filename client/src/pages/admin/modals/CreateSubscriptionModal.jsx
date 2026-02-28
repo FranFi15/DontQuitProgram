@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext';
 import { X, Save, Search } from 'lucide-react';
 import './CreateUserModal.css'; 
 
 function CreateSubscriptionModal({ onClose, onSuccess, subToEdit }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
   
   // Datos originales del backend
@@ -58,11 +60,11 @@ function CreateSubscriptionModal({ onClose, onSuccess, subToEdit }) {
         }
       } catch (error) {
         console.error("Error cargando listas", error);
+        showAlert("Error al cargar la lista de alumnos o planes.", "error");
       }
     };
     fetchData();
 
-    // Event listener para cerrar los dropdowns al hacer clic fuera
     const handleClickOutside = (event) => {
         if (userRef.current && !userRef.current.contains(event.target)) setShowUserDropdown(false);
         if (planRef.current && !planRef.current.contains(event.target)) setShowPlanDropdown(false);
@@ -70,9 +72,8 @@ function CreateSubscriptionModal({ onClose, onSuccess, subToEdit }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
 
-  }, [subToEdit, setValue]);
+  }, [subToEdit, setValue, showAlert]);
 
-  // Filtrado reactivo basado en lo que el usuario escribe
   const filteredUsers = users.filter(u => 
       u.name?.toLowerCase().includes(userSearch.toLowerCase()) || 
       u.email?.toLowerCase().includes(userSearch.toLowerCase())
@@ -82,25 +83,24 @@ function CreateSubscriptionModal({ onClose, onSuccess, subToEdit }) {
       p.title.toLowerCase().includes(planSearch.toLowerCase())
   );
 
-  // Funciones de selección
   const handleSelectUser = (user) => {
       setSelectedUser(user);
       setUserSearch(`${user.name} (${user.email})`);
-      setValue('userId', user.id); // Guardamos el ID en react-hook-form
+      setValue('userId', user.id); 
       setShowUserDropdown(false);
   };
 
   const handleSelectPlan = (plan) => {
       setSelectedPlan(plan);
       setPlanSearch(`${plan.title} - ${plan.duration} Semanas`);
-      setValue('planId', plan.id); // Guardamos el ID en react-hook-form
+      setValue('planId', plan.id); 
       setShowPlanDropdown(false);
   };
 
   const onSubmit = async (data) => {
-    // Validación manual de los selectores personalizados
-    if (!selectedUser) return alert("Por favor selecciona un alumno de la lista.");
-    if (!selectedPlan) return alert("Por favor selecciona un plan de la lista.");
+    // 👈 3. ALERTAS DE VALIDACIÓN MANUAL
+    if (!selectedUser) return showAlert("Por favor selecciona un alumno de la lista.", "error");
+    if (!selectedPlan) return showAlert("Por favor selecciona un plan de la lista.", "error");
 
     const payload = {
         userId: selectedUser.id,
@@ -110,17 +110,20 @@ function CreateSubscriptionModal({ onClose, onSuccess, subToEdit }) {
 
     try {
       if (subToEdit) {
-        // En edición, a veces solo se actualiza el plan y la fecha
         await axios.put(`/subscriptions/${subToEdit.id}`, payload);
-        alert('Suscripción actualizada');
+        // 👈 4. ALERTA DE ÉXITO AL ACTUALIZAR
+        showAlert('Suscripción actualizada correctamente', 'success');
       } else {
         await axios.post('/subscriptions', payload);
-        alert('Suscripción asignada correctamente');
+        // 👈 5. ALERTA DE ÉXITO AL CREAR
+        showAlert('Plan asignado al alumno con éxito', 'success');
       }
       onSuccess();
       onClose();
     } catch (error) {
-      alert('Error al procesar la solicitud');
+      console.error(error);
+      // 👈 6. ALERTA DE ERROR
+      showAlert('Error al procesar la suscripción. Inténtalo de nuevo.', 'error');
     }
   };
 
@@ -146,11 +149,11 @@ function CreateSubscriptionModal({ onClose, onSuccess, subToEdit }) {
                     value={userSearch}
                     onChange={(e) => {
                         setUserSearch(e.target.value);
-                        setSelectedUser(null); // Resetea selección si edita el texto
+                        setSelectedUser(null); 
                         setShowUserDropdown(true);
                     }}
                     onFocus={() => setShowUserDropdown(true)}
-                    disabled={!!subToEdit} // Bloqueado si edita
+                    disabled={!!subToEdit} 
                     style={{ paddingLeft: '35px', backgroundColor: subToEdit ? '#f3f4f6' : 'white' }}
                 />
             </div>

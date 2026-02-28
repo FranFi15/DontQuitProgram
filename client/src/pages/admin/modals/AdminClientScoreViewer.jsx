@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios'; 
+import { useAlert } from '../../../context/AlertContext'; 
 import './AdminClientScoreViewer.css';
 
 function AdminClientScoreViewer({ planId, userId }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -17,12 +19,14 @@ function AdminClientScoreViewer({ planId, userId }) {
         setScores(res.data);
       } catch (error) {
         console.error("Error cargando scores:", error);
+        // 👈 3. ALERTA SI FALLA LA CARGA
+        showAlert("Error al cargar las marcas del atleta.", "error");
       } finally {
         setLoading(false);
       }
     };
     fetchScores();
-  }, [planId, userId]);
+  }, [planId, userId, showAlert]); // Agregamos showAlert a las dependencias
 
   if (loading) return <div className="loader-mini">Cargando datos...</div>;
   

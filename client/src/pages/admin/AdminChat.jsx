@@ -1,11 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
 import axios from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { Send, Paperclip, Search, Video, Image as ImageIcon, X, ArrowLeft } from 'lucide-react';
 import './AdminChat.css';
 
 function AdminChat() {
   const navigate = useNavigate();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -27,13 +29,15 @@ function AdminChat() {
         setUsers(res.data);
       } catch (error) {
         console.error(error);
+        // 👈 3. ALERTA SI FALLA LA CARGA DE ALUMNOS
+        showAlert("Error al cargar la lista de alumnos.", "error");
       }
     };
     fetchUsers();
-  }, []);
+  }, [showAlert]);
 
   // 2. CARGAR CONVERSACIÓN
- useEffect(() => {
+  useEffect(() => {
     if (selectedUser) {
       const fetchChat = async () => {
         try {
@@ -51,11 +55,14 @@ function AdminChat() {
 
         } catch (error) {
           console.error(error);
+          // 👈 4. ALERTA SI FALLA EL HISTORIAL DE CHAT
+          showAlert(`Error al cargar la conversación con ${selectedUser.name}.`, "error");
         }
       };
       fetchChat();
     }
-  }, [selectedUser]);
+  }, [selectedUser, showAlert]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -64,6 +71,13 @@ function AdminChat() {
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // 👈 5. VALIDACIÓN DE PESO (Igual que en ClientChat)
+    const isVideo = file.type.startsWith('video/');
+    const limitMB = isVideo ? 50 : 10;
+    if (file.size > limitMB * 1024 * 1024) {
+      return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error');
+    }
 
     const formData = new FormData();
     formData.append('file', file);
@@ -75,7 +89,9 @@ function AdminChat() {
       });
       setAttachment({ url: res.data.url, type: res.data.type });
     } catch (error) {
-      alert("Error al subir archivo");
+      console.error(error);
+      // 👈 6. ALERTA DE ERROR AL SUBIR
+      showAlert("Error al subir el archivo.", "error");
     } finally {
       setUploading(false);
     }
@@ -111,10 +127,11 @@ function AdminChat() {
       scrollToBottom();
     } catch (error) {
       console.error(error);
+      // 👈 7. ALERTA DE ERROR AL ENVIAR MENSAJE
+      showAlert("Error al enviar el mensaje. Inténtalo de nuevo.", "error");
     }
   };
 
-  // Función para cerrar el chat y volver a la lista (en celulares)
   const handleBackToList = () => {
     setSelectedUser(null);
   };
@@ -128,7 +145,6 @@ function AdminChat() {
         </div>
       </div>
 
-      {/* Le agregamos una clase dinámica para el celular */}
       <div className={`chat-container ${selectedUser ? 'chat-active' : ''}`}>
         
         {/* SIDEBAR */}
@@ -171,7 +187,6 @@ function AdminChat() {
           {selectedUser ? (
             <>
               <div className="chat-header">
-                {/* BOTÓN VOLVER (Solo visible en móviles por CSS) */}
                 <button className="back-to-list-btn" onClick={handleBackToList}>
                   <ArrowLeft size={24} />
                 </button>

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext'; 
+import { useAlert } from '../../context/AlertContext'; 
 import { MessageSquare, Send, Users } from 'lucide-react';
 import './AdminWall.css';
 
 function AdminWall() {
   const { user } = useAuth(); // Este user es el Admin
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   
   const [plans, setPlans] = useState([]);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
@@ -17,12 +19,10 @@ function AdminWall() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        // --- NUEVO: Limpiamos los posteos pendientes del Muro en segundo plano ---
-        // (Asegúrate de que la ruta coincida con tu backend, ej: router.put('/approve-all', ...))
+        // Limpiamos los posteos pendientes del Muro en segundo plano
         axios.put('/wall/approve-all').catch(err => console.error("Error limpiando notificaciones del muro:", err));
 
-        // --- TU CÓDIGO ORIGINAL ---
-        const res = await axios.get('/plans'); // Endpoint que trae todos los planes
+        const res = await axios.get('/plans'); 
         const activePlans = res.data.filter(p => p.isActive !== false); 
         setPlans(activePlans);
         
@@ -31,15 +31,18 @@ function AdminWall() {
         }
       } catch (error) {
         console.error("Error cargando planes", error);
+        // 👈 3. ALERTA SI FALLA LA CARGA DE PLANES
+        showAlert("Error al cargar la lista de planes del muro.", "error");
       }
     };
     fetchPlans();
-  }, []);
+  }, [showAlert]);
 
   // 2. Cargar Mensajes del Plan seleccionado
   useEffect(() => {
     if (!selectedPlanId) return;
     fetchPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPlanId]);
 
   const fetchPosts = async () => {
@@ -49,6 +52,8 @@ function AdminWall() {
       setPosts(res.data);
     } catch (error) {
       console.error(error);
+      // 👈 4. ALERTA SI FALLA LA CARGA DE POSTS
+      showAlert("No se pudieron cargar los mensajes de este muro.", "error");
     } finally {
       setLoadingPosts(false);
     }
@@ -68,6 +73,8 @@ function AdminWall() {
       fetchPosts(); 
     } catch (error) {
       console.error(error);
+      // 👈 5. ALERTA SI FALLA EL ENVÍO
+      showAlert("Error al enviar el mensaje al muro.", "error");
     }
   };
 
@@ -122,7 +129,6 @@ function AdminWall() {
                 posts.map(post => (
                   <div key={post.id} className={`chat-bubble-row ${post.userId === user.id ? 'mine' : 'theirs'}`}>
                     
-                    {/* AVATAR (Para los atletas) */}
                     {post.userId !== user.id && (
                       <div className="avatar-circle user-avatar">
                         {post.user.name.charAt(0).toUpperCase()}
@@ -130,7 +136,6 @@ function AdminWall() {
                     )}
 
                     <div className={`chat-bubble ${post.userId === user.id ? 'admin-bubble' : ''}`}>
-                      {/* Nombre */}
                       {post.userId !== user.id && (
                         <div className="bubble-author">
                            {post.user.name}

@@ -1,12 +1,14 @@
 // client/src/pages/admin/AdminCategories.jsx
 import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
-import { Trash2, Edit, Plus, Layers } from 'lucide-react'; // Agregamos Layers
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
+import { Trash2, Edit, Plus, Layers } from 'lucide-react'; 
 import CreateCategoryModal from './modals/CreateCategoryModal';
-import CategoryPlansModal from './modals/CategoryPlansModal'; // Importamos el nuevo modal
+import CategoryPlansModal from './modals/CategoryPlansModal'; 
 import './AdminCategories.css'; 
 
 function AdminCategories() {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -20,6 +22,7 @@ function AdminCategories() {
 
   useEffect(() => {
     fetchCategories();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCategories = async () => {
@@ -28,23 +31,29 @@ function AdminCategories() {
       setCategories(res.data);
     } catch (error) {
       console.error(error);
+      // 👈 3. ALERTA DE ERROR AL CARGAR
+      showAlert("Error al cargar las categorías.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
+    // Mantenemos el confirm nativo por seguridad
     if (!window.confirm("¿Seguro que quieres eliminar esta categoría?")) return;
     
     try {
       await axios.delete(`/plan-types/${id}`);
       fetchCategories(); 
-      alert("Categoría eliminada.");
+      // 👈 4. ALERTA DE ÉXITO AL ELIMINAR
+      showAlert("Categoría eliminada correctamente.", "success");
     } catch (error) {
       if (error.response && error.response.status === 400) {
-         alert("⚠️ " + error.response.data.error);
+         // 👈 5. ALERTA DEL BACKEND (Ej: "No se puede borrar porque tiene planes asociados")
+         showAlert(error.response.data.error, "error");
       } else {
-         alert("Error al eliminar.");
+         // 👈 6. ALERTA DE ERROR GENÉRICO
+         showAlert("Error al eliminar la categoría.", "error");
       }
     }
   };
@@ -78,7 +87,7 @@ function AdminCategories() {
               <th>ID</th>
               <th>Nombre</th>
               <th>Descripción</th>
-              <th style={{textAlign: 'center'}}>Planes Asociados</th> {/* Nueva Columna */}
+              <th style={{textAlign: 'center'}}>Planes Asociados</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -89,7 +98,6 @@ function AdminCategories() {
               </tr>
             ) : (
               categories.map((cat) => {
-                // Obtenemos la cantidad que viene del backend (si no existe, 0)
                 const planCount = cat._count?.plans || 0;
 
                 return (
@@ -98,7 +106,6 @@ function AdminCategories() {
                     <td className="name-col">{cat.name}</td>
                     <td className="desc-col">{cat.description || '-'}</td>
                     
-                    {/* Nueva celda para mostrar la cantidad de planes */}
                     <td style={{textAlign: 'center'}}>
                       <button 
                         className="btn-view-plans" 

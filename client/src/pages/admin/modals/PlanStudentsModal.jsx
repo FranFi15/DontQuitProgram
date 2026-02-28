@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import { X, UserX, Calendar } from 'lucide-react';
 import './PlanStudentsModal.css';
 
 function PlanStudentsModal({ plan, onClose, onUpdate }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,6 +13,7 @@ function PlanStudentsModal({ plan, onClose, onUpdate }) {
     if (plan) {
       fetchStudents();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plan]);
 
   const fetchStudents = async () => {
@@ -19,22 +22,27 @@ function PlanStudentsModal({ plan, onClose, onUpdate }) {
       setStudents(res.data);
     } catch (error) {
       console.error("Error al cargar alumnos", error);
+      // 👈 3. ALERTA DE ERROR AL CARGAR
+      showAlert("No se pudo cargar la lista de alumnos de este plan.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancelSubscription = async (subId) => {
+    // Mantenemos el confirm por seguridad
     if (!window.confirm('¿Seguro que deseas cancelar la suscripción de este alumno? Perderá el acceso al plan.')) return;
     
     try {
       await axios.delete(`/subscriptions/${subId}`);
-      alert('Suscripción cancelada');
+      // 👈 4. ALERTA DE ÉXITO
+      showAlert('Suscripción cancelada correctamente.', 'success');
       fetchStudents();
       onUpdate(); // Actualiza el conteo en la pantalla principal
     } catch (error) {
       console.error(error);
-      alert('Error al cancelar suscripción');
+      // 👈 5. ALERTA DE ERROR AL CANCELAR
+      showAlert('Error al intentar cancelar la suscripción.', 'error');
     }
   };
 

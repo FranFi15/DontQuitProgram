@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import { Settings, Save, Users, AlertCircle } from 'lucide-react';
 import './FollowUpControl.css'; 
 
 function FollowUpControl() {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [stats, setStats] = useState({ used: 0, limit: 50 });
   const [isEditing, setIsEditing] = useState(false);
   const [newLimit, setNewLimit] = useState(50);
@@ -11,6 +13,7 @@ function FollowUpControl() {
 
   useEffect(() => {
     fetchStats();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchStats = async () => {
@@ -19,7 +22,9 @@ function FollowUpControl() {
       setStats(res.data);
       setNewLimit(res.data.limit);
     } catch (error) {
-      console.error("Error cargando stats de seguimiento");
+      console.error("Error cargando stats de seguimiento", error);
+      // 👈 3. ALERTA DE ERROR AL CARGAR
+      showAlert("No se pudieron cargar las métricas de cupos.", "error");
     }
   };
 
@@ -29,9 +34,11 @@ function FollowUpControl() {
       await axios.put('/settings/followup-limit', { newLimit: parseInt(newLimit) });
       await fetchStats(); 
       setIsEditing(false);
-      alert("✅ Límite actualizado correctamente");
+      // 👈 4. ALERTA DE ÉXITO
+      showAlert("Límite de seguimiento actualizado correctamente", "success");
     } catch (error) {
-      alert("Error al guardar el límite");
+      // 👈 5. ALERTA DE ERROR AL GUARDAR
+      showAlert("Error al intentar guardar el nuevo límite.", "error");
     } finally {
       setLoading(false);
     }

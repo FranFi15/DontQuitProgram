@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import { X, ClipboardList } from 'lucide-react';
 import AdminClientScoreViewer from '../modals/AdminClientScoreViewer'; 
 import './AdminUserScoresModal.css';
 
 function AdminUserScoresModal({ userId, userName, onClose }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [history, setHistory] = useState([]);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,12 +24,14 @@ function AdminUserScoresModal({ userId, userName, onClose }) {
         }
       } catch (error) {
         console.error(error);
+        // 👈 3. ALERTA DE ERROR SI FALLA LA CONEXIÓN
+        showAlert("Error al cargar el historial de métricas del usuario.", "error");
       } finally {
         setLoading(false);
       }
     };
     fetchHistory();
-  }, [userId]);
+  }, [userId, showAlert]); // Agregamos showAlert a las dependencias
 
   return (
     <div className="modal-overlay">

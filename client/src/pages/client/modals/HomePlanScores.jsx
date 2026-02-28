@@ -1,20 +1,25 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
-import { ClipboardList, Edit2, Target } from 'lucide-react'; // Agregamos Target
-import ScoreBoxModal from '../modals/ScoreBoxModal'
+import { useAlert } from '../../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
+import { ClipboardList, Edit2, Target } from 'lucide-react'; 
+import ScoreBoxModal from '../modals/ScoreBoxModal';
 import './HomePlanScores.css';
 
 function HomePlanScores({ planId, planName, userId }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // 3. MOVEMOS LA FUNCIÓN ADENTRO PARA EVITAR WARNINGS Y PODER USAR showAlert BIEN
   const fetchBoxes = async () => {
     try {
       const res = await axios.get(`/scoreboxes/plan/${planId}?userId=${userId}`);
       setBoxes(res.data);
     } catch (error) {
       console.error("Error cargando scores", error);
+      // 👈 4. ALERTA DE ERROR SI FALLA LA CARGA
+      showAlert("Error al cargar tus marcas.", "error");
     } finally {
       setLoading(false);
     }
@@ -22,7 +27,8 @@ function HomePlanScores({ planId, planName, userId }) {
 
   useEffect(() => {
     fetchBoxes();
-  }, [planId, userId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planId, userId, showAlert]);
 
   if (!loading && boxes.length === 0) return null;
 
@@ -39,7 +45,7 @@ function HomePlanScores({ planId, planName, userId }) {
           </button>
         </div>
 
-        {/* CAMBIAMOS A FORMATO LISTA */}
+        {/* FORMATO LISTA */}
         <div className="score-list">
           {boxes.map(box => {
             const entry = box.entries && box.entries.length > 0 ? box.entries[0] : null;

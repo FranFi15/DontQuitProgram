@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
 import { ChevronRight, ArrowLeft, CheckCircle, Calendar, Info, ChevronDown, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import './ClientWorkouts.css';
 import ScoreBoxModal from './modals/ScoreBoxModal';
-import FinishWorkoutModal from './modals/FinishWorkoutModal'; // <--- IMPORTADO
+import FinishWorkoutModal from './modals/FinishWorkoutModal'; 
 
 function ClientWorkouts() {
   const { user } = useAuth();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const userId = user ? user.id : null;
 
   // Lógica para saber si tiene seguimiento (habilita el botón de Terminar Entreno)
@@ -65,11 +67,13 @@ function ClientWorkouts() {
         }
       } catch (error) {
         console.error("Error fetching plans", error);
+        // 👈 3. ALERTA SI FALLA LA CARGA DE SUS PLANES
+        showAlert("No pudimos cargar tus planes activos.", "error");
         setLoading(false);
       }
     };
     fetchPlans();
-  }, [userId]);
+  }, [userId, showAlert]);
 
   // 2. CARGAR RUTINA CUANDO CAMBIA EL PLAN SELECCIONADO
   useEffect(() => {
@@ -96,19 +100,24 @@ function ClientWorkouts() {
         
       } catch (error) {
         console.error(error);
+        // 👈 4. ALERTA SI FALLA LA CARGA DE LA RUTINA
+        showAlert("Error al cargar la rutina de este plan.", "error");
       } finally {
         setLoading(false);
       }
     };
 
     fetchRoutine();
-  }, [userId, selectedPlanId]);
+  }, [userId, selectedPlanId, showAlert]);
 
   const markAsCompleted = (workoutId) => {
     const updatedList = [...completedWorkouts, workoutId];
     setCompletedWorkouts(updatedList);
     localStorage.setItem(`completed_${userId}`, JSON.stringify(updatedList)); // Guardamos en memoria
     setIsFinishModalOpen(false); // Cerramos el modal
+    
+    // 👈 5. ALERTA DE ÉXITO AL TERMINAR ENTRENAMIENTO
+    showAlert("¡Excelente trabajo! Entrenamiento completado.", "success");
   };
   
   if (loading && availablePlans.length === 0) return <div className="p-4">Cargando...</div>;
@@ -149,7 +158,6 @@ function ClientWorkouts() {
             {hasChatAccess && (
                <button 
                  className="finish-workout-btn"
-                 // Si está en la lista de completados, se pone verde y no hace nada al hacer click
                  style={{ 
                    backgroundColor: completedWorkouts.includes(selectedDayWorkout.id) ? '#10b981' : '#000',
                    cursor: completedWorkouts.includes(selectedDayWorkout.id) ? 'default' : 'pointer'
@@ -228,7 +236,7 @@ function ClientWorkouts() {
              onClick={() => setIsScoreBoxOpen(true)}
              style={{marginTop: 10}} 
            >
-              <ClipboardList size={18}/> Mi Marcas
+              <ClipboardList size={18}/> Mis Marcas
            </button>
           </div>
         ) : (

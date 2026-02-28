@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { Send, Video, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './ClientChat.css';
 
 function ClientChat() {
   const { user } = useAuth();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
@@ -63,7 +65,8 @@ function ClientChat() {
 
     const limitMB = type === 'VIDEO' ? 50 : 10;
     if (file.size > limitMB * 1024 * 1024) {
-      return alert(`El archivo es muy pesado. Máximo ${limitMB}MB.`);
+      // 👈 3. USAMOS LA NUEVA ALERTA DE ERROR
+      return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error'); 
     }
 
     setUploading(true);
@@ -99,9 +102,11 @@ function ClientChat() {
       
     } catch (error) {
       if (error.response?.status === 403) {
-        alert("⛔ " + error.response.data.error);
+        // 👈 4. ALERTA DE ERROR (le saqué el emoji ⛔ porque tu toast ya tiene ícono)
+        showAlert(error.response.data.error, 'error');
       } else {
-        alert("Error al enviar el archivo.");
+        // 👈 5. ALERTA DE ERROR GENÉRICO
+        showAlert("Error al enviar el archivo.", 'error');
       }
     } finally {
       setUploading(false);
@@ -170,7 +175,6 @@ function ClientChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* --- EL FAMOSO WRAPPER DE INPUT --- */}
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
           

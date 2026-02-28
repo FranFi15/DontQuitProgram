@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { AlertProvider } from './context/AlertContext';
 
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -29,6 +30,7 @@ import ClientStore from './pages/client/ClientStore';
 function App() {
   return (
     <AuthProvider> 
+      <AlertProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LoginPage />} /> 
@@ -74,6 +76,7 @@ function App() {
       </Route>
         </Routes>
       </BrowserRouter>
+      </AlertProvider>
     </AuthProvider>
   );
 }

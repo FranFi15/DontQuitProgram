@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Plus, Trophy, Dumbbell, Calendar, Search, Clock, PlayCircle, ShoppingBag } from 'lucide-react'; 
 import RMCalculatorModal from './modals/RMCalculatorModal';
@@ -11,6 +12,7 @@ import './ClientHome.css';
 
 function ClientHome() {
   const { user } = useAuth();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const navigate = useNavigate();
   
   const [plans, setPlans] = useState([]);
@@ -19,7 +21,7 @@ function ClientHome() {
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   
-const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
+  const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
 
   // Estados de Modals y Filtros
   const [isRMModalOpen, setIsRMModalOpen] = useState(false);
@@ -36,24 +38,28 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
         axios.get(`/scoreboxes/history/${user.id}`),
         axios.get('/exercises')
       ]);
+      
       setPlans(plansRes.data);
       setRecords(recordsRes.data);
       setScorePlans(historyRes.data);
       setExercises(exercisesRes.data);
       
-
       if (historyRes.data.length > 0) {
         setSelectedScorePlanId(historyRes.data[0].planId);
       }
 
     } catch (error) {
       console.error(error);
+      // 👈 3. MOSTRAMOS LA ALERTA SI FALLA LA CARGA INICIAL
+      showAlert("Error al conectar con el servidor. Por favor, recarga la página.", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, [user]);
+  useEffect(() => { 
+    fetchData(); 
+  }, [user]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
@@ -79,12 +85,11 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
       <header className="home-header-section">
         <div>
           <h1 className="greeting-title">¡Hola, {user?.name?.split(' ')[0]}! </h1>
-          {/* AQUÍ SE APLICA EL CAMBIO DE GÉNERO */}
           <p className="greeting-subtitle">¿Vamos a entrenar?</p>
         </div>
       </header>
 
-      {/* SECCIÓN 1: PLANES (MODIFICADO) */}
+      {/* SECCIÓN 1: PLANES */}
       <section className="section-container">
         <div className="section-header">
           <h2>Mis Planes</h2>
@@ -99,46 +104,39 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
             <ShoppingBag size={14} /> Tienda
           </button>
         </div>
+        
         {plans.length === 0 ? (
           <div className="empty-card"><p>No tienes planes activos aún.</p></div>
         ) : (
           <div className="plans-list-vertical">
             {plans.map((plan) => (
               <div key={plan.planId} className="plan-home-card" onClick={() => navigate(`/app/workouts`)}>
-                
-                {/* Icono a la izquierda */}
                 <div className="plan-icon-box">
                     <Dumbbell size={24} color="white" />
                 </div>
                 
-                {/* Info Central (NUEVO DISEÑO) */}
                 <div className="plan-info">
                   <h3>{plan.planName}</h3>
-                  
                   <div className="plan-meta-grid">
-                    {/* Duración */}
                     <div className="meta-item">
                         <Clock size={12} className="meta-icon"/>
-                        {/* Si el back no manda duration, mostramos un default o nada */}
                         <span>{plan.duration} Semanas</span>
                     </div>
-
-                    {/* Fechas */}
                     <div className="meta-item">
                         <Calendar size={12} className="meta-icon"/>
                         <span>{formatDate(plan.startDate)} - {formatDate(plan.endDate)}</span>
                     </div>
                   </div>
                 </div>
-
                 <div className="action-circle"><ChevronRight size={18} /></div>
               </div>
             ))}
           </div>
         )}
-        </section>
-        {/* SECCIÓN 2: Glosario  */}
-        <section className="section-container glossary-section">
+      </section>
+
+      {/* SECCIÓN 2: Glosario  */}
+      <section className="section-container glossary-section">
         <div className="section-header">
           <h2>Glosario</h2>
         </div>
@@ -153,7 +151,7 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
             className="search-input"
           />
         </div>
-        {/* Solo mostramos resultados si el usuario escribió algo */}
+
         {glossarySearchTerm.trim() !== '' && (
           <div className="glossary-results animate-fadeIn">
             {filteredExercises.length === 0 ? (
@@ -162,7 +160,7 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
               </div>
             ) : (
               <div className="glossary-grid">
-                {filteredExercises.slice(0, 5).map(ex => ( // Limitamos a 5 resultados para no saturar la pantalla
+                {filteredExercises.slice(0, 5).map(ex => ( 
                   <div key={ex.id} className="glossary-item-card">
                     <div className="glossary-item-info">
                       <h4>{ex.name}</h4>
@@ -183,14 +181,14 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
           </div>
         )}
       </section>
-        {/* SECCIÓN 3: SCORES DE PLANES  */}
+
+      {/* SECCIÓN 3: SCORES DE PLANES  */}
       {scorePlans.length > 0 && (
         <section className="section-container">
           <div className="section-header">
             <h2>Mis Marcas</h2>
           </div>
           
-          {/* 1. SELECTOR HORIZONTAL DE PLANES */}
           <div className="score-tabs-container">
             {scorePlans.map(plan => (
               <button 
@@ -203,7 +201,6 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
             ))}
           </div>
           
-          {/* 2. RENDERIZADO DINÁMICO (Solo mostramos el seleccionado) */}
           <div className="plan-scores-content">
             {selectedScorePlanId && (
               <HomePlanScores 
@@ -217,7 +214,7 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
         </section>
       )}
 
-      {/* SECCIÓN 4: RÉCORDS (MANTENIDO EXACTAMENTE IGUAL) */}
+      {/* SECCIÓN 4: RÉCORDS */}
       <section className="section-container ">
         <div className="section-header">
           <h2>Mis Récords</h2>
@@ -226,7 +223,6 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
           </button>
         </div>
 
-        {/* --- BARRA DE BÚSQUEDA --- */}
         {records.length > 0 && (
           <div className="search-bar-container">
             <Search size={18} className="search-icon" />

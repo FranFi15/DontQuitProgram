@@ -1,0 +1,86 @@
+/* src/context/AlertContext.css */
+
+.custom-toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999; /* Por encima de todos los modales y barras */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  animation: slideDownToast 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  min-width: 300px;
+  max-width: 90%;
+  box-sizing: border-box;
+}
+
+.custom-toast-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.custom-toast-content p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.custom-toast-close {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  padding: 0;
+}
+.custom-toast-close:hover {
+  opacity: 1;
+}
+
+/* --- VARIANTES DE COLOR --- */
+
+/* Éxito: Fondo negro con ícono verde esmeralda (Estilo Premium) */
+.custom-toast-container.success {
+  background: #111;
+  color: white;
+  border: 1px solid #333;
+}
+.toast-icon-success { color: #10b981; }
+
+/* Error: Fondo rojo claro con texto oscuro */
+.custom-toast-container.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #f87171;
+}
+.toast-icon-error { color: #dc2626; }
+
+/* Info: Azul suave */
+.custom-toast-container.info {
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #60a5fa;
+}
+.toast-icon-info { color: #2563eb; }
+
+/* Animación de entrada */
+@keyframes slideDownToast {
+  from {
+    transform: translate(-50%, -30px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}

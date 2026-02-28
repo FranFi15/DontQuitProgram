@@ -1,11 +1,13 @@
 // client/src/pages/admin/modals/CategoryPlansModal.jsx
 import { useEffect, useState } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; 
 import { X, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './CategoryPlansModal.css';
 
 function CategoryPlansModal({ category, onClose }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -14,18 +16,19 @@ function CategoryPlansModal({ category, onClose }) {
     if (category) {
       fetchPlansForCategory();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
   const fetchPlansForCategory = async () => {
     try {
-      // Necesitaremos una ruta en el backend para buscar planes por categoría,
-      // pero podemos aprovechar la ruta getAllPlans y filtrarlos en el front para simplificar.
       const res = await axios.get('/plans');
       // Filtramos solo los planes que pertenecen a esta categoría
       const categoryPlans = res.data.filter(p => p.planTypeId === category.id);
       setPlans(categoryPlans);
     } catch (error) {
       console.error("Error al cargar los planes de la categoría", error);
+      // 👈 3. ALERTA SI FALLA LA CARGA
+      showAlert("Error al cargar los planes de esta categoría.", "error");
     } finally {
       setLoading(false);
     }
@@ -60,7 +63,10 @@ function CategoryPlansModal({ category, onClose }) {
                   </div>
                   <button 
                     className="cat-btn-link"
-                    onClick={() => navigate(`/admin/plans/${plan.id}`)}
+                    onClick={() => {
+                        onClose(); // Cerramos el modal antes de navegar
+                        navigate(`/admin/plans/${plan.id}`);
+                    }}
                     title="Ver Rutina del Plan"
                   >
                     <ExternalLink size={16} /> Ver Rutina

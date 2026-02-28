@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { ArrowLeft, Plus, Trash2, Edit3, Save, AlertCircle } from 'lucide-react'; 
 import DayEditorModal from './modals/DayEditorModal';
 import './AdminPlanDetail.css';
@@ -9,12 +10,14 @@ import './AdminPlanDetail.css';
 function AdminPlanDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  
   const [plan, setPlan] = useState(null);
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
 
   // Funciones de carga
   const fetchData = async () => {
@@ -27,6 +30,8 @@ const [selectedWorkout, setSelectedWorkout] = useState(null);
       setWorkouts(workoutsRes.data);
     } catch (error) {
       console.error(error);
+      // 👈 3. ALERTA SI FALLA LA CARGA
+      showAlert("Error al cargar los detalles del plan.", "error");
       navigate('/admin/plans');
     } finally {
       setLoading(false);
@@ -45,8 +50,6 @@ const [selectedWorkout, setSelectedWorkout] = useState(null);
 
   const weekNumbers = Object.keys(weeks).map(Number).sort((a, b) => a - b);
 
-  // --- ACCIONES DE SEMANA ---
-  
   // --- LÓGICA DE LÍMITE DE SEMANAS ---
   const maxWeeks = plan ? plan.duration * 4 : 0; 
   const currentWeeksCount = weekNumbers.length;
@@ -54,12 +57,11 @@ const [selectedWorkout, setSelectedWorkout] = useState(null);
 
   // --- ACCIONES DE SEMANA ---
   const handleAddWeek = async () => {
-    // 1. Validación estricta por CANTIDAD (Count)
     if (weekNumbers.length >= maxWeeks) {
-      alert(`¡Límite alcanzado! Ya tienes ${weekNumbers.length} semanas creadas (Máximo: ${maxWeeks}). Borra una para crear otra.`);
+      // 👈 4. ALERTA DE LÍMITE ALCANZADO
+      showAlert(`¡Límite alcanzado! Máximo: ${maxWeeks} semanas. Borra una para crear otra.`, "info");
       return;
     }
-
 
     let nextWeekToCreate = 1;
     while (weekNumbers.includes(nextWeekToCreate)) {
@@ -67,7 +69,7 @@ const [selectedWorkout, setSelectedWorkout] = useState(null);
     }
 
     if (nextWeekToCreate > maxWeeks) {
-         alert(`Error inesperado: Intentando crear semana ${nextWeekToCreate} fuera del límite.`);
+         showAlert(`Error: Intentando crear semana ${nextWeekToCreate} fuera del límite.`, "error");
          return;
     }
 
@@ -79,13 +81,15 @@ const [selectedWorkout, setSelectedWorkout] = useState(null);
         blocks: []
       });
       fetchData();
+      // Opcional: showAlert(`Semana ${nextWeekToCreate} creada`, "success");
     } catch (error) {
       console.error(error);
-      alert("Error al crear la semana");
+      showAlert("Error al crear la semana.", "error");
     }
   };
 
   const handleEditWeekNumber = async (currentWeekNum) => {
+    // Mantenemos prompt porque necesitamos el input del usuario
     const newNum = prompt("Ingresa el nuevo número para esta semana:", currentWeekNum);
     if (!newNum || newNum === String(currentWeekNum)) return;
 
@@ -94,69 +98,75 @@ const [selectedWorkout, setSelectedWorkout] = useState(null);
         newWeekNumber: newNum
       });
       fetchData();
+      showAlert("Número de semana actualizado.", "success");
     } catch (error) {
-      alert(error.response?.data?.error || "Error al cambiar número de semana");
+      showAlert(error.response?.data?.error || "Error al cambiar número de semana", "error");
     }
   };
 
   const handleDeleteWeek = async (weekNum) => {
+    // Mantenemos confirm por seguridad
     if(!window.confirm(`⚠️ ¿Estás segura de borrar TODA la Semana ${weekNum}? Se borrarán todos sus días.`)) return;
     try {
       await axios.delete(`/workouts/week/${id}/${weekNum}`);
       fetchData();
+      showAlert(`Semana ${weekNum} eliminada.`, "success");
     } catch (error) {
-      alert("Error al eliminar semana");
+      showAlert("Error al eliminar la semana.", "error");
     }
   };
 
   // --- ACCIONES DE DÍA ---
-
   const handleAddDay = async (weekNum) => {
     const daysInWeek = weeks[weekNum] || [];
-    // Calculamos el siguiente día basándonos en el último (o 1 si es nuevo)
     const lastDayNum = daysInWeek.length > 0 ? daysInWeek[daysInWeek.length - 1].dayNumber : 0;
     const nextDay = lastDayNum + 1;
     
-    await axios.post(`/workouts/${id}`, {
-      weekNumber: weekNum,
-      dayNumber: nextDay,
-      title: `Día ${nextDay}`,
-      blocks: []
-    });
-    fetchData();
+    // Agregamos try/catch por seguridad
+    try {
+      await axios.post(`/workouts/${id}`, {
+        weekNumber: weekNum,
+        dayNumber: nextDay,
+        title: `Día ${nextDay}`,
+        blocks: []
+      });
+      fetchData();
+    } catch (error) {
+      showAlert("Error al agregar el día.", "error");
+    }
   };
 
   const handleEditDayTitle = async (workout) => {
     const newTitle = prompt(`Nuevo nombre para el día (Actual: ${workout.title}):`, workout.title);
-    
-    // Si cancela o lo deja vacío, no hacemos nada
     if (newTitle === null || newTitle.trim() === "") return;
 
     try {
       await axios.put(`/workouts/${workout.id}`, {
-        title: newTitle // Enviamos el nuevo título
+        title: newTitle 
       });
-      fetchData(); // Recargamos
+      fetchData(); 
+      showAlert("Nombre del día actualizado.", "success");
     } catch (error) {
-      alert(error.response?.data?.error || "Error al cambiar el nombre");
+      showAlert(error.response?.data?.error || "Error al cambiar el nombre del día.", "error");
     }
   };
 
   const handleDeleteDay = async (workoutId) => {
-    if(!window.confirm("¿Borrar este día?")) return;
+    if(!window.confirm("¿Borrar este día de la rutina?")) return;
     try {
       await axios.delete(`/workouts/${workoutId}`);
       fetchData();
+      showAlert("Día eliminado.", "success");
     } catch (error) {
       console.error(error);
-      alert("Error al eliminar el día");
+      showAlert("Error al eliminar el día.", "error");
     }
   };
 
- const handleEditDay = (workout) => {
-  setSelectedWorkout(workout);
-  setIsEditorOpen(true);
-};
+  const handleEditDay = (workout) => {
+    setSelectedWorkout(workout);
+    setIsEditorOpen(true);
+  };
 
   if (loading) return <div className="plan-detail-container">Cargando...</div>;
 
@@ -238,30 +248,28 @@ const [selectedWorkout, setSelectedWorkout] = useState(null);
                       </button>
 
                       <div className="day-card-header">
-        <div className="day-header-left">
-          <span className="day-number">{workout.title}</span>
-          
-          <button 
-            onClick={(e) => { e.stopPropagation(); handleEditDayTitle(workout); }}
-            className="edit-day-num-btn"
-            title="Cambiar nombre"
-          >
-            <Edit3 size={12} />
-          </button>
-        </div>
+                        <div className="day-header-left">
+                          <span className="day-number">{workout.title}</span>
+                          
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleEditDayTitle(workout); }}
+                            className="edit-day-num-btn"
+                            title="Cambiar nombre"
+                          >
+                            <Edit3 size={12} />
+                          </button>
+                        </div>
+                      </div>
 
-      </div>
-
-      
-      <button 
-        onClick={() => handleEditDay(workout)}
-        className="edit-day-btn"
-      >
-        <Edit3 size={16} /> Editar Rutina
-      </button>
-    </div>
-  ))}
-</div>
+                      <button 
+                        onClick={() => handleEditDay(workout)}
+                        className="edit-day-btn"
+                      >
+                        <Edit3 size={16} /> Editar Rutina
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
 

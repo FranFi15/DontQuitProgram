@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { Search, Play, Dumbbell } from 'lucide-react';
 import './ClientGlossary.css';
 
 function ClientGlossary() {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [exercises, setExercises] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -15,17 +17,19 @@ function ClientGlossary() {
         setExercises(res.data);
       } catch (error) {
         console.error("Error cargando el glosario", error);
+        // 👈 3. MOSTRAMOS LA ALERTA SI FALLA LA CARGA
+        showAlert("Error al cargar el glosario de ejercicios.", "error"); 
       } finally {
         setLoading(false);
       }
     };
     fetchExercises();
-  }, []);
+  }, [showAlert]); // Es buena práctica pasar showAlert en las dependencias del useEffect
 
-  // Filtrado por nombre o grupo muscular (si lo tienes)
+  // Filtrado por nombre o grupo muscular
   const filteredExercises = exercises.filter(ex => 
     ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (ex.muscleGroup && ex.muscleGroup.toLowerCase().includes(searchTerm.toLowerCase()))
+    (ex.category && ex.category.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -55,7 +59,7 @@ function ClientGlossary() {
             filteredExercises.map((ex) => (
               <div key={ex.id} className="exercise-card">
                 
-                {/* Si tienes miniaturas de video o imágenes, irían aquí. Usamos un placeholder por ahora */}
+                {/* Miniaturas de video o placeholder */}
                 <div className="exercise-media-placeholder">
                   {ex.videoUrl ? (
                     <a href={ex.videoUrl} target="_blank" rel="noreferrer" className="play-btn-link">
@@ -68,7 +72,7 @@ function ClientGlossary() {
 
                 <div className="exercise-info">
                   <h3>{ex.name}</h3>
-                  {ex.muscleGroup && <span className="muscle-tag">{ex.muscleGroup}</span>}
+                  {ex.category && <span className="muscle-tag">{ex.category}</span>}
                   <p>{ex.description || "Sin descripción detallada."}</p>
                 </div>
               </div>

@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import axios from '../../../api/axios';
+import { useAlert } from '../../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { X, Send, Flame } from 'lucide-react';
 import './FinishWorkoutModal.css';
 
 function FinishWorkoutModal({ workoutTitle, userId, onClose, onSuccess }) {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [score, setScore] = useState(null);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (!score) {
-      return alert("Por favor, selecciona qué tan difícil estuvo (1 al 10).");
+      // 👈 3. ALERTA DE VALIDACIÓN
+      return showAlert("Por favor, selecciona qué tan difícil estuvo (1 al 10).", "error");
     }
 
     setLoading(true);
@@ -24,14 +27,14 @@ function FinishWorkoutModal({ workoutTitle, userId, onClose, onSuccess }) {
         mediaType: 'TEXT'
       });
 
-      alert("¡Entrenamiento registrado y enviado a tu coach! 💪");
-      
-      // ¡AQUÍ ESTÁ EL CAMBIO! Ejecutamos onSuccess en lugar de onClose
+      // ¡AQUÍ ESTÁ EL CAMBIO! Ejecutamos onSuccess en lugar de onClose.
+      // (La alerta de éxito "¡Excelente trabajo!" se mostrará desde el componente padre ClientWorkouts)
       onSuccess(); 
       
     } catch (error) {
       console.error(error);
-      alert("Hubo un error al enviar el reporte.");
+      // 👈 4. ALERTA DE ERROR DE RED
+      showAlert("Hubo un error al enviar el reporte a tu coach.", "error");
     } finally {
       setLoading(false);
     }

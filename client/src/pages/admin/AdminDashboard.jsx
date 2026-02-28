@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { Users, CreditCard, Dumbbell, AlertTriangle, TrendingUp, Calendar, DollarSign, ChevronRight, Activity, Wallet } from 'lucide-react';
 import './AdminDashboard.css';
 
 function AdminDashboard() {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -16,12 +18,14 @@ function AdminDashboard() {
         setStats(res.data);
       } catch (error) {
         console.error("Error cargando estadísticas:", error);
+        // 👈 3. AGREGAMOS LA ALERTA DE ERROR
+        showAlert("Error al cargar las estadísticas del panel.", "error");
       } finally {
         setLoading(false);
       }
     };
     fetchStats();
-  }, []);
+  }, [showAlert]);
 
   // Formateadores de moneda
   const formatARS = (amount) => {

@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import axios from '../../api/axios';
+import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
 import { CreditCard, Plus, Trash2, Calendar, CheckCircle, AlertCircle, Edit3 } from 'lucide-react';
 import CreateSubscriptionModal from './modals/CreateSubscriptionModal';
 import './AdminUsers.css';
 
 function AdminSubscriptions() {
+  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
   const [subs, setSubs] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [subToEdit, setSubToEdit] = useState(null);
@@ -16,8 +18,10 @@ function AdminSubscriptions() {
       setSubs(res.data);
     } catch (error) {
       console.error(error);
+      // 👈 3. ALERTA DE ERROR AL CARGAR
+      showAlert("Error al cargar las suscripciones activas.", "error");
     }
-  }, []);
+  }, [showAlert]); 
 
   useEffect(() => {
     fetchSubs();
@@ -40,8 +44,11 @@ function AdminSubscriptions() {
     try {
       await axios.delete(`/subscriptions/${id}`);
       fetchSubs(); 
+      // 👈 4. ALERTA DE ÉXITO AL CANCELAR
+      showAlert("Suscripción cancelada correctamente.", "success");
     } catch (error) {
-      alert('Error al cancelar');
+      // 👈 5. ALERTA DE ERROR AL CANCELAR
+      showAlert("Error al cancelar la suscripción.", "error");
     }
   };
 
