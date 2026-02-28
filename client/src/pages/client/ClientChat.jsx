@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { Send, Video, Image as ImageIcon, Loader2, ArrowLeft } from 'lucide-react';
+import { Send, Video, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './ClientChat.css';
 
@@ -14,8 +14,6 @@ function ClientChat() {
   const messagesEndRef = useRef(null);
 
   const ADMIN_ID = 1; 
-  
-  // 👇 1. LEYENDO DESDE LAS VARIABLES DE ENTORNO 👇
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET; 
 
@@ -76,13 +74,9 @@ function ClientChat() {
 
       const resourceType = type === 'VIDEO' ? 'video' : 'image';
       
-      // 👇 2. USAMOS FETCH NATIVO PARA EVITAR EL ERROR DE CORS 👇
       const cloudRes = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, 
-        {
-          method: 'POST',
-          body: formData
-        }
+        { method: 'POST', body: formData }
       );
       
       const cloudData = await cloudRes.json();
@@ -93,7 +87,6 @@ function ClientChat() {
 
       const uploadedUrl = cloudData.secure_url;
 
-      // Una vez que subió a Cloudinary, le avisamos a nuestro backend
       await axios.post('/chat', {
         senderId: user.id,
         receiverId: ADMIN_ID,
@@ -108,7 +101,6 @@ function ClientChat() {
       if (error.response?.status === 403) {
         alert("⛔ " + error.response.data.error);
       } else {
-        console.error("Error completo:", error);
         alert("Error al enviar el archivo.");
       }
     } finally {
@@ -118,24 +110,24 @@ function ClientChat() {
   };
 
   return (
-    <div className="chat-page-container">
+    <div className="pchat-container">
       
-      <div className="chat-header">
-        <div className="chat-header-info">
-          <div className="chat-avatar">
+      <div className="pchat-header">
+        <div className="pchat-header-info">
+          <div className="pchat-avatar">
             <img src="https://ui-avatars.com/api/?name=Rocio&background=000&color=fff" alt="Coach" />
-            <span className="online-dot"></span>
+            <span className="pchat-online-dot"></span>
           </div>
-          <div className="chat-title-box">
+          <div className="pchat-title-box">
             <h2>Coach Ro</h2>
             <p>Soporte Premium</p>
           </div>
         </div>
       </div>
 
-      <div className="messages-scroll-area">
+      <div className="pchat-messages-area">
         {messages.length === 0 && !uploading && (
-          <div className="empty-chat-msg">
+          <div className="pchat-empty-msg">
             <p>¡Hola! Envía un mensaje a Rocío para comenzar.</p>
           </div>
         )}
@@ -143,23 +135,23 @@ function ClientChat() {
         {messages.map((msg) => {
           const isMine = msg.senderId === user.id;
           return (
-            <div key={msg.id} className={`message-row ${isMine ? 'row-mine' : 'row-theirs'}`}>
-              <div className={`message-bubble ${isMine ? 'bubble-mine' : 'bubble-theirs'}`}>
+            <div key={msg.id} className={`pchat-row ${isMine ? 'pchat-row-mine' : 'pchat-row-theirs'}`}>
+              <div className={`pchat-bubble ${isMine ? 'pchat-bubble-mine' : 'pchat-bubble-theirs'}`}>
                 
                 {msg.mediaType === 'IMAGE' && (
-                  <div className="media-container">
-                    <img src={msg.mediaUrl} alt="adjunto" className="chat-media-img" />
+                  <div className="pchat-media-container">
+                    <img src={msg.mediaUrl} alt="adjunto" className="pchat-media-img" />
                   </div>
                 )}
                 {msg.mediaType === 'VIDEO' && (
-                  <div className="media-container">
-                    <video src={msg.mediaUrl} controls className="chat-media-video" />
+                  <div className="pchat-media-container">
+                    <video src={msg.mediaUrl} controls className="pchat-media-video" />
                   </div>
                 )}
 
-                {msg.content && <p className="msg-text">{msg.content}</p>}
+                {msg.content && <p className="pchat-text">{msg.content}</p>}
                 
-                <span className="msg-time">
+                <span className="pchat-time">
                   {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </span>
               </div>
@@ -168,8 +160,8 @@ function ClientChat() {
         })}
 
         {uploading && (
-           <div className="message-row row-mine">
-             <div className="message-bubble bubble-mine uploading-bubble">
+           <div className="pchat-row pchat-row-mine">
+             <div className="pchat-bubble pchat-bubble-mine pchat-uploading">
                <Loader2 className="spin" size={16}/> Enviando archivo...
              </div>
            </div>
@@ -178,15 +170,16 @@ function ClientChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="chat-input-wrapper">
-        <form className="chat-input-form" onSubmit={handleSendText}>
+      {/* --- EL FAMOSO WRAPPER DE INPUT --- */}
+      <div className="pchat-input-wrapper">
+        <form className="pchat-form" onSubmit={handleSendText}>
           
-          <label className={`attach-icon-btn ${uploading ? 'disabled' : ''}`} title="Enviar Video">
+          <label className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} title="Enviar Video">
             <input type="file" accept="video/*" hidden onChange={(e) => handleFileUpload(e, 'VIDEO')} disabled={uploading}/>
             <Video size={22} />
           </label>
 
-          <label className={`attach-icon-btn ${uploading ? 'disabled' : ''}`} title="Enviar Imagen">
+          <label className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} title="Enviar Imagen">
             <input type="file" accept="image/*" hidden onChange={(e) => handleFileUpload(e, 'IMAGE')} disabled={uploading}/>
             <ImageIcon size={22} />
           </label>
@@ -197,10 +190,10 @@ function ClientChat() {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={uploading}
-            className="text-input-field"
+            className="pchat-text-input"
           />
           
-          <button type="submit" className={`send-msg-btn ${inputText.trim() ? 'active' : ''}`} disabled={!inputText.trim() || uploading}>
+          <button type="submit" className={`pchat-send-btn ${inputText.trim() ? 'active' : ''}`} disabled={!inputText.trim() || uploading}>
             <Send size={18} />
           </button>
 

@@ -1,4 +1,4 @@
-/* CONTENEDOR PRINCIPAL DE LA PÁGINA */
+/* client/src/pages/client/ClientWall.css */
 .wall-page-container {
   padding: 1rem;
   height: calc(100vh - 65px);
@@ -9,12 +9,6 @@
   animation: fadeIn 0.5s ease-out;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* HEADER */
 .wall-page-header {
   display: flex;
   justify-content: space-between;
@@ -35,9 +29,8 @@
   font-size: 0.9rem;
   font-weight: 500;
 }
-.header-icon { color: #e5e7eb; }
+.wall-header-icon { color: #e5e7eb; }
 
-/* TABS (Selector de Planes) */
 .wall-tabs-container {
   display: flex;
   gap: 10px;
@@ -51,7 +44,7 @@
 .wall-tab-pill {
   white-space: nowrap;
   padding: 8px 18px;
-  border-radius: 99px; /* Pill shape */
+  border-radius: 99px;
   border: 1px solid #e5e7eb;
   background: white;
   color: #6b7280;
@@ -62,7 +55,7 @@
   text-transform: uppercase;
 }
 
-.wall-tab-pill.active {
+.wall-tab-pill.wall-active {
   background: #111;
   color: white;
   border-color: #111;
@@ -70,8 +63,7 @@
   transform: scale(1.02);
 }
 
-/* CAJA DE CHAT */
-.chat-container {
+.wall-chat-container {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
@@ -81,78 +73,66 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
-  min-height: 510px;
+  min-height: 400px;
 }
 
-/* ÁREA DE MENSAJES */
-.messages-area {
+.wall-messages-area {
   flex: 1;
   padding: 1.5rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem; /* Espacio entre mensajes */
-  background: #fcfcfc; /* Casi blanco */
+  gap: 1.2rem;
+  background: #fcfcfc;
 }
 
-/* FILAS DE MENSAJES */
-.chat-bubble-row {
+.wall-bubble-row {
   display: flex;
   gap: 10px;
   align-items: flex-end;
   max-width: 85%;
 }
 
-/* --- ESTILO: MIS MENSAJES (Cliente) --- */
-.chat-bubble-row.mine {
+.wall-bubble-row.wall-mine {
   align-self: flex-end;
   flex-direction: row-reverse;
 }
-
-.chat-bubble-row.mine .chat-bubble {
-  background: #111; /* Negro estándar usuario */
+.wall-bubble-row.wall-mine .wall-bubble {
+  background: #111;
   color: white;
-  border-bottom-right-radius: 4px; /* Esquina recta */
+  border-bottom-right-radius: 4px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
-.chat-bubble-row.mine .bubble-text { color: white; }
-.chat-bubble-row.mine .bubble-time { color: #6b7280; text-align: right; }
+.wall-bubble-row.wall-mine .wall-bubble-text { color: white; }
+.wall-bubble-row.wall-mine .wall-bubble-time { color: #6b7280; text-align: right; }
 
-
-/* --- ESTILO: OTROS (Compañeros) --- */
-.chat-bubble-row.theirs {
+.wall-bubble-row.wall-theirs {
   align-self: flex-start;
 }
-
-.chat-bubble-row.theirs .chat-bubble {
+.wall-bubble-row.wall-theirs .wall-bubble {
   background: white;
   border: 1px solid #e5e7eb;
-  border-bottom-left-radius: 4px; /* Esquina recta */
+  border-bottom-left-radius: 4px;
   color: #1f2937;
 }
 
-
-/* --- ESTILO ESPECIAL: COACH / ADMIN --- */
-/* Se aplica si el mensaje es de rol ADMIN */
-.coach-bubble {
-  background: #f0dba8 !important; /* Negro Puro */
+.wall-coach-bubble {
+  background: #f0dba8 !important;
   border: 1px solid #fbbf24!important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important; /* Sombra más fuerte */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
 }
-
-.coach-bubble .bubble-text {
+.wall-coach-bubble .wall-bubble-text {
   color: #000000 !important;
   font-weight: 500;
 }
-
-.coach-bubble .bubble-author {
-  color: #000000 !important; /* DORADO */
+.wall-coach-bubble .wall-bubble-author {
+  color: #000000 !important;
   font-weight: 900 !important;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
 }
 
-.coach-badge {
+.wall-coach-badge {
   background: #fbbf24;
   color: #000;
   font-size: 0.6rem;
@@ -163,16 +143,7 @@
   vertical-align: middle;
 }
 
-.coach-avatar {
-  background: #ffffff !important;
-  color: #fbbf24 !important;
-  border: 2px solid #fbbf24 !important;
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
-}
-
-
-/* ELEMENTOS COMUNES DE BURBUJA */
-.avatar-circle {
+.wall-avatar-circle {
   width: 34px; height: 34px;
   border-radius: 50%;
   background: #f3f4f6;
@@ -183,47 +154,40 @@
   flex-shrink: 0;
   border: 1px solid #e5e7eb;
 }
+.wall-coach-avatar {
+  background: #ffffff !important;
+  color: #fbbf24 !important;
+  border: 2px solid #fbbf24 !important;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
 
-.chat-bubble {
+.wall-bubble {
   padding: 12px 16px;
   border-radius: 18px;
   position: relative;
   min-width: 80px;
 }
-
-.bubble-author {
+.wall-bubble-author {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #4b5563; /* Gris oscuro nombre normal */
+  color: #4b5563;
   margin-bottom: 4px;
   display: flex; align-items: center;
 }
+.wall-bubble-text { margin: 0; font-size: 0.95rem; line-height: 1.5; }
+.wall-bubble-time { display: block; font-size: 0.65rem; color: #9ca3af; margin-top: 5px; text-align: right; }
 
-.bubble-text {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.bubble-time {
-  display: block;
-  font-size: 0.65rem;
-  color: #9ca3af;
-  margin-top: 5px;
-  text-align: right;
-}
-
-/* INPUT AREA (Parte inferior fija) */
-.chat-input-wrapper {
+.wall-input-wrapper {
   display: flex ;
   padding: 1.2rem;
   background: white;
   border-top: 1px solid #f3f4f6;
-  width: 90%;
+  width: 100%; /* Ajustado */
+  box-sizing: border-box;
   justify-content: center;
 }
 
-.chat-form {
+.wall-chat-form {
   width: 100%;
   display: flex;
   gap: 10px;
@@ -232,14 +196,15 @@
   border-radius: 99px;
   border: 1px solid #e5e7eb;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
-.chat-form:focus-within {
+.wall-chat-form:focus-within {
   background: white;
   border-color: #111;
   box-shadow: 0 0 0 4px rgba(0,0,0,0.05);
 }
 
-.chat-form input {
+.wall-chat-form input {
   flex: 1;
   border: none;
   background: transparent;
@@ -247,9 +212,10 @@
   outline: none;
   font-size: 0.95rem;
   color: #111;
+  min-width: 0; /* Prevents input from breaking flexbox */
 }
 
-.chat-form button {
+.wall-chat-form button {
   width: 42px; height: 42px;
   border-radius: 50%;
   background: #111;
@@ -258,16 +224,14 @@
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: transform 0.2s;
+  flex-shrink: 0;
 }
-.chat-form button:disabled { background: #e5e7eb; cursor: not-allowed; }
-.chat-form button:hover:not(:disabled) { transform: scale(1.05); background: #000; }
+.wall-chat-form button:disabled { background: #e5e7eb; cursor: not-allowed; }
+.wall-chat-form button:hover:not(:disabled) { transform: scale(1.05); background: #000; }
 
-/* ESTADOS DE CARGA */
-.loading-txt, .empty-chat-state {
-  text-align: center;
-  color: #9ca3af;
-  margin-top: 4rem;
+.wall-loading-txt, .wall-empty-state {
+  text-align: center; color: #9ca3af; margin-top: 4rem;
   display: flex; flex-direction: column; align-items: center; gap: 10px;
 }
-.empty-chat-state h3 { margin: 0; color: #374151; font-weight: 700; }
-.empty-chat-state p { margin: 0; font-size: 0.9rem; }
+.wall-empty-state h3 { margin: 0; color: #374151; font-weight: 700; }
+.wall-empty-state p { margin: 0; font-size: 0.9rem; }

@@ -1,246 +1,235 @@
-/* 1. CONTENEDOR PRINCIPAL */
-.chat-page-container {
+/* client/src/pages/client/ClientChat.css */
+
+.pchat-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 70px);
-  background-color: #f4f4f5; /* Un fondo gris muy claro, más moderno */
+  height: 100vh;
+  height: calc(100vh - 70px); 
+  background-color: #f4f4f5;
   position: relative;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box; 
+  width: 100%;
 }
 
-/* --- NUEVO: HEADER FIJO --- */
-.chat-header {
+.pchat-header {
   background: white;
-  padding: 12px 20px;
+  padding: 10px 15px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   z-index: 10;
   flex-shrink: 0;
 }
 
-.chat-header-info {
+.pchat-header-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.chat-avatar {
+.pchat-avatar {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
 }
 
-.chat-avatar img {
+.pchat-avatar img {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.online-dot {
+.pchat-online-dot {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 12px;
-  height: 12px;
-  background-color: #10b981; /* Verde esmeralda */
+  width: 10px;
+  height: 10px;
+  background-color: #10b981;
   border: 2px solid white;
   border-radius: 50%;
 }
 
-.chat-title-box h2 {
+.pchat-title-box h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: #111;
-  line-height: 1.2;
 }
 
-.chat-title-box p {
+.pchat-title-box p {
   margin: 0;
-  font-size: 0.75rem;
-  color: #10b981; /* Verde haciendo match con el punto */
+  font-size: 0.7rem;
+  color: #10b981;
   font-weight: 600;
 }
 
-/* 2. ZONA DE MENSAJES */
-.messages-scroll-area {
+/* ZONA DE MENSAJES */
+.pchat-messages-area {
   flex: 1; 
   overflow-y: auto; 
-  -webkit-overflow-scrolling: touch; 
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 1rem;
-  gap: 8px; 
-  padding-bottom: 30px; /* Espacio extra abajo */
+  padding: 1rem;
+  gap: 10px;
 }
 
-.empty-chat-msg {
+.pchat-empty-msg {
   text-align: center;
-  margin: auto;
+  margin: 20px auto;
   background: #e5e7eb;
-  padding: 8px 16px;
+  padding: 6px 14px;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #4b5563;
 }
 
-/* 3. FILAS Y BURBUJAS */
-.message-row {
+.pchat-row {
   display: flex;
   width: 100%;
+  margin-bottom: 4px;
 }
-.row-mine { justify-content: flex-end; }
-.row-theirs { justify-content: flex-start; }
+.pchat-row-mine { justify-content: flex-end; }
+.pchat-row-theirs { justify-content: flex-start; }
 
-.message-bubble {
-  max-width: 75%;
+.pchat-bubble {
+  max-width: 85%;
   padding: 8px 12px;
-  border-radius: 18px;
+  border-radius: 15px;
+  font-size: 0.9rem;
   position: relative;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  word-wrap: break-word;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  display: flex;
-  flex-direction: column;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.05);
 }
 
-/* ESTILO MÍO (Cliente) */
-.bubble-mine {
-  background: #111; /* Negro suave, no puro */
+.pchat-bubble-mine {
+  background: #111;
   color: white;
-  border-bottom-right-radius: 4px; /* Cola de diálogo */
+  border-bottom-right-radius: 2px;
 }
-.bubble-mine .msg-time { color: rgba(255,255,255,0.6); }
 
-/* ESTILO ADMIN (Coach) */
-.bubble-theirs {
+.pchat-bubble-theirs {
   background: white;
   color: #1f2937;
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 2px;
+  border: 1px solid #e5e7eb;
 }
-.bubble-theirs .msg-time { color: #9ca3af; }
 
-/* 5. MULTIMEDIA REDISEÑADA */
-.media-container {
-  margin: -4px -8px 4px -8px; /* Hace que la imagen toque los bordes de la burbuja */
+.pchat-time {
+  font-size: 0.6rem;
+  opacity: 0.7;
+  margin-top: 4px;
+  display: block;
+  text-align: right;
+}
+
+.pchat-media-container {
+  margin: -4px -8px 4px -8px;
   overflow: hidden;
   border-radius: 14px;
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
 }
 
-.chat-media-img {
+.pchat-media-img, .pchat-media-video {
   width: 100%;
   max-width: 280px;
-  height: auto;
   display: block;
   object-fit: cover;
 }
 
-.chat-media-video {
-  width: 100%;
-  max-width: 280px;
-  display: block;
-  background: black;
-}
+.pchat-text { margin: 0; white-space: pre-wrap; line-height: 1.4; }
 
-/* TEXTOS Y HORA */
-.msg-text { 
-  margin: 0; 
-  white-space: pre-wrap; 
-}
-
-.msg-time { 
-  display: block; 
-  font-size: 0.65rem; 
-  text-align: right; 
-  margin-top: 4px; 
-  font-weight: 500;
-}
-
-/* BURBUJA DE CARGA */
-.uploading-bubble {
-  flex-direction: row;
+.pchat-uploading {
+  display: flex;
   align-items: center;
   gap: 8px;
   opacity: 0.8;
   font-style: italic;
-  font-size: 0.85rem;
 }
 
-
-.chat-input-wrapper {
-  background: transparent;
-  padding: 10px 15px 20px 15px; /* Padding bottom extra para iPhone */
-  flex-shrink: 0; 
-  position: sticky;
-  bottom: 0;
-  display: flex;
-  justify-content: center; /* Mantiene la barra centrada en pantallas anchas */
+/* ====================================================
+   NUEVA BARRA DE INPUT
+   ==================================================== */
+.pchat-input-wrapper {
+  background: #ffffff;
+  width: 100%;
+  padding: 10px 15px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom)); /* Soporte para notch iPhone */
+  box-sizing: border-box; 
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
 }
 
-.chat-input-form {
+.pchat-form {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: white;
-  padding: 6px 6px 6px 12px;
-  border-radius: 99px; /* Forma de píldora continua */
-  box-shadow: 0 4px 15px rgba(0,0,0,0.06); /* Sombra más elegante */
-  border: 1px solid #e5e7eb;
+  background: #f4f4f5; 
+  border-radius: 50px;
+  padding: 6px 6px 6px 15px;
   width: 100%;
-  max-width: 800px; /* Tope de ancho para que no se deforme en PC */
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* BOTONES ADJUNTAR SIN FONDO BLANCO */
-.attach-icon-btn {
-  display: flex; 
-  align-items: center; 
+.pchat-attach-btn {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  cursor: pointer; 
-  color: #9ca3af; 
-  transition: all 0.2s;
+  color: #6b7280;
+  cursor: pointer;
   padding: 4px;
+  flex-shrink: 0;
+  transition: color 0.2s;
 }
-.attach-icon-btn:hover { color: #111; transform: scale(1.1); }
-.attach-icon-btn.disabled { opacity: 0.5; cursor: not-allowed; }
+.pchat-attach-btn:hover { color: #111; }
+.pchat-attach-btn.disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* CAMPO DE TEXTO (OCUPA EL CENTRO) */
-.text-input-field {
-  flex: 1; /* Esto hace que el input empuje a los costados y se adueñe del medio */
-  border: none; 
+.pchat-text-input {
+  flex: 1;
+  min-width: 0; /* MAGIA CSS PARA FLEXBOX */
+  border: none;
   background: transparent;
-  font-size: 0.95rem; 
-  outline: none; 
+  outline: none;
+  font-size: 0.95rem;
   color: #111;
   padding: 8px 4px;
 }
-.text-input-field::placeholder { color: #9ca3af; }
+.pchat-text-input::placeholder { color: #9ca3af; }
 
-/* BOTÓN ENVIAR */
-.send-msg-btn {
-  width: 36px; height: 36px; 
+.pchat-send-btn {
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: #f3f4f6;
-  color: #9ca3af; 
+  background: white;
+  color: #9ca3af;
   border: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: default; 
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.2s;
 }
 
-/* Se prende de negro cuando hay texto */
-.send-msg-btn.active {
+.pchat-send-btn.active {
   background: #111;
   color: white;
   cursor: pointer;
 }
-.send-msg-btn.active:active { transform: scale(0.95); }
+.pchat-send-btn.active:active { transform: scale(0.95); }
+
+@media (max-width: 480px) {
+  .pchat-header { padding: 8px 12px; }
+  .pchat-bubble { max-width: 90%; }
+  .pchat-attach-btn { padding: 2px; }
+  .pchat-media-img, .pchat-media-video { max-width: 240px; }
+}
 
 .spin { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }

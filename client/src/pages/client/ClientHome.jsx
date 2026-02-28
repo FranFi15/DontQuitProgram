@@ -60,11 +60,6 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
     return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
   };
 
-  // --- LÓGICA DE GÉNERO (NUEVO) ---
-  const isMale = user?.sex === 'Masculino' ;
-  const isFemale = user?.sex === 'Femenino';
-  
-  const readyWord = isMale ? 'listo' : isFemale ? 'lista' : 'liste';
 
   // --- LÓGICA DE FILTRADO ---
   const filteredRecords = records.filter(rec => 
@@ -83,9 +78,9 @@ const [selectedScorePlanId, setSelectedScorePlanId] = useState(null);
       {/* HEADER */}
       <header className="home-header-section">
         <div>
-          <h1 className="greeting-title">Hola, {user?.name?.split(' ')[0]} 👋</h1>
+          <h1 className="greeting-title">¡Hola, {user?.name?.split(' ')[0]}! </h1>
           {/* AQUÍ SE APLICA EL CAMBIO DE GÉNERO */}
-          <p className="greeting-subtitle">¿Estás {readyWord} para entrenar?</p>
+          <p className="greeting-subtitle">¿Vamos a entrenar?</p>
         </div>
       </header>
 

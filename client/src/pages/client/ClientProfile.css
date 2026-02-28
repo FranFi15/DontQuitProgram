@@ -1,11 +1,12 @@
 /* client/src/pages/client/ClientProfile.css */
 
 .profile-page {
+  /* Al igual que en el chat, ocupamos el 100% de la altura disponible */
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #f3f4f6; /* Fondo gris suave */
-  overflow: hidden; /* Bloqueamos scroll general */
+  background-color: #f3f4f6;
+  position: relative;
 }
 
 /* HEADER FIJO */
@@ -13,7 +14,10 @@
   padding: 1.5rem;
   background: white;
   border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0; /* Evita que el header se aplaste */
+  z-index: 10;
 }
+
 .profile-title {
   margin: 0;
   font-size: 1.8rem;
@@ -22,12 +26,13 @@
   color: #111;
 }
 
-/* CONTENIDO CON SCROLL */
+/* CONTENIDO CON SCROLL SEGURO */
 .profile-scroll-content {
   flex: 1;
-  overflow-y: auto; /* Scroll aquí */
+  overflow-y: auto;
   padding: 1.5rem;
-  padding-bottom: 100px; /* Espacio para BottomNav */
+  /* Espacio extra abajo para que el botón de Cerrar Sesión no quede atrás de la BottomNav */
+  padding-bottom: max(90px, env(safe-area-inset-bottom)); 
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -72,6 +77,25 @@
 .status-badge-profile.active { background: #dcfce7; color: #166534; }
 .status-badge-profile.inactive { background: #fee2e2; color: #991b1b; }
 
+/* Nuevo estilo para el botón de tienda que estaba inline */
+.store-quick-btn {
+  margin-top: 1rem;
+  background: #111;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  transition: transform 0.2s;
+}
+.store-quick-btn:hover { transform: scale(1.05); }
+
 /* FORMULARIO */
 .profile-form {
   background: white;
@@ -108,10 +132,21 @@
   background: #f9fafb;
   color: #111;
   transition: all 0.2s;
+  /* Evitamos que el input se salga del celular */
+  box-sizing: border-box;
+  width: 100%;
 }
 .profile-input:focus { border-color: #000; background: white; }
 
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+/* Hacemos que los campos en fila se apilen en pantallas muy chicas */
+.form-row { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 1rem; 
+}
+@media (max-width: 400px) {
+  .form-row { grid-template-columns: 1fr; }
+}
 
 /* BOTONES */
 .save-profile-btn {
@@ -143,10 +178,9 @@
   border-radius: 8px;
   font-weight: 700;
   cursor: pointer;
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: all 0.2s;
   width: 100%;
-  justify-content: center;
 }
 .logout-btn:hover { background: #fef2f2; border-color: #ef4444; }
 
@@ -173,10 +207,7 @@
   font-size: 0.85rem;
   transition: all 0.2s;
 }
-.change-pass-btn:hover {
-  background: #f9fafb;
-  border-color: #000;
-}
+.change-pass-btn:hover { background: #f9fafb; border-color: #000; }
 
 /* --- MODAL DE CONTRASEÑA --- */
 .modal-overlay {
@@ -186,7 +217,7 @@
   display: flex; justify-content: center; align-items: center;
   z-index: 9999;
   backdrop-filter: blur(2px);
-  padding: 1rem; /* Margen en móvil */
+  padding: 1rem; 
 }
 
 .modal-content-pass {

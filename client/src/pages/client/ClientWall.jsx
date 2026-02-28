@@ -13,14 +13,12 @@ function ClientWall() {
   const [newMessage, setNewMessage] = useState("");
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  // 1. Cargar Planes Activos al entrar
   useEffect(() => {
     if (!user) return;
     const fetchPlans = async () => {
       try {
         const res = await axios.get(`/workouts/my-plans/${user.id}`);
         setPlans(res.data);
-        // Seleccionar el primero por defecto
         if (res.data.length > 0) {
           setSelectedPlanId(res.data[0].planId);
         }
@@ -31,7 +29,6 @@ function ClientWall() {
     fetchPlans();
   }, [user]);
 
-  // 2. Cargar Mensajes cuando cambia el Plan seleccionado
   useEffect(() => {
     if (!selectedPlanId) return;
     fetchPosts();
@@ -60,7 +57,7 @@ function ClientWall() {
         content: newMessage
       });
       setNewMessage("");
-      fetchPosts(); // Recargar chat
+      fetchPosts(); 
     } catch (error) {
       console.error(error);
     }
@@ -74,86 +71,74 @@ function ClientWall() {
   return (
     <div className="wall-page-container">
       
-      {/* HEADER DE LA PÁGINA */}
       <div className="wall-page-header">
         <div>
           <h1>Muro del Equipo</h1>
           <p>Interactúa con compañeros de tu mismo plan.</p>
         </div>
-        <Users size={32} className="header-icon"/>
+        <Users size={32} className="wall-header-icon"/>
       </div>
 
       {plans.length === 0 ? (
-        <div className="empty-plans-wall">
+        <div className="wall-empty-plans">
           <p>No tienes planes activos para ver el muro.</p>
         </div>
       ) : (
         <>
-          {/* SELECTOR DE PLANES (TABS) */}
           <div className="wall-tabs-container">
             {plans.map(plan => (
               <button
                 key={plan.planId}
                 onClick={() => setSelectedPlanId(plan.planId)}
-                className={`wall-tab-pill ${selectedPlanId === plan.planId ? 'active' : ''}`}
+                className={`wall-tab-pill ${selectedPlanId === plan.planId ? 'wall-active' : ''}`}
               >
                 {plan.planName}
               </button>
             ))}
           </div>
 
-          {/* ZONA DE CHAT */}
-          <div className="chat-container">
-            
-            {/* LISTA DE MENSAJES */}
-            <div className="messages-area">
+          <div className="wall-chat-container">
+            <div className="wall-messages-area">
               {loadingPosts ? (
-                <p className="loading-txt">Cargando comentarios...</p>
+                <p className="wall-loading-txt">Cargando comentarios...</p>
               ) : posts.length === 0 ? (
-                <div className="empty-chat-state">
+                <div className="wall-empty-state">
                   <MessageSquare size={40} />
                   <h3>Muro vacío</h3>
                   <p>¡Escribe el primer mensaje para el equipo!</p>
                 </div>
               ) : (
                 posts.map(post => {
-  const isCoach = post.user.role === 'ADMIN'; // <--- DETECTAMOS SI ES COACH
+                  const isCoach = post.user.role === 'ADMIN'; 
 
-  return (
-    <div key={post.id} className={`chat-bubble-row ${post.userId === user.id ? 'mine' : 'theirs'}`}>
-      
-      {/* AVATAR */}
-      {post.userId !== user.id && (
-        // Si es Coach mostramos un icono o inicial distinta
-        <div className={`avatar-circle ${isCoach ? 'coach-avatar' : ''}`}>
-          {post.user.name.charAt(0).toUpperCase()}
-        </div>
-      )}
+                  return (
+                    <div key={post.id} className={`wall-bubble-row ${post.userId === user.id ? 'wall-mine' : 'wall-theirs'}`}>
+                      
+                      {post.userId !== user.id && (
+                        <div className={`wall-avatar-circle ${isCoach ? 'wall-coach-avatar' : ''}`}>
+                          {post.user.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
 
-      {/* BURBUJA CON CLASE CONDICIONAL */}
-      <div className={`chat-bubble ${isCoach ? 'coach-bubble' : ''}`}>
-        
-        {/* Nombre del autor */}
-        {post.userId !== user.id && (
-          <div className="bubble-author">
-              {post.user.name}
-              {isCoach && <span className="coach-badge">COACH</span>}
-          </div>
-        )}
-        
-        <p className="bubble-text">{post.content}</p>
-        <span className="bubble-time">{formatTime(post.createdAt)}</span>
-      </div>
+                      <div className={`wall-bubble ${isCoach ? 'wall-coach-bubble' : ''}`}>
+                        {post.userId !== user.id && (
+                          <div className="wall-bubble-author">
+                              {post.user.name}
+                              {isCoach && <span className="wall-coach-badge">COACH</span>}
+                          </div>
+                        )}
+                        <p className="wall-bubble-text">{post.content}</p>
+                        <span className="wall-bubble-time">{formatTime(post.createdAt)}</span>
+                      </div>
 
-    </div>
-  );
-})
+                    </div>
+                  );
+                })
               )}
             </div>
 
-            {/* INPUT FIXED ABAJO */}
-            <div className="chat-input-wrapper">
-              <form onSubmit={handleSend} className="chat-form">
+            <div className="wall-input-wrapper">
+              <form onSubmit={handleSend} className="wall-chat-form">
                 <input
                   type="text"
                   placeholder={`Escribe al equipo de ${plans.find(p=>p.planId === selectedPlanId)?.planName}...`}
