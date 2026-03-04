@@ -93,7 +93,7 @@ function AdminSubscriptions() {
                       </span>
                     </td>
                     <td className="text-gray">{new Date(sub.startDate).toLocaleDateString()}</td>
-                    <td className="text-gray" style={{color: expired ? 'red' : 'inherit'}}>
+                    <td className="text-gray" style={{color: expired ? 'red' : 'green'}}>
                       {new Date(sub.endDate).toLocaleDateString()}
                     </td>
                     <td>

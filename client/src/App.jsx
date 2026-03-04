@@ -3,7 +3,10 @@ import { AuthProvider } from './context/AuthContext';
 import { AlertProvider } from './context/AlertContext';
 
 import RegisterPage from './pages/RegisterPage';
-import LoginPage from './pages/LoginPage';
+import LoginPage from './pages/public/LoginPage';
+
+import LandingPage from './pages/public/LandingPage';
+import CheckoutPage from './pages/public/CheckoutPage';
 
 import AdminLayout from './layouts/AdminLayout';
 
@@ -33,8 +36,9 @@ function App() {
       <AlertProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LoginPage />} /> 
+          <Route path="/" element={<LandingPage />} /> 
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/checkout/:planId" element={<CheckoutPage />} />
           <Route path="/register" element={<RegisterPage />} />
           
         

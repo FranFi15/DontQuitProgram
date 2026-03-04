@@ -1,0 +1,409 @@
+.checkout-container {
+  min-height: 100vh;
+  background-color: #0a0a0a;
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.checkout-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a1a1aa;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #fff;
+}
+
+.checkout-logo {
+  height: 100px; /* Mismo tamaño que en la landing */
+  width: auto;
+  object-fit: contain;
+}
+
+.checkout-wrapper {
+  flex: 1;
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 60px;
+  align-items: flex-start;
+}
+
+/* LADO IZQUIERDO: RESUMEN */
+.checkout-summary {
+  background-color: #111;
+  padding: 40px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.summary-badge {
+  display: inline-block;
+  background-color: rgba(250, 243, 239, 0.1);
+  color: #FAF3EF;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-bottom: 15px;
+}
+
+.checkout-summary h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.summary-desc {
+  color: #a1a1aa;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.summary-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.price-item {
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.summary-price {
+  font-size: 1.5rem;
+  color: #FAF3EF;
+}
+
+/* LADO DERECHO: FORMULARIOS */
+.checkout-form-section {
+  width: 100%;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 30px;
+  color: #FAF3EF;
+}
+
+.step-header h3 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.checkout-form {
+  background-color: transparent;
+}
+
+.checkout-form-section {
+  width: 100%;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 30px;
+  color: #FAF3EF;
+}
+
+.step-header h3 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.checkout-form {
+  background-color: transparent;
+}
+
+/* Usamos un nombre más específico para evitar conflicto con Login */
+.checkout-group {
+  margin-bottom: 20px;
+}
+
+.checkout-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #d4d4d8;
+  font-weight: 500; /* Lo diferenciamos del bold del login */
+  text-transform: none; /* Quitamos el mayúsculas del login si se cruzó */
+}
+
+/* Forzamos el estilo específico solo para los inputs dentro del checkout */
+.checkout-group input[type="text"],
+.checkout-group input[type="email"],
+.checkout-group input[type="password"],
+.checkout-group input[type="tel"] {
+  width: 100%;
+  padding: 14px 16px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box; /* Previene desbordes */
+}
+
+.checkout-group input:focus {
+  outline: none;
+  border-color: #FAF3EF;
+}
+
+.error-message {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* MÉTODOS DE PAGO */
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.pm-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 20px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #d4d4d8;
+}
+.pm-logo {
+  height: 24px; 
+  width: 50px;
+  object-fit: contain;
+  margin-right: 5px;
+}
+
+.pm-icon-lucide {
+  margin-right: 5px;
+}
+
+
+.pm-option span {
+  font-size: 0.95rem;
+}
+
+.pm-option:hover {
+  border-color: rgba(250, 243, 239, 0.5);
+}
+
+.pm-option.selected {
+  border-color: #FAF3EF;
+  background-color: rgba(250, 243, 239, 0.05);
+  color: #fff;
+  font-weight: 600;
+}
+
+.pm-option input[type="radio"] {
+  accent-color: #FAF3EF;
+  transform: scale(1.2);
+  margin-right: 5px;
+}
+
+/* DETALLES DE TRANSFERENCIA */
+.bank-details-box {
+  background-color: #1a1a1a;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #FAF3EF;
+  margin-bottom: 25px;
+}
+
+.bank-info {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #a1a1aa;
+}
+
+.bank-info strong {
+  color: #fff;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.file-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 20px;
+  background-color: #111;
+  border: 2px dashed #333;
+  border-radius: 8px;
+  color: #d4d4d8;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.file-upload-btn:hover {
+  border-color: #FAF3EF;
+  color: #FAF3EF;
+}
+
+/* BOTONES INFERIORES */
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.btn-next, .btn-submit {
+  width: 100%;
+  padding: 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #FAF3EF;
+  color: #000;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  transition: opacity 0.2s, background-color 0.2s;
+  margin-top: 10px;
+  flex: 1;
+}
+
+.btn-next:hover, .btn-submit:hover:not(:disabled) {
+  background-color: #c1bebd;
+}
+
+.btn-submit:disabled {
+  background-color: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.btn-back {
+  padding: 16px 24px;
+  background-color: transparent;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.btn-back:hover {
+  background-color: #1a1a1a;
+}
+
+.icon-flip {
+  transform: rotate(180deg);
+}
+
+/* PASO 3: ÉXITO */
+.checkout-success {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #111;
+  border-radius: 16px;
+  border: 1px solid rgba(250, 243, 239, 0.2);
+}
+
+.success-icon {
+  color: #10b981;
+  margin-bottom: 20px;
+}
+
+.checkout-success h3 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.success-subtext {
+  color: #a1a1aa;
+  margin-top: 15px;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.btn-to-login {
+  display: inline-block;
+  background-color: #FAF3EF;
+  color: #000;
+  text-decoration: none;
+  padding: 14px 30px;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: background-color 0.2s;
+}
+
+.btn-to-login:hover {
+  background-color: #c1bebd;
+}
+
+/* ANIMACIONES */
+.animate-enter {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .checkout-wrapper {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .checkout-nav {
+    padding: 15px 20px;
+  }
+}

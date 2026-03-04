@@ -1,0 +1,641 @@
+/* =========================================
+   1. GLOBALS & NAVBAR
+   ========================================= */
+.landing-container {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #0a0a0a;
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+.landing-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px 0;
+  z-index: 100;
+  transition: all 0.3s ease;
+  background-color: transparent;
+}
+
+.landing-navbar.scrolled {
+  background-color: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.navbar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+
+.nav-logo img {
+  height: 100px; /* Podés subir o bajar este número para hacerlo más grande o más chico */
+  width: auto;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.nav-logo img:hover {
+  transform: scale(1.05); /* Pequeño efecto al pasar el mouse */
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  color: #e5e5e5;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: #fff;
+}
+
+.login-btn {
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 8px 20px;
+  border-radius: 50px;
+}
+
+.login-btn:hover {
+  background-color: #fff;
+  color: #000;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.mobile-dropdown {
+  display: none;
+}
+
+/* =========================================
+   2. HERO SECTION (VIDEO)
+   ========================================= */
+.hero-section {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.video-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom, 
+    rgba(0,0,0,0.3) 0%, 
+    rgba(0,0,0,0.7) 80%,
+    #0a0a0a 100%
+  );
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  max-width: 800px;
+  padding: 0 20px;
+  margin-top: 60px;
+}
+
+.hero-badge {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #FAF3EF;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: #d4d4d8;
+  margin-bottom: 40px;
+  line-height: 1.6;
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.btn-primary-landing {
+  background-color: #fff;
+  color: #000;
+  border: none;
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.btn-primary-landing:hover {
+  background-color: #e5e5e5;
+  transform: translateY(-2px);
+}
+
+.btn-secondary-landing {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(5px);
+}
+
+.btn-secondary-landing:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* =========================================
+   3. SECCIÓN FILOSOFÍA
+   ========================================= */
+.philosophy-section {
+  padding: 100px 20px;
+  background-color: #0a0a0a;
+  text-align: center;
+}
+
+.philosophy-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.philosophy-content h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  letter-spacing: -0.5px;
+}
+
+.divider-line {
+  width: 60px;
+  height: 4px;
+  background-color: #FAF3EF;
+  margin: 0 auto 40px auto;
+  border-radius: 2px;
+}
+
+.lead-text {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: #fff;
+  margin-bottom: 30px;
+  font-weight: 500;
+}
+
+.philosophy-content p:not(.lead-text) {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #a1a1aa;
+}
+
+/* =========================================
+   4. SECCIÓN CATÁLOGO
+   ========================================= */
+.catalog-section {
+  padding: 80px 20px 100px;
+  background-color: #111111;
+}
+
+.catalog-filters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 50px;
+}
+
+.filter-btn {
+  background-color: transparent;
+  color: #a1a1aa;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 24px;
+  border-radius: 50px; /* Estilo píldora */
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  border-color: #FAF3EF;
+  color: #FAF3EF;
+}
+
+.filter-btn.active {
+  background-color: #FAF3EF;
+  color: #000;
+  border-color: #FAF3EF;
+}
+
+.catalog-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.catalog-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.catalog-header p {
+  color: #a1a1aa;
+  font-size: 1.1rem;
+}
+
+.catalog-loading {
+  text-align: center;
+  color: #FAF3EF;
+  font-size: 1.2rem;
+  padding: 40px 0;
+}
+
+.categories-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+.category-info {
+  margin-bottom: 30px;
+  border-left: 4px solid #FAF3EF;
+  padding-left: 20px;
+}
+
+.category-info h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+
+.category-info p {
+  color: #d4d4d8;
+  font-size: 1.1rem;
+  max-width: 600px;
+}
+
+.plans-grid-landing {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.plan-card-landing {
+  background-color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.plan-card-landing:hover {
+  transform: translateY(-5px);
+  border-color: rgba(250, 243, 239, 0.5);
+}
+
+.plan-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.plan-card-header h4 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.plan-duration {
+  background-color: rgba(250, 243, 239, 0.15); 
+  color: #FAF3EF !important; 
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  border: 1px solid rgba(250, 243, 239, 0.3);
+}
+
+.plan-card-price {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.price-ars {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.price-usd {
+  font-size: 1.1rem;
+  color: #a1a1aa;
+  margin-left: 8px;
+}
+
+.plan-description {
+  color: #a1a1aa;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 25px;
+  flex-grow: 1;
+}
+
+.plan-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: #e5e5e5;
+}
+
+.text-yellow { color: #FAF3EF; }
+.text-red { color: #ef4444; }
+.text-highlight { font-weight: 600; color: #fff; }
+
+.btn-buy-plan {
+  width: 100%;
+  padding: 15px;
+  border-radius: 8px;
+  border: none;
+  background-color: #FAF3EF;
+  color: #000;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-buy-plan:hover:not(:disabled) {
+  background-color: #c1bebd;
+}
+
+.btn-buy-plan:disabled {
+  background-color: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   7. FOOTER
+   ========================================= */
+.landing-footer {
+  background-color: #050505; /* Un negro un pelín más oscuro para marcar el final */
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 60px 20px 20px;
+  color: #a1a1aa;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-brand .footer-logo {
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 15px;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.footer-brand .footer-logo:hover {
+  opacity: 1;
+}
+
+.footer-brand p {
+  line-height: 1.6;
+  max-width: 300px;
+  font-size: 0.95rem;
+}
+
+.footer-links, .footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-links h4, .footer-contact h4 {
+  color: #FAF3EF;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.footer-links button {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  text-align: left;
+  padding: 0;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  width: fit-content;
+}
+
+.footer-links button:hover {
+  color: #FAF3EF;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.contact-item:hover {
+  color: #FAF3EF;
+}
+
+.footer-bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  font-size: 0.85rem;
+}
+.custom-social-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* =========================================
+   5. RESPONSIVE
+   ========================================= */
+@media (max-width: 768px) {
+  .desktop-only { display: none; }
+  .mobile-menu-btn { display: block; }
+  
+  .hero-title { font-size: 2.5rem; }
+  .hero-subtitle { font-size: 1rem; }
+  .hero-actions { flex-direction: column; }
+  .btn-primary-landing, .btn-secondary-landing { width: 100%; justify-content: center; }
+  
+  .philosophy-content h2 { font-size: 2rem; }
+  .lead-text { font-size: 1.2rem; }
+
+  .mobile-dropdown {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #0a0a0a;
+    flex-direction: column;
+    padding: 20px;
+    border-bottom: 1px solid #333;
+  }
+  
+  .mobile-dropdown button {
+    background: none;
+    border: none;
+    color: #fff;
+    padding: 15px 0;
+    text-align: left;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-bottom: 1px solid #222;
+  }
+
+  .catalog-section { padding: 60px 15px; }
+  .category-info h3 { font-size: 1.6rem; }
+  .plans-grid-landing { grid-template-columns: 1fr; }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    text-align: center;
+  }
+  
+  .footer-brand p {
+    margin: 0 auto;
+  }
+
+  .footer-links button, .contact-item {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(60px);
+  /* 1s de duración, curva de aceleración suave para que frene elegante */
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); 
+}
+
+/* Estado activo (visible y en posición original) */
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Efecto dominó: que las tarjetas vayan apareciendo una por una */
+.plans-grid-landing .plan-card-landing:nth-child(1) { transition-delay: 0s; }
+.plans-grid-landing .plan-card-landing:nth-child(2) { transition-delay: 0.15s; }
+.plans-grid-landing .plan-card-landing:nth-child(3) { transition-delay: 0.3s; }
+.plans-grid-landing .plan-card-landing:nth-child(4) { transition-delay: 0.45s; }
+.plans-grid-landing .plan-card-landing:nth-child(5) { transition-delay: 0.6s; }

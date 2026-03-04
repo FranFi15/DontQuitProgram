@@ -9,7 +9,7 @@ import './ClientStore.css';
 
 function ClientStore() {
   const { user } = useAuth();
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [categories, setCategories] = useState([]);

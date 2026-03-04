@@ -42,7 +42,6 @@
   margin: 0; 
   font-size: 2.2rem; 
   font-weight: 900; 
-  color: #111; 
   letter-spacing: -1px;
 }
 
@@ -380,4 +379,4 @@
 /* Estilo adicional para ícono ARS */
 .stat-icon.revenue-ars { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
-.fw-bold { font-weight: 800; }
+.fw-bold { font-weight: 800; }USD

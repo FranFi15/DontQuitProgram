@@ -58,7 +58,7 @@ function AdminDashboard() {
       <div className="dashboard-header">
         <div>
           <h1 className="dashboard-title">Panel de Control</h1>
-          <p className="dashboard-subtitle">Hola Coach, así progresa Gain Wellness hoy.</p>
+          <p className="dashboard-subtitle">Hola Coach!</p>
         </div>
         <div className="date-badge">
           <Calendar size={16} /> 
@@ -73,7 +73,7 @@ function AdminDashboard() {
         <div className="stat-card premium-card" onClick={() => navigate('/admin/payments')}>
           <div className="stat-icon revenue-ars"><DollarSign size={28} /></div>
           <div className="stat-info">
-            <p>Ingresos Mensuales (ARS)</p>
+            <p>Ingresos  (ARS)</p>
             <h3>{formatARS(stats?.monthlyRevenueARS || 0)}</h3>
           </div>
           {stats?.pendingPayments > 0 && (
@@ -87,11 +87,10 @@ function AdminDashboard() {
         <div className="stat-card intl-card" onClick={() => navigate('/admin/payments')}>
           <div className="stat-icon revenue-usd"><Wallet size={24} /></div>
           <div className="stat-info">
-            <p>Ingresos Globales (USD)</p>
+            <p>Ingresos  (USD)</p>
             <h3>{formatUSD(stats?.monthlyRevenueUSD || 0)}</h3>
           </div>
           <div className="stat-trend positive">
-            <TrendingUp size={14} /> Global
           </div>
         </div>
 
