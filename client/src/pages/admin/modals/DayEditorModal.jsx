@@ -7,11 +7,10 @@ import { Plus, Trash2, Save, X, Edit3 } from 'lucide-react';
 import './DayEditorModal.css';
 
 function DayEditorModal({ workout, onClose, onSuccess }) {
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState(workout.title || '');
 
-  // 1. ESTADO DE LOS BLOQUES (Parseamos si viene como string JSON)
   const [blocks, setBlocks] = useState(() => {
     try {
       if (typeof workout.blocks === 'string') {
@@ -23,7 +22,6 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
     }
   });
 
-  // 2. CONFIGURACIÓN DE LA BARRA
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, false] }],
@@ -33,8 +31,6 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
       ['clean']
     ],
   };
-
-  // --- ACCIONES ---
 
   const addBlock = () => {
     const nextNum = blocks.length + 1;
@@ -65,11 +61,9 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
     setBlocks(newBlocks);
   };
 
-  // --- GUARDAR ---
   const handleSave = async () => {
     setLoading(true);
     
-    // Limpieza de títulos vacíos
     const cleanBlocks = blocks.map((b, i) => ({
       title: b.title.trim() === '' ? `Bloque ${i + 1}` : b.title,
       content: b.content
@@ -84,13 +78,11 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
         blocks: cleanBlocks 
       });
       
-      // 👈 3. ALERTA DE ÉXITO
       showAlert("Rutina guardada correctamente.", "success");
       onSuccess(); 
       onClose();   
     } catch (error) {
       console.error(error);
-      // 👈 4. ALERTA DE ERROR
       showAlert("Hubo un problema al guardar la rutina.", "error");
     } finally {
       setLoading(false);
@@ -98,54 +90,57 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content large-modal animate-enter">
+    <div className="dem-overlay">
+      <div className="dem-content dem-animate-enter">
         
         {/* HEADER */}
-        <div className="modal-header">
-          <div className="header-info" style={{width: '100%'}}>
-            <span className="header-meta"> SEMANA {workout.weekNumber} -  {workout.title}</span>
+        <div className="dem-header">
+          <div className="dem-header-info">
+            <span className="dem-header-meta">SEMANA {workout.weekNumber} - {workout.title}</span>
             <input 
-              className="modal-title-input"
+              className="dem-title-input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Título del Día (Ej: Pierna Hipertrofia)"
             />
           </div>
-          <button onClick={onClose} className="close-btn"><X size={24}/></button>
+          <button onClick={onClose} className="dem-close-btn"><X size={24}/></button>
         </div>
 
-        <div className="modal-scroll-area">
+        <div className="dem-scroll-area">
           
+          {/* ESTADO VACÍO (SIN BLOQUES) */}
           {blocks.length === 0 && (
-            <div className="empty-blocks-state">
+            <div className="dem-empty-state">
+              <div className="dem-empty-icon">📝</div>
               <p>No hay bloques creados para este día.</p>
-              <button onClick={addBlock} className="add-block-btn-large">
-                <Plus size={18}/> Agregar Primer Bloque
+              <button onClick={addBlock} className="dem-add-block-large">
+                <Plus size={20}/> Agregar Primer Bloque
               </button>
             </div>
           )}
 
-          <div className="blocks-list">
+          {/* LISTA DE BLOQUES */}
+          <div className="dem-blocks-list">
             {blocks.map((block, index) => (
-              <div key={index} className="workout-block">
+              <div key={index} className="dem-workout-block animate-enter">
                 
-                <div className="block-header">
-                  <div className="block-title-wrapper">
-                    <Edit3 size={14} className="edit-icon-indicator"/>
+                <div className="dem-block-header">
+                  <div className="dem-block-title-wrapper">
+                    <Edit3 size={16} className="dem-edit-icon"/>
                     <input 
-                      className="block-title-input"
+                      className="dem-block-title-input"
                       value={block.title}
                       onChange={(e) => updateBlockTitle(index, e.target.value)}
                       placeholder={`Nombre del Bloque (Ej: Sentadilla)`}
                     />
                   </div>
-                  <button onClick={() => removeBlock(index)} className="delete-icon-btn">
+                  <button onClick={() => removeBlock(index)} className="dem-delete-btn" title="Eliminar bloque">
                     <Trash2 size={18} />
                   </button>
                 </div>
 
-                <div className="editor-container">
+                <div className="dem-editor-container">
                   <ReactQuill 
                     theme="snow"
                     value={block.content}
@@ -159,9 +154,10 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
             ))}
           </div>
 
+          {/* BOTÓN INFERIOR PARA AGREGAR MÁS BLOQUES */}
           {blocks.length > 0 && (
-            <div className="add-section-footer-centered">
-              <button onClick={addBlock} className="add-block-btn-footer">
+            <div className="dem-add-footer-centered">
+              <button onClick={addBlock} className="dem-add-block-footer">
                 <Plus size={18} /> Agregar Nuevo Bloque
               </button>
             </div>
@@ -170,9 +166,9 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
         </div>
 
         {/* FOOTER GENERAL */}
-        <div className="modal-footer-actions">
-           <button onClick={onClose} className="cancel-btn">Cancelar</button>
-           <button onClick={handleSave} className="save-btn" disabled={loading}>
+        <div className="dem-footer-actions">
+           <button onClick={onClose} className="dem-cancel-btn">Cancelar</button>
+           <button onClick={handleSave} className="dem-save-btn" disabled={loading}>
              <Save size={18} /> {loading ? 'Guardando...' : 'Guardar Rutina'}
            </button>
         </div>

@@ -19,6 +19,8 @@ function AdminUsers() {
   const [showScoresModal, setShowScoresModal] = useState(false);
   const [selectedScoreUser, setSelectedScoreUser] = useState(null);
 
+  const [userToDelete, setUserToDelete] = useState(null);
+
   // Carga inicial
   useEffect(() => {
     fetchUsers();
@@ -55,20 +57,23 @@ function AdminUsers() {
     setShowScoresModal(true);
   };
 
-  // Eliminar (Soft Delete de la cuenta)
-  const handleDelete = async (id, name) => {
-    // Mantenemos el confirm nativo por seguridad crítica
-    if(!window.confirm(`¿Estás segura de eliminar la cuenta de "${name}"?`)) return;
+  const handleDeleteClick = (user) => {
+    setUserToDelete(user);
+  };
+
+  // 2. Función que EJECUTA el borrado (se llama desde el modal)
+  const executeDelete = async () => {
+    if (!userToDelete) return;
 
     try {
-      await axios.delete(`/users/${id}`);
+      await axios.delete(`/users/${userToDelete.id}`);
       fetchUsers();
-      // 👈 4. ALERTA DE ÉXITO AL ELIMINAR
-      showAlert("La cuenta ha sido eliminada correctamente.", "success");
+      showAlert(`La cuenta de ${userToDelete.name} ha sido eliminada.`, "success");
     } catch (error) {
       console.error(error);
-      // 👈 5. ALERTA DE ERROR AL ELIMINAR
       showAlert("Error al intentar eliminar al usuario.", "error");
+    } finally {
+      setUserToDelete(null); 
     }
   };
 
@@ -175,7 +180,7 @@ function AdminUsers() {
                     </button>
                     <button 
                       className="action-btn delete" 
-                      onClick={() => handleDelete(user.id, user.name)} 
+                      onClick={() => handleDeleteClick(user)}
                       title="Eliminar Cuenta"
                     >
                       <Trash2 size={16} />
@@ -207,6 +212,45 @@ function AdminUsers() {
             }} 
          />
        )}
+       {userToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-content animate-enter" style={{ maxWidth: '450px', padding: '30px', textAlign: 'center' }}>
+            <div style={{ color: '#ef4444', marginBottom: '15px', display: 'flex', justifyContent: 'center' }}>
+              <Trash2 size={50} />
+            </div>
+            
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '15px', color: '#111' }}>
+              ¿Eliminar a {userToDelete.name}?
+            </h2>
+            
+            {userToDelete.subscriptionStatus === 'ACTIVO' ? (
+              <p style={{ color: '#ef4444', fontWeight: '600', marginBottom: '25px', lineHeight: '1.5' }}>
+                ⚠️ ¡CUIDADO! Este alumno tiene el "{userToDelete.planName}" ACTIVO.<br/><br/>
+                Si lo eliminás, perderá el acceso inmediatamente y se borrarán todos sus pagos e historial.
+              </p>
+            ) : (
+              <p style={{ color: '#6b7280', marginBottom: '25px', lineHeight: '1.5' }}>
+                Esta acción es irreversible. Se borrarán todos los datos y el historial de este usuario.
+              </p>
+            )}
+
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setUserToDelete(null)} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={executeDelete} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Sí, Eliminar Todo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,60 +1,162 @@
-/* EL CONTENEDOR PRINCIPAL DEL MODAL (CONTENIDO) */
-.large-modal {
-  max-width: 1000px;
+/* --- OVERLAY DE FONDO --- */
+.dem-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+/* --- CONTENEDOR PRINCIPAL DEL MODAL --- */
+.dem-content {
+  max-width: 900px;
   width: 95%;
   height: 90vh;
   display: flex;
   flex-direction: column;
-  background-color: #fff; /* <--- BLANCO (Antes era rgba oscuro) */
-  border-radius: 12px;    /* Agregado borde redondeado para consistencia */
+  background-color: #fff;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 }
 
-.modal-title-input {
-  font-size: 1.4rem;
-  font-weight: 800;
-  border: none;
-  border-bottom: 2px solid #e5e7eb;
-  width: 100%;
-  outline: none;
-  padding: 5px 0;
-  background: transparent;
-  margin-top: 5px;
-  color: #111; /* Texto negro */
+/* --- HEADER --- */
+.dem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #fff;
 }
-.modal-title-input:focus { border-color: #000; }
 
-.header-meta {
-  font-size: 0.7rem;
+.dem-header-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dem-header-meta {
+  font-size: 0.75rem;
   font-weight: 700;
   color: #6b7280;
   letter-spacing: 1px;
 }
 
-/* ÁREA DE SCROLL */
-.modal-scroll-area {
+.dem-title-input {
+  font-size: 1.6rem;
+  font-weight: 800;
+  border: none;
+  border-bottom: 2px solid transparent;
+  width: 100%;
+  outline: none;
+  padding: 4px 0;
+  background: transparent;
+  color: #111;
+  transition: border-color 0.2s;
+}
+
+.dem-title-input:focus {
+  border-bottom-color: #111;
+}
+
+.dem-close-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.dem-close-btn:hover {
+  background-color: #f3f4f6;
+  color: #111;
+}
+
+/* --- ÁREA DE SCROLL --- */
+.dem-scroll-area {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
-  background: #f9fafb; /* Gris muy clarito de fondo para diferenciar */
-  scrollbar-width: none;
-  color: #333;
+  padding: 30px;
+  background: #f9fafb;
+  scrollbar-width: thin;
 }
 
-/* TARJETA DE BLOQUE */
-.workout-block {
+/* --- ESTADO VACÍO (SIN BLOQUES) --- */
+.dem-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  border: 2px dashed #d1d5db;
+  border-radius: 16px;
+  background-color: #fff;
+  margin-top: 20px;
+}
+
+.dem-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  opacity: 0.8;
+}
+
+.dem-empty-state p {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+}
+
+/* Botón grande para agregar el primer bloque */
+.dem-add-block-large {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #111;
+  color: #fff;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dem-add-block-large:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+}
+
+/* --- TARJETAS DE BLOQUES --- */
+.dem-workout-block {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 0;
-  margin-bottom: 2rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  border-radius: 12px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
   overflow: hidden;
+  transition: border-color 0.2s;
 }
 
-.block-header {
-  padding: 0.8rem 1rem;
+.dem-workout-block:focus-within {
+  border-color: #d1d5db;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+}
+
+.dem-block-header {
+  padding: 14px 20px;
   background: #f3f4f6;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
@@ -62,53 +164,148 @@
   align-items: center;
 }
 
-.block-title-input {
+.dem-block-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.dem-edit-icon {
+  color: #9ca3af;
+}
+
+.dem-block-title-input {
   border: none;
   background: transparent;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   width: 100%;
   outline: none;
   color: #111;
 }
 
-/* EDITOR */
-.editor-container .ql-toolbar {
+/* Botón de basurero (Eliminar) */
+.dem-delete-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444; /* Rojo */
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.dem-delete-btn:hover {
+  background-color: #fee2e2;
+}
+
+/* --- QUILL EDITOR ESTILOS --- */
+.dem-editor-container .ql-toolbar {
   border: none;
   border-bottom: 1px solid #e5e7eb;
   background: #fff;
+  padding: 12px 20px;
 }
 
-/* FOOTER ACTIONS */
-.modal-footer-actions {
-  padding: 1rem 1.5rem;
+.dem-editor-container .ql-container {
+  border: none;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1rem;
+}
+
+.dem-editor-container .ql-editor {
+  min-height: 120px;
+  padding: 20px;
+  color: #374151;
+}
+
+/* --- BOTÓN FOOTER PARA AGREGAR MÁS BLOQUES --- */
+.dem-add-footer-centered {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.dem-add-block-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: transparent;
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dem-add-block-footer:hover {
+  border-color: #111;
+  color: #111;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* --- FOOTER ACTIONS (Guardar / Cancelar) --- */
+.dem-footer-actions {
+  padding: 20px 24px;
   border-top: 1px solid #e5e7eb;
   background: white;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 15px;
 }
 
-.save-btn {
-  background: #000; /* Botón negro para consistencia */
+.dem-cancel-btn {
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #374151;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.dem-cancel-btn:hover {
+  background: #f3f4f6;
+}
+
+.dem-save-btn {
+  background: #111;
   color: white;
   border: none;
-  padding: 10px 24px;
-  border-radius: 6px;
+  padding: 12px 24px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: background-color 0.2s;
 }
-.save-btn:hover { background: #333; }
 
-.cancel-btn {
-  background: white;
-  border: 1px solid #d1d5db;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #333;
+.dem-save-btn:hover:not(:disabled) {
+  background: #333;
 }
-.cancel-btn:hover { background: #f3f4f6; }
+
+.dem-save-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* ANIMACIONES */
+.dem-animate-enter {
+  animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.98) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
