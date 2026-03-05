@@ -1,5 +1,5 @@
 import express from 'express';
-import { processCheckout } from '../controllers/checkoutController.js';
+import { processCheckout } from '../controllers/checkout.controller.js';
 
 // Suponiendo que ya tenés configurado un middleware de upload (Multer o Cloudinary)
 import { upload } from '../libs/cloudinary.js'; 
