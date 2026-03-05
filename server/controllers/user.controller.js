@@ -121,15 +121,43 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    await prisma.user.update({
-      where: { id: parseInt(id) },
-      data: { isActive: false }
-    });
-    res.json({ message: 'Usuario eliminado' });
+    const userId = parseInt(req.params.id);
+
+    // Utilizamos una Transacción para asegurar que todo se borre o no se borre nada
+    await prisma.$transaction([
+      
+      // 1. Finanzas y Accesos
+      prisma.payment.deleteMany({ where: { userId: userId } }),
+      prisma.subscription.deleteMany({ where: { userId: userId } }),
+      
+      // 2. Historial de Entrenamientos y RMs
+      prisma.personalRecord.deleteMany({ where: { userId: userId } }),
+      prisma.workoutResult.deleteMany({ where: { userId: userId } }),
+      prisma.scoreEntry.deleteMany({ where: { userId: userId } }),
+      
+      // 3. Interacción Social (Muro)
+      prisma.wallPost.deleteMany({ where: { userId: userId } }),
+
+      // 4. Chat (Mensajes enviados o recibidos por el usuario)
+      prisma.message.deleteMany({
+        where: {
+          OR: [
+            { senderId: userId },
+            { receiverId: userId }
+          ]
+        }
+      }),
+
+      // 5. Finalmente, aniquilamos al usuario
+      prisma.user.delete({
+        where: { id: userId }
+      })
+    ]);
+
+    res.json({ message: 'Usuario y todo su historial han sido eliminados permanentemente' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al eliminar usuario' });
+    console.error("Error al hacer hard-delete del usuario:", error);
+    res.status(500).json({ error: 'Error interno al limpiar las dependencias del usuario' });
   }
 };
 
