@@ -98,17 +98,15 @@ function CheckoutPage() {
         setStep(3); // Pantalla de éxito
         
       } else {
-        // --- LÓGICA DE MERCADOPAGO / PAYPAL ---
-        // Llamada real al backend para pasarelas (JSON puro sin foto)
         const response = await axios.post('/checkout/register-checkout', {
           planId,
           ...formData,
           paymentMethod: paymentMethod.toUpperCase()
         });
         
-        // Redirigimos al usuario a la URL que nos devuelve MercadoPago o PayPal
         if (response.data.initPoint) {
           if (paymentMethod === 'paypal') {
+            // Guardamos el ID que viene del backend y el plan elegido
             localStorage.setItem('pendingPayPalUserId', response.data.userId);
             localStorage.setItem('pendingPayPalPlanId', planId);
           }

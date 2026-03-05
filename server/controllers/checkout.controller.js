@@ -92,7 +92,6 @@ export const processCheckout = async (req, res) => {
 
     // --- C. PAYPAL ---
     if (paymentMethod === 'PAYPAL') {
-      // Usamos la misma lógica que ya tenías armada para pedir el token
       const auth = Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`).toString("base64");
       const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
         method: "POST", body: "grant_type=client_credentials",
@@ -108,16 +107,21 @@ export const processCheckout = async (req, res) => {
           intent: "CAPTURE",
           purchase_units: [{
             description: `Plan: ${plan.title}`,
-            amount: { currency_code: "USD", value: plan.internationalPrice } // OJO: Usamos el precio internacional
+            amount: { currency_code: "USD", value: plan.internationalPrice }
           }],
+          // 👇 AGREGAMOS ESTO PARA QUE SEPA A DÓNDE VOLVER 👇
+          application_context: {
+            return_url: "https://dont-quit-program.vercel.app/login",
+            cancel_url: "https://dont-quit-program.vercel.app/login"
+          }
         }),
       });
       const orderData = await orderRes.json();
       
-      // Buscamos el link de redirección de PayPal
       const approveLink = orderData.links.find(link => link.rel === "approve").href;
 
-     return res.json({ success: true, initPoint: approveLink, userId: newUser.id });
+      // Devolvemos el link y el ID del usuario que creamos recién
+      return res.json({ success: true, initPoint: approveLink, userId: newUser.id });
     }
 
   } catch (error) {
