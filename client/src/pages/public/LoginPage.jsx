@@ -70,7 +70,7 @@ function LoginPage() {
       const res = await axios.post('/auth/login', values);
       login(res.data.user, res.data.token);
       
-      showAlert(`¡Bienvenido de vuelta, ${res.data.user.name?.split(' ')[0] || 'Atleta'}!`, "success");
+      showAlert(`¡Bienvenido/a de vuelta, ${res.data.user.name?.split(' ')[0] || 'Atleta'}!`, "success");
 
       if (res.data.user.role === 'ADMIN') {
         navigate('/admin/dashboard');
