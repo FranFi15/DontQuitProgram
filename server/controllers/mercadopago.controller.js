@@ -61,7 +61,6 @@ export const createPreference = async (req, res) => {
 };
 
 export const receiveWebhook = async (req, res) => {
-  // 1. Le decimos a MP "Recibido" rapidísimo para que no reintente
   res.status(200).send("OK");
 
   try {
@@ -76,33 +75,17 @@ export const receiveWebhook = async (req, res) => {
       if (paymentInfo.status === 'approved') {
         const userId = parseInt(paymentInfo.metadata.user_id);
         const planId = parseInt(paymentInfo.metadata.plan_id);
-
-        const plan = await prisma.plan.findUnique({ where: { id: planId } });
-        if (!plan) return; // Si no hay plan, cortamos acá
-
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + (plan.duration * 7) + 14);
-
-        const receiptCode = `MP-${paymentId}`;
+        const receiptCode = `MP-${paymentId}`; // Este es el valor ÚNICO
 
         try {
-          // 2. LA MAGIA ESTÁ ACÁ: Usamos una Transacción
-          // Si el receiptUrl ya existe en otro pago, la base de datos va a frenar todo el bloque automáticamente.
-          await prisma.$transaction(async (tx) => {
-            
-            // Verificamos dentro de la transacción si ya existe
-            const existing = await tx.payment.findFirst({
-              where: { receiptUrl: receiptCode }
-            });
+          const plan = await prisma.plan.findUnique({ where: { id: planId } });
+          const startDate = new Date();
+          const endDate = new Date();
+          endDate.setDate(endDate.getDate() + (plan.duration * 7) + 14);
 
-            if (existing) {
-               console.log(`⚠️ Webhook duplicado frenado para el pago ${paymentId}`);
-               return; // Cortamos la ejecución de la transacción
-            }
-
-            // Si no existe, creamos el pago
-            await tx.payment.create({
+          // Disparamos la creación en bloque. Si receiptCode ya existe en la BD, falla todo automáticamente.
+          await prisma.$transaction([
+            prisma.payment.create({
               data: {
                 userId,
                 planId,
@@ -111,10 +94,8 @@ export const receiveWebhook = async (req, res) => {
                 method: 'MERCADOPAGO',
                 receiptUrl: receiptCode, 
               }
-            });
-
-            // Y creamos la suscripción
-            await tx.subscription.create({
+            }),
+            prisma.subscription.create({
               data: {
                 userId,
                 planId,
@@ -122,13 +103,18 @@ export const receiveWebhook = async (req, res) => {
                 endDate,
                 isActive: true
               }
-            });
-            
-            console.log(`✅ ¡ÉXITO! Acceso otorgado al usuario ${userId} por MP.`);
-          });
+            })
+          ]);
+
+          console.log(`✅ ¡ÉXITO! Acceso otorgado al usuario ${userId} por MP.`);
 
         } catch (dbError) {
-          console.error(`⚠️ Error en la base de datos al guardar pago ${paymentId} (Posible duplicado):`, dbError.message);
+          // Si el error es P2002, significa que el candado de la BD funcionó y frenó al duplicado.
+          if (dbError.code === 'P2002') {
+            console.log(`🛡️ Webhook duplicado frenado por la base de datos (Pago: ${paymentId})`);
+          } else {
+            console.error(`❌ Error guardando en BD:`, dbError);
+          }
         }
       }
     }

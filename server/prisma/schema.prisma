@@ -217,7 +217,7 @@ model Payment {
   currency      String   @default("ARS") // "ARS" o "USD"
   method        String   // "TRANSFERENCIA", "MERCADOPAGO", "STRIPE"
   status        String   @default("PENDING") // "PENDING", "APPROVED", "REJECTED"
-  receiptUrl    String?  // Foto del comprobante subida a Cloudinary
+  receiptUrl  String?  @unique
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
