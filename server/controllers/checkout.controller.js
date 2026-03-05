@@ -73,9 +73,9 @@ export const processCheckout = async (req, res) => {
             currency_id: 'ARS',
           }],
           back_urls: {
-            success: "https://dont-quit-program.vercel.app/app/home", 
-            failure: "https://dont-quit-program.vercel.app/app/home",
-            pending: "https://dont-quit-program.vercel.app/app/home"
+            success: "https://dont-quit-program.vercel.app/login", 
+            failure: "https://dont-quit-program.vercel.app/login",
+            pending: "https://dont-quit-program.vercel.app/login"
           },
           auto_return: "approved",
           notification_url: "https://dontquitprogram.onrender.com/api/payments/mp/webhook",
