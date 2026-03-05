@@ -3,18 +3,18 @@ import nodemailer from 'nodemailer';
 // Configuración REFORZADA para GMAIL (Optimizado para Render)
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // true para puerto 465 (SSL)
+  port: 587,
+  secure: false, // 👈 Para el puerto 587 esto DEBE ser false
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  // 👇 Esto es clave para evitar el timeout en hostings
   tls: {
+    // Esto es vital para que Google no rechace la conexión de Render
+    ciphers: 'SSLv3',
     rejectUnauthorized: false
   },
-  connectionTimeout: 10000, // 10 segundos
-  greetingTimeout: 10000,
+  connectionTimeout: 20000, // Le damos 20 segundos
 });
 
 export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
