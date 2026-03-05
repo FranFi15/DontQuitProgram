@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../api/axios'; 
-import { Menu, X, ChevronRight, CheckCircle2, AlertCircle, Instagram, Mail } from 'lucide-react';
+import { Menu, X, ChevronRight, CheckCircle2, AlertCircle, Instagram, Mail, Youtube} from 'lucide-react';
 import './LandingPage.css';
 
 
@@ -332,6 +332,10 @@ function LandingPage() {
             <a href="https://tiktok.com/@rocioboxall" target="_blank" rel="noopener noreferrer" className="contact-item">
               <img src="/tiktok.svg" alt="TikTok" className="custom-social-icon" />
               @rocioboxall
+            </a>
+
+            <a href="https://www.youtube.com/@ROCIOBOXALL" target="_blank" rel="noopener noreferrer" className="contact-item">
+              <Youtube size={18} /> @ROCIOBOXALL
             </a>
             
           </div>
