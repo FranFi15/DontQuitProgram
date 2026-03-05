@@ -43,6 +43,12 @@ function CheckoutPage() {
     fetchPlan();
   }, [planId]);
 
+  // --- LÓGICA DE PRECIOS DINÁMICOS ---
+  const isTransfer = paymentMethod === 'transfer';
+  const hasTransferDiscount = plan?.transferDiscount > 0;
+  const discountAmount = (isTransfer && hasTransferDiscount) ? (plan.price * plan.transferDiscount) / 100 : 0;
+  const finalPrice = plan ? plan.price - discountAmount : 0;
+
   // Manejo de inputs de texto
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -74,7 +80,6 @@ function CheckoutPage() {
 
     try {
       if (paymentMethod === 'transfer') {
-        // --- LÓGICA DE TRANSFERENCIA MANUAL ---
         if (!receipt) {
           setError('Por favor, adjuntá el comprobante de transferencia.');
           setSubmitting(false);
@@ -89,8 +94,8 @@ function CheckoutPage() {
         data.append('phone', formData.phone);
         data.append('paymentMethod', 'TRANSFER');
         data.append('receipt', receipt);
+        data.append('amount', finalPrice); // Enviamos el precio con descuento
 
-        // Llamada real al backend (con foto incluida)
         await axios.post('/checkout/register-checkout', data, { 
           headers: { 'Content-Type': 'multipart/form-data' }
         });
@@ -106,7 +111,6 @@ function CheckoutPage() {
         
         if (response.data.initPoint) {
           if (paymentMethod === 'paypal') {
-            // Guardamos el ID que viene del backend y el plan elegido
             localStorage.setItem('pendingPayPalUserId', response.data.userId);
             localStorage.setItem('pendingPayPalPlanId', planId);
           }
@@ -128,18 +132,16 @@ function CheckoutPage() {
 
   return (
     <div className="checkout-container">
-      {/* Navbar Minimalista */}
       <nav className="checkout-nav">
         <Link to="/" className="back-link">
           <ArrowLeft size={20} /> Volver al inicio
         </Link>
-        {/* Usamos la misma lógica de imagen que en la Landing */}
         <img src="/logob.png" alt="Don't Quit Logo" className="checkout-logo" />
       </nav>
 
       <div className="checkout-wrapper">
         
-        {/* LADO IZQUIERDO: Resumen de Compra */}
+        {/* LADO IZQUIERDO: Resumen de Compra Dinámico */}
         <div className="checkout-summary">
           <span className="summary-badge">ESTÁS POR COMPRAR</span>
           <h2>{plan.title}</h2>
@@ -150,10 +152,29 @@ function CheckoutPage() {
               <span>Duración:</span>
               <strong>{plan.duration} Semanas</strong>
             </div>
+
+            <div className="detail-item">
+              <span>Precio de lista:</span>
+              <span style={{ 
+                textDecoration: isTransfer && hasTransferDiscount ? 'line-through' : 'none',
+                opacity: isTransfer && hasTransferDiscount ? 0.6 : 1
+              }}>
+                ${plan.price.toLocaleString()} ARS
+              </span>
+            </div>
+
+            {isTransfer && hasTransferDiscount && (
+              <div className="detail-item discount-row" style={{ color: '#10b981' }}>
+                <span>Descuento Transferencia ({plan.transferDiscount}%):</span>
+                <strong>- ${discountAmount.toLocaleString()} ARS</strong>
+              </div>
+            )}
+
             <div className="detail-item price-item">
               <span>Total a pagar:</span>
-              <strong className="summary-price">${plan.price} ARS</strong>
+              <strong className="summary-price">${finalPrice.toLocaleString()} ARS</strong>
             </div>
+
             {plan.internationalPrice > 0 && (
               <div className="detail-item">
                 <span>Precio Internacional:</span>
@@ -166,7 +187,6 @@ function CheckoutPage() {
         {/* LADO DERECHO: Formulario */}
         <div className="checkout-form-section">
           
-          {/* PASO 1: DATOS DEL USUARIO */}
           {step === 1 && (
             <form onSubmit={handleNextStep} className="checkout-form animate-enter">
               <div className="step-header">
@@ -178,38 +198,22 @@ function CheckoutPage() {
 
               <div className="checkout-group">
                 <label>Nombre y Apellido *</label>
-                <input 
-                  type="text" name="name" 
-                  value={formData.name} onChange={handleChange} 
-                  placeholder="Ej: Juan Pérez" required 
-                />
+                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Ej: Juan Pérez" required />
               </div>
 
               <div className="checkout-group">
                 <label>Email *</label>
-                <input 
-                  type="email" name="email" 
-                  value={formData.email} onChange={handleChange} 
-                  placeholder="juan@email.com" required 
-                />
+                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="juan@email.com" required />
               </div>
 
               <div className="checkout-group">
                 <label>Contraseña *</label>
-                <input 
-                  type="password" name="password" 
-                  value={formData.password} onChange={handleChange} 
-                  placeholder="Mínimo 6 caracteres" required 
-                />
+                <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Mínimo 6 caracteres" required />
               </div>
 
               <div className="checkout-group">
                 <label>Teléfono (Opcional)</label>
-                <input 
-                  type="tel" name="phone" 
-                  value={formData.phone} onChange={handleChange} 
-                  placeholder="Ej: +54 9 11 1234-5678" 
-                />
+                <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Ej: +54 9 11 1234-5678" />
               </div>
 
               <button type="submit" className="btn-next">
@@ -218,7 +222,6 @@ function CheckoutPage() {
             </form>
           )}
 
-          {/* PASO 2: SELECCIÓN DE PAGO Y COMPROBANTE */}
           {step === 2 && (
             <form onSubmit={handleSubmit} className="checkout-form animate-enter">
               <div className="step-header">
@@ -228,46 +231,30 @@ function CheckoutPage() {
 
               {error && <div className="error-message">{error}</div>}
 
-              {/* Selector de Método de Pago */}
               <div className="payment-methods">
                 <label className={`pm-option ${paymentMethod === 'mercadopago' ? 'selected' : ''}`}>
-                  <input 
-                    type="radio" name="payment" value="mercadopago" 
-                    checked={paymentMethod === 'mercadopago'} 
-                    onChange={(e) => setPaymentMethod(e.target.value)} 
-                  />
-                  {/* Logo de Mercado Pago */}
+                  <input type="radio" name="payment" value="mercadopago" checked={paymentMethod === 'mercadopago'} onChange={(e) => setPaymentMethod(e.target.value)} />
                   <img src="/mercadopago.png" alt="Mercado Pago" className="pm-logo" />
-                  <span>MercadoPago </span>
+                  <span>MercadoPago</span>
                 </label>
                 
                 <label className={`pm-option ${paymentMethod === 'paypal' ? 'selected' : ''}`}>
-                  <input 
-                    type="radio" name="payment" value="paypal" 
-                    checked={paymentMethod === 'paypal'} 
-                    onChange={(e) => setPaymentMethod(e.target.value)} 
-                  />
-                  {/* Logo de PayPal */}
+                  <input type="radio" name="payment" value="paypal" checked={paymentMethod === 'paypal'} onChange={(e) => setPaymentMethod(e.target.value)} />
                   <img src="/paypal.png" alt="PayPal" className="pm-logo" />
-                  <span>PayPal (Dólares)</span>
+                  <span>PayPal (USD)</span>
                 </label>
 
                 <label className={`pm-option ${paymentMethod === 'transfer' ? 'selected' : ''}`}>
-                  <input 
-                    type="radio" name="payment" value="transfer" 
-                    checked={paymentMethod === 'transfer'} 
-                    onChange={(e) => setPaymentMethod(e.target.value)} 
-                  />
-                  <Landmark size={24} color="#FAF3EF" className="pm-icon-lucide" />
-                  <span>Transferencia Bancaria </span>
+                  <input type="radio" name="payment" value="transfer" checked={paymentMethod === 'transfer'} onChange={(e) => setPaymentMethod(e.target.value)} />
+                  <Landmark size={24} color="#FAF3EF" />
+                  <span>Transferencia {hasTransferDiscount && <span className="discount-tag">-{plan.transferDiscount}%</span>}</span>
                 </label>
               </div>
 
-              {/* Detalles si elige Transferencia */}
               {paymentMethod === 'transfer' && (
                 <div className="transfer-details animate-enter">
                   <div className="bank-details-box">
-                    <p>Transferí el total de <strong>${plan.price} ARS</strong> a la siguiente cuenta:</p>
+                    <p>Transferí <strong style={{color: '#10b981'}}>${finalPrice.toLocaleString()} ARS</strong> a:</p>
                     <div className="bank-info">
                       <span><strong>Alias:</strong> DONTQUIT.PROGRAM</span>
                       <span><strong>CBU/CVU:</strong> 0000003100000000000000</span>
@@ -278,13 +265,7 @@ function CheckoutPage() {
                   <div className="form-group receipt-group">
                     <label>Subí tu comprobante *</label>
                     <div className="file-upload-wrapper">
-                      <input 
-                        type="file" 
-                        id="receipt-upload" 
-                        accept="image/*,.pdf" 
-                        onChange={handleFileChange} 
-                        className="file-input-hidden"
-                      />
+                      <input type="file" id="receipt-upload" accept="image/*,.pdf" onChange={handleFileChange} className="file-input-hidden" />
                       <label htmlFor="receipt-upload" className="file-upload-btn">
                         <Upload size={20} />
                         {receipt ? receipt.name : 'Seleccionar archivo...'}
@@ -295,28 +276,21 @@ function CheckoutPage() {
               )}
 
               <div className="form-actions">
-                <button type="button" onClick={() => setStep(1)} className="btn-back">
-                  Volver
-                </button>
+                <button type="button" onClick={() => setStep(1)} className="btn-back">Volver</button>
                 <button type="submit" className="btn-submit" disabled={submitting}>
-                  {submitting ? 'Procesando...' : (paymentMethod === 'transfer' ? 'Finalizar Compra' : 'Ir a Pagar')}
+                  {submitting ? 'Procesando...' : (isTransfer ? 'Finalizar Compra' : 'Ir a Pagar')}
                 </button>
               </div>
             </form>
           )}
 
-          {/* PASO 3: ÉXITO (Solo para transferencias, las pasarelas redirigen) */}
           {step === 3 && (
             <div className="checkout-success animate-enter">
               <CheckCircle size={60} className="success-icon" />
               <h3>¡Solicitud recibida!</h3>
-              <p>Tu cuenta fue pre-creada y recibimos tu comprobante de pago.</p>
-              <p className="success-subtext">
-                Rocío validará el pago a la brevedad. Te enviamos un mail de bienvenida y, una vez aprobado el pago, podrás ingresar a la app con tu email y la contraseña que elegiste.
-              </p>
-              <Link to="/login" className="btn-to-login">
-                Ir a Iniciar Sesión
-              </Link>
+              <p>Tu cuenta fue pre-creada y recibimos tu comprobante.</p>
+              <p className="success-subtext">Rocío validará el pago pronto. Recibirás un mail y luego podrás ingresar.</p>
+              <Link to="/login" className="btn-to-login">Ir a Iniciar Sesión</Link>
             </div>
           )}
 

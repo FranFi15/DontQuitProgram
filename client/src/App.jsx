@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AlertProvider } from './context/AlertContext';
 
-import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/public/LoginPage';
 
 import LandingPage from './pages/public/LandingPage';
@@ -39,7 +38,6 @@ function App() {
           <Route path="/" element={<LandingPage />} /> 
           <Route path="/login" element={<LoginPage />} />
           <Route path="/checkout/:planId" element={<CheckoutPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           
         
           <Route path="/admin" element={<AdminLayout />}>
