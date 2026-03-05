@@ -16,6 +16,7 @@ import wallRoutes from './routes/wall.routes.js';
 import planTypeRoutes from './routes/planType.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
+import checkoutRoutes from './routes/checkout.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -48,6 +49,7 @@ app.use('/api/records', recordsRoutes);
 app.use('/api/scoreboxes', scoreboxRoutes);
 app.use('/api/wall', wallRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/checkout', checkoutRoutes); 
 
 // --- Iniciar Servidor ---
 app.listen(PORT, () => {

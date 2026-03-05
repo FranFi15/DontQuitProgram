@@ -90,30 +90,28 @@ function CheckoutPage() {
         data.append('paymentMethod', 'TRANSFER');
         data.append('receipt', receipt);
 
-        // TODO: Endpoint real de tu backend para transferencias
-        // await axios.post('/auth/register-transfer', data, { headers: { 'Content-Type': 'multipart/form-data' }});
+        // Llamada real al backend (con foto incluida)
+        await axios.post('/checkout/register-checkout', data, { 
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         
-        // Simulación de carga por ahora
-        await new Promise(resolve => setTimeout(resolve, 1500)); 
-        setStep(3); // Pantalla de éxito local
+        setStep(3); // Pantalla de éxito
         
       } else {
         // --- LÓGICA DE MERCADOPAGO / PAYPAL ---
-        // TODO: Endpoint real de tu backend que devuelve el link de pago
-        /*
-        const response = await axios.post('/auth/register-gateway', {
+        // Llamada real al backend para pasarelas (JSON puro sin foto)
+        const response = await axios.post('/checkout/register-checkout', {
           planId,
           ...formData,
           paymentMethod: paymentMethod.toUpperCase()
         });
         
-        // Redirigimos al usuario a la URL de pago real
-        window.location.href = response.data.initPoint; 
-        */
-
-        // Simulación temporal para que no se rompa antes de conectar el backend
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        alert(`Acá el usuario sería redirigido a la pantalla de ${paymentMethod.toUpperCase()}`);
+        // Redirigimos al usuario a la URL que nos devuelve MercadoPago o PayPal
+        if (response.data.initPoint) {
+          window.location.href = response.data.initPoint; 
+        } else {
+          setError('No se pudo generar el link de pago. Intentá nuevamente.');
+        }
       }
     } catch (err) {
       console.error(err);
