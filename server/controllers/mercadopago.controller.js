@@ -32,9 +32,9 @@ export const createPreference = async (req, res) => {
         ],
         // 👇 1. URLs ACTUALIZADAS A VERCEL (Tu Frontend) 👇
         back_urls: {
-          success: "https://dont-quit-program.vercel.app/app/home", 
-          failure: "https://dont-quit-program.vercel.app/app/home",
-          pending: "https://dont-quit-program.vercel.app/app/home"
+          success: "https://dont-quit-program.vercel.app/app/login", 
+          failure: "https://dont-quit-program.vercel.app/app/login",
+          pending: "https://dont-quit-program.vercel.app/app/login"
         },
         // 👇 2. VOLVEMOS A PRENDER EL RETORNO AUTOMÁTICO 👇
         auto_return: "approved",
@@ -61,13 +61,15 @@ export const createPreference = async (req, res) => {
 };
 
 export const receiveWebhook = async (req, res) => {
+  // 1. Le decimos a MP "Recibido" rapidísimo para que no reintente
   res.status(200).send("OK");
 
   try {
-    const type = req.query.topic || req.body.type;
+    // MP a veces manda el tipo en 'topic', en 'type' o en 'action'
+    const type = req.query.topic || req.body.type || req.body.action;
     const paymentId = req.query.id || req.body.data?.id;
 
-    if (type === 'payment' && paymentId) {
+    if ((type === 'payment' || type === 'payment.created' || type === 'payment.updated') && paymentId) {
       
       const paymentClient = new Payment(client);
       const paymentInfo = await paymentClient.get({ id: paymentId });
@@ -76,11 +78,25 @@ export const receiveWebhook = async (req, res) => {
         const userId = parseInt(paymentInfo.metadata.user_id);
         const planId = parseInt(paymentInfo.metadata.plan_id);
 
+        // 2. Buscamos si ya registramos este comprobante exacto
         const existingPayment = await prisma.payment.findFirst({
           where: { receiptUrl: `MP-${paymentId}` } 
         });
 
-        if (!existingPayment) {
+        // 3. CANDADO ANTI-DUPLICADOS 
+        // Buscamos si este usuario ya recibió este plan hace menos de 5 minutos
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60000);
+        const recentSubscription = await prisma.subscription.findFirst({
+          where: {
+            userId: userId,
+            planId: planId,
+            startDate: { gte: fiveMinutesAgo }
+          }
+        });
+
+        // Si no existe el pago Y no le dimos el plan recién, lo creamos
+        if (!existingPayment && !recentSubscription) {
+          
           await prisma.payment.create({
             data: {
               userId,
@@ -108,6 +124,9 @@ export const receiveWebhook = async (req, res) => {
           });
           
           console.log(`✅ ¡ÉXITO! Acceso otorgado al usuario ${userId} por MP.`);
+        } else {
+          // Si cae acá, es el segundo aviso ansioso de MP, simplemente lo ignoramos
+          console.log(`⚠️ Webhook duplicado de MP ignorado para el pago ${paymentId}`);
         }
       }
     }
