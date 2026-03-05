@@ -108,6 +108,10 @@ function CheckoutPage() {
         
         // Redirigimos al usuario a la URL que nos devuelve MercadoPago o PayPal
         if (response.data.initPoint) {
+          if (paymentMethod === 'paypal') {
+            localStorage.setItem('pendingPayPalUserId', response.data.userId);
+            localStorage.setItem('pendingPayPalPlanId', planId);
+          }
           window.location.href = response.data.initPoint; 
         } else {
           setError('No se pudo generar el link de pago. Intentá nuevamente.');

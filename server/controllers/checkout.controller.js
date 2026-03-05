@@ -117,7 +117,7 @@ export const processCheckout = async (req, res) => {
       // Buscamos el link de redirección de PayPal
       const approveLink = orderData.links.find(link => link.rel === "approve").href;
 
-      return res.json({ success: true, initPoint: approveLink });
+     return res.json({ success: true, initPoint: approveLink, userId: newUser.id });
     }
 
   } catch (error) {

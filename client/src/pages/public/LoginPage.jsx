@@ -1,9 +1,11 @@
 // client/src/pages/LoginPage.jsx
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react'; // 👈 Importamos el ícono
 import './LoginPage.css'; 
 import logo from '../../../public/logob.png';
 
@@ -12,13 +14,47 @@ function LoginPage() {
   const { login } = useAuth();
   const { showAlert } = useAlert(); 
   const navigate = useNavigate();
+  
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const paypalToken = searchParams.get('token'); 
+    
+    if (paypalToken) {
+      const capturePayment = async () => {
+        try {
+          const userId = localStorage.getItem('pendingPayPalUserId');
+          const planId = localStorage.getItem('pendingPayPalPlanId');
+
+          if (userId && planId) {
+            await axios.post('/payments/paypal/capture-order', { 
+              orderID: paypalToken, 
+              userId, 
+              planId 
+            });
+
+            localStorage.removeItem('pendingPayPalUserId');
+            localStorage.removeItem('pendingPayPalPlanId');
+            setSearchParams({});
+            
+            showAlert('¡Pago aprobado! Tu suscripción ya está activa. Iniciá sesión.', 'success');
+          }
+        } catch (error) {
+          console.error("Error capturando PayPal:", error);
+          showAlert('Hubo una demora procesando tu pago. Si ya te cobraron, contactá a soporte.', 'error');
+          setSearchParams({});
+        }
+      };
+
+      capturePayment();
+    }
+  }, [searchParams, setSearchParams, showAlert]);
 
   const onSubmit = async (values) => {
     try {
       const res = await axios.post('/auth/login', values);
       login(res.data.user, res.data.token);
       
-      // 👈 3. MENSAJE DE BIENVENIDA (Opcional, pero queda muy pro)
       showAlert(`¡Bienvenido de vuelta, ${res.data.user.name?.split(' ')[0] || 'Atleta'}!`, "success");
 
       if (res.data.user.role === 'ADMIN') {
@@ -28,7 +64,6 @@ function LoginPage() {
       }
     } catch (error) {
       console.error(error);
-      // 👈 4. REEMPLAZAMOS EL ESTADO LOCAL POR LA ALERTA GLOBAL
       showAlert(error.response?.data?.error || "Error al iniciar sesión. Verifica tus datos.", "error");
     }
   };
@@ -36,12 +71,16 @@ function LoginPage() {
   return (
   <div className="login-container">
     <div className="login-box">
-      {/* 1. El Título aparece primero */}
+      
+      {/* 👇 NUEVO BOTÓN VOLVER AL INICIO 👇 */}
+      <div className="login-back-wrapper animate-enter">
+        <Link to="/" className="login-back-link">
+          <ArrowLeft size={18} /> Volver al inicio
+        </Link>
+      </div>
+
       <h1 className="login-title animate-enter">INICIAR SESIÓN</h1>
       
-      {/* ELIMINAMOS EL DIV DE LOGIN ERROR, YA NO HACE FALTA */}
-
-      {/* 2. El Formulario aparece segundo */}
       <form onSubmit={handleSubmit(onSubmit)} className="login-form animate-enter delay-200">
         
         <div className="form-group">
@@ -69,7 +108,6 @@ function LoginPage() {
         </button>
       </form>
 
-      {/* 3. Los links y el footer aparecen al final */}
       <div className="register-link-container animate-enter delay-300">
         <p>
           ¿NO TIENES CUENTA? <Link to="/register" className="register-link">REGÍSTRATE</Link>

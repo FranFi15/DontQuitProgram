@@ -170,3 +170,24 @@
     max-width: 180px; /* Achicamos el logo proporcionalmente */
   }
 }
+.login-back-wrapper {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.login-back-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a1a1aa;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.login-back-link:hover {
+  color: #FAF3EF;
+}
