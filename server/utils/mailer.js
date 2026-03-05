@@ -1,12 +1,20 @@
 import nodemailer from 'nodemailer';
 
-// Configuración para GMAIL
+// Configuración REFORZADA para GMAIL (Optimizado para Render)
 const transporter = nodemailer.createTransport({
-  service: 'gmail', 
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // true para puerto 465 (SSL)
   auth: {
-    user: process.env.EMAIL_USER, 
-    pass: process.env.EMAIL_PASS  
-  }
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  // 👇 Esto es clave para evitar el timeout en hostings
+  tls: {
+    rejectUnauthorized: false
+  },
+  connectionTimeout: 10000, // 10 segundos
+  greetingTimeout: 10000,
 });
 
 export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
@@ -41,9 +49,12 @@ export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`✉️ Mail de bienvenida enviado a ${userEmail}`);
+    // Quitamos el await aquí para que el backend no se quede "colgado" esperando al mail
+    transporter.sendMail(mailOptions)
+      .then(() => console.log(`✉️ Mail de bienvenida enviado a ${userEmail}`))
+      .catch(err => console.error("❌ Error interno Nodemailer:", err));
+
   } catch (error) {
-    console.error("❌ Error enviando email:", error);
+    console.error("❌ Error en la función sendWelcomeEmail:", error);
   }
 };
