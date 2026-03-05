@@ -33,7 +33,7 @@ export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #000;">¡Hola ${userName.split(' ')[0]}! Bienvenido/a al equipo.</h2>
-          <p>Tu cuenta fue pre-creada con éxito en nuestra plataforma.</p>
+          <p>Tu cuenta fue creada con éxito en nuestra plataforma.</p>
           
           <div style="background-color: #f4f4f4; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0;"><strong>Tu usuario para ingresar es:</strong> ${userEmail}</p>
