@@ -18,33 +18,28 @@ function LoginPage() {
   // Leemos los parámetros de la URL (?token=...)
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // --- 🎯 CAPTURADOR DE PAYPAL ---
+  // --- 🎯 CAPTURADOR DE NOTIFICACIONES (PayPal y Mercado Pago) ---
   useEffect(() => {
     const paypalToken = searchParams.get('token'); 
-    
+    const mpStatus = searchParams.get('status'); // Mercado Pago devuelve esto en la URL
+
+    // 1. LÓGICA PAYPAL
     if (paypalToken) {
       const capturePayPalPayment = async () => {
         try {
-          // Recuperamos los datos guardados en el Checkout
           const userId = localStorage.getItem('pendingPayPalUserId');
           const planId = localStorage.getItem('pendingPayPalPlanId');
 
           if (userId && planId) {
-            // Llamamos a la ruta de tu backend para capturar la orden
-            // NOTA: Ajustá la ruta si tu prefijo de pagos es distinto a /payments
             await axios.post('/payments/paypal/capture-order', { 
               orderID: paypalToken, 
               userId: Number(userId), 
               planId: Number(planId) 
             });
 
-            // Limpiamos los datos temporales
             localStorage.removeItem('pendingPayPalUserId');
             localStorage.removeItem('pendingPayPalPlanId');
-
-            // Limpiamos la URL (quitamos el token)
             setSearchParams({});
-            
             showAlert('¡Pago de PayPal exitoso! Tu cuenta ya está activa. Iniciá sesión ahora.', 'success');
           }
         } catch (error) {
@@ -53,9 +48,21 @@ function LoginPage() {
           setSearchParams({});
         }
       };
-
       capturePayPalPayment();
     }
+
+    // 2. LÓGICA MERCADO PAGO
+    if (mpStatus === 'approved') {
+      showAlert('¡Pago de Mercado Pago exitoso! Tu cuenta se activará en instantes. Ya podés iniciar sesión.', 'success');
+      setSearchParams({}); 
+    } else if (mpStatus === 'pending') {
+      showAlert('Tu pago está pendiente. Te avisaremos cuando se acredite.', 'warning');
+      setSearchParams({});
+    } else if (mpStatus === 'failure') {
+      showAlert('El pago de Mercado Pago falló o fue cancelado.', 'error');
+      setSearchParams({});
+    }
+
   }, [searchParams, setSearchParams, showAlert]);
 
   const onSubmit = async (values) => {
