@@ -325,13 +325,13 @@ function LandingPage() {
               <Mail size={18} /> dontquit.bahiablanca@gmail.com
             </a>
             
-            <a href="https://instagram.com/dontquit.program" target="_blank" rel="noopener noreferrer" className="contact-item">
-              <Instagram size={18} /> @dontquit.program
+            <a href="https://www.instagram.com/rocioboxallcoach/" target="_blank" rel="noopener noreferrer" className="contact-item">
+              <Instagram size={18} /> @rocioboxallcoach
             </a>
 
-            <a href="https://tiktok.com/@dontquit.program" target="_blank" rel="noopener noreferrer" className="contact-item">
+            <a href="https://tiktok.com/@rocioboxall" target="_blank" rel="noopener noreferrer" className="contact-item">
               <img src="/tiktok.svg" alt="TikTok" className="custom-social-icon" />
-              @dontquit.program
+              @rocioboxall
             </a>
             
           </div>
