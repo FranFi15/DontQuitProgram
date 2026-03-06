@@ -155,7 +155,7 @@ function LandingPage() {
           </p>
           
           <p>
-            Personas que buscan enamorarse del proceso y alcanzar sus objetivos sin perder el foco, <strong style={{ fontSize: '1.2rem', fontWeight: '600', color: '#FAF3EF' }}>sentirse bien.</strong><br/><br/>
+            Personas que buscan enamorarse del proceso y alcanzar sus objetivos sin perder EL FOCO, <strong style={{ fontSize: '1.2rem', fontWeight: '600', color: '#FAF3EF' }}>sentirse bien.</strong><br/><br/>
             <strong  style={{ fontSize: '1.2rem', fontWeight: '600', color: '#FAF3EF' }}>Spoiler:</strong> si vos estás bien, tu rendimiento va a ir al máximo. No siempre más es más, hacerlo bien y consciente sí lo es. Somos cuerpo, mente, alma, no te olvides.
           </p>
 
@@ -166,11 +166,11 @@ function LandingPage() {
           </p>
           
           <p>
-            Fundadora y Head Coach del Gimnasio Don’t Quit. de Bahía Blanca. Este año cumplo 10 años como entrenadora y 8 años como fundadora.
+            Fundadora y Head Coach del Gimnasio <strong  style={{ fontSize: '1.2rem', fontWeight: '600', color: '#FAF3EF' }}>Don’t Quit.</strong>, de Bahía Blanca. Este año cumplo 10 años como entrenadora y 8 años como fundadora.
           </p>
           
           <p>
-            El deporte es parte de mi vida, fui gimnasta de alto rendimiento desde los 7 años hasta los 17 y justamente en ese quiebre encontré el Cross, y entendí que era ahí donde mi corazón se sentía en casa, sabía que se venía un camino largo por recorrer en el mundo del Fitness.
+            Fui gimnasta de alto rendimiento desde los 7 hasta los 18, en ese momento, la gimnasia, se volvio incompatible con mi carrera profesional. En medio del duelo de dejar de hacer lo que siempre amé, encontre el Cross, mi corazón se volvio a sentir como en casa y entendí que me esperaba un largo camino por recorrer en el mundo del Fitness.
           </p>
 
           <p style={{ marginTop: '30px', fontSize: '1.2rem', fontStyle: 'italic', color: '#FAF3EF' }}>
