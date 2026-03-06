@@ -37,7 +37,31 @@ export const processCheckout = async (req, res) => {
     sendWelcomeEmail(newUser.email, newUser.name, paymentMethod);
 
     // 5. Bifurcación según Método de Pago
-    
+    if (plan.price === 0) {
+      await prisma.subscription.create({
+        data: {
+          userId: newUser.id,
+          planId: plan.id,
+          isActive: true,
+          endDate: new Date(new Date().getTime() + (plan.duration + 2) * 7 * 24 * 60 * 60 * 1000)
+        }
+      });
+
+      // Guardamos un registro de pago "SIMBÓLICO" por $0 para que no queden huecos en las métricas
+      await prisma.payment.create({
+        data: {
+          userId: newUser.id,
+          planId: plan.id,
+          amount: 0,
+          currency: 'ARS',
+          method: 'GRATUITO',
+          status: 'APPROVED', // Ya está aprobado
+        }
+      });
+
+      // Le decimos al frontend que todo fue un éxito y que no hace falta ir a ninguna pasarela
+      return res.json({ success: true, isFree: true });
+    }
     // --- A. TRANSFERENCIA BANCARIA ---
     if (paymentMethod === 'TRANSFER') {
       if (!req.file) {
@@ -73,9 +97,9 @@ export const processCheckout = async (req, res) => {
             currency_id: 'ARS',
           }],
           back_urls: {
-            success: "https://dont-quit-program.vercel.app/login", 
-            failure: "https://dont-quit-program.vercel.app/login",
-            pending: "https://dont-quit-program.vercel.app/login"
+            success: "https://dontquitprogram.com/login", 
+            failure: "https://dontquitprogram.com/login",
+            pending:"https://dontquitprogram.com/login"
           },
           auto_return: "approved",
           notification_url: "https://dontquitprogram.onrender.com/api/payments/mp/webhook",
@@ -111,8 +135,8 @@ export const processCheckout = async (req, res) => {
           }],
           // 👇 AGREGAMOS ESTO PARA QUE SEPA A DÓNDE VOLVER 👇
           application_context: {
-            return_url: "https://dont-quit-program.vercel.app/login",
-            cancel_url: "https://dont-quit-program.vercel.app/login"
+            return_url: "https://dontquitprogram.com/login",
+            cancel_url: "https://dontquitprogram.com/login",
           }
         }),
       });

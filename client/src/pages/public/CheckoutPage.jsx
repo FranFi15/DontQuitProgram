@@ -79,6 +79,18 @@ function CheckoutPage() {
     setError('');
 
     try {
+      if (finalPrice === 0) {
+        const response = await axios.post('/checkout/register-checkout', {
+          planId,
+          ...formData,
+          paymentMethod: 'GRATUITO' 
+        });
+
+        if (response.data.isFree) {
+          setStep(3); 
+        }
+        return;
+      }
       if (paymentMethod === 'transfer') {
         if (!receipt) {
           setError('Por favor, adjuntá el comprobante de transferencia.');
@@ -222,74 +234,97 @@ function CheckoutPage() {
             </form>
           )}
 
-          {step === 2 && (
+         {step === 2 && (
             <form onSubmit={handleSubmit} className="checkout-form animate-enter">
               <div className="step-header">
                 <Wallet size={24} className="step-icon" />
-                <h3>Paso 2: ¿Cómo querés pagar?</h3>
+                <h3>{finalPrice === 0 ? 'Paso 2: Activar Plan' : 'Paso 2: ¿Cómo querés pagar?'}</h3>
               </div>
 
               {error && <div className="error-message">{error}</div>}
 
-              <div className="payment-methods">
-                <label className={`pm-option ${paymentMethod === 'mercadopago' ? 'selected' : ''}`}>
-                  <input type="radio" name="payment" value="mercadopago" checked={paymentMethod === 'mercadopago'} onChange={(e) => setPaymentMethod(e.target.value)} />
-                  <img src="/mercadopago.png" alt="Mercado Pago" className="pm-logo" />
-                  <span>MercadoPago</span>
-                </label>
-                
-                <label className={`pm-option ${paymentMethod === 'paypal' ? 'selected' : ''}`}>
-                  <input type="radio" name="payment" value="paypal" checked={paymentMethod === 'paypal'} onChange={(e) => setPaymentMethod(e.target.value)} />
-                  <img src="/paypal.png" alt="PayPal" className="pm-logo" />
-                  <span>PayPal (USD)</span>
-                </label>
-
-                <label className={`pm-option ${paymentMethod === 'transfer' ? 'selected' : ''}`}>
-                  <input type="radio" name="payment" value="transfer" checked={paymentMethod === 'transfer'} onChange={(e) => setPaymentMethod(e.target.value)} />
-                  <Landmark size={24} color="#FAF3EF" />
-                  <span>Transferencia {hasTransferDiscount && <span className="discount-tag">-{plan.transferDiscount}%</span>}</span>
-                </label>
-              </div>
-
-              {paymentMethod === 'transfer' && (
-                <div className="transfer-details animate-enter">
-                  <div className="bank-details-box">
-                    <p>Transferí <strong style={{color: '#10b981'}}>${finalPrice.toLocaleString()} ARS</strong> a:</p>
-                    <div className="bank-info">
-                      <span><strong>Alias:</strong> DONTQUIT.PROGRAM</span>
-                      <span><strong>CBU/CVU:</strong> 0000003100000000000000</span>
-                      <span><strong>Titular:</strong> Rocio Boxall</span>
-                    </div>
-                  </div>
-
-                  <div className="form-group receipt-group">
-                    <label>Subí tu comprobante *</label>
-                    <div className="file-upload-wrapper">
-                      <input type="file" id="receipt-upload" accept="image/*,.pdf" onChange={handleFileChange} className="file-input-hidden" />
-                      <label htmlFor="receipt-upload" className="file-upload-btn">
-                        <Upload size={20} />
-                        {receipt ? receipt.name : 'Seleccionar archivo...'}
-                      </label>
-                    </div>
-                  </div>
+              {/* Si es gratis, mostramos un cartel especial */}
+              {finalPrice === 0 ? (
+                <div className="bank-details-box" style={{ textAlign: 'center', borderColor: '#10b981' }}>
+                  <h4 style={{ color: '#10b981', marginBottom: '10px' }}>¡Este plan es 100% gratuito!</h4>
+                  <p>No necesitas ingresar tarjeta de crédito. Hacé clic abajo para crear tu cuenta y empezar a entrenar inmediatamente.</p>
                 </div>
+              ) : (
+                /* Si no es gratis, mostramos los métodos de pago normales */
+                <>
+                  <div className="payment-methods">
+                    <label className={`pm-option ${paymentMethod === 'mercadopago' ? 'selected' : ''}`}>
+                      <input type="radio" name="payment" value="mercadopago" checked={paymentMethod === 'mercadopago'} onChange={(e) => setPaymentMethod(e.target.value)} />
+                      <img src="/mercadopago.png" alt="Mercado Pago" className="pm-logo" />
+                      <span>MercadoPago</span>
+                    </label>
+                    
+                    <label className={`pm-option ${paymentMethod === 'paypal' ? 'selected' : ''}`}>
+                      <input type="radio" name="payment" value="paypal" checked={paymentMethod === 'paypal'} onChange={(e) => setPaymentMethod(e.target.value)} />
+                      <img src="/paypal.png" alt="PayPal" className="pm-logo" />
+                      <span>PayPal (USD)</span>
+                    </label>
+
+                    <label className={`pm-option ${paymentMethod === 'transfer' ? 'selected' : ''}`}>
+                      <input type="radio" name="payment" value="transfer" checked={paymentMethod === 'transfer'} onChange={(e) => setPaymentMethod(e.target.value)} />
+                      <Landmark size={24} color="#FAF3EF" />
+                      <span>Transferencia {hasTransferDiscount && <span className="discount-tag">-{plan.transferDiscount}%</span>}</span>
+                    </label>
+                  </div>
+
+                  {paymentMethod === 'transfer' && (
+                    <div className="transfer-details animate-enter">
+                      {/* ... el cuadro del banco que ya tenías ... */}
+                      <div className="bank-details-box">
+                        <p>Transferí <strong style={{color: '#10b981'}}>${finalPrice.toLocaleString()} ARS</strong> a:</p>
+                        <div className="bank-info">
+                          <span><strong>Alias:</strong> DONTQUIT.PROGRAM</span>
+                          <span><strong>CBU/CVU:</strong> 0000003100000000000000</span>
+                          <span><strong>Titular:</strong> Rocio Boxall</span>
+                        </div>
+                      </div>
+
+                      <div className="form-group receipt-group">
+                        <label>Subí tu comprobante *</label>
+                        <div className="file-upload-wrapper">
+                          <input type="file" id="receipt-upload" accept="image/*,.pdf" onChange={handleFileChange} className="file-input-hidden" />
+                          <label htmlFor="receipt-upload" className="file-upload-btn">
+                            <Upload size={20} />
+                            {receipt ? receipt.name : 'Seleccionar archivo...'}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               <div className="form-actions">
                 <button type="button" onClick={() => setStep(1)} className="btn-back">Volver</button>
                 <button type="submit" className="btn-submit" disabled={submitting}>
-                  {submitting ? 'Procesando...' : (isTransfer ? 'Finalizar Compra' : 'Ir a Pagar')}
+                  {submitting ? 'Procesando...' : (finalPrice === 0 ? 'Activar Cuenta Gratis' : (isTransfer ? 'Finalizar Compra' : 'Ir a Pagar'))}
                 </button>
               </div>
             </form>
           )}
 
-          {step === 3 && (
+         {step === 3 && (
             <div className="checkout-success animate-enter">
               <CheckCircle size={60} className="success-icon" />
-              <h3>¡Solicitud recibida!</h3>
-              <p>Tu cuenta fue pre-creada y recibimos tu comprobante.</p>
-              <p className="success-subtext">Rocío validará el pago pronto. Recibirás un mail y luego podrás ingresar.</p>
+              <h3>¡Cuenta Creada!</h3>
+              
+              {finalPrice === 0 ? (
+                <>
+                  <p>Tu cuenta y tu plan gratuito ya están activos.</p>
+                  <p className="success-subtext">Ya podés ingresar a la app con tu email y contraseña.</p>
+                </>
+              ) : (
+                <>
+                  <p>Tu cuenta fue creada y recibimos tu comprobante.</p>
+                  <p className="success-subtext">Rocío validará el pago pronto. Recibirás un mail y luego podrás ingresar.</p>
+                </>
+              )}
+              
               <Link to="/login" className="btn-to-login">Ir a Iniciar Sesión</Link>
             </div>
           )}
