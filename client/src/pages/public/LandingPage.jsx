@@ -128,10 +128,10 @@ function LandingPage() {
         <div className="hero-content reveal">
           <span className="hero-badge">PROGRAMACIÓN ONLINE</span>
           <h1 className="hero-title">
-            PLANIFICACIÓN PARA ATLETAS REALES
+            PLANIFICACIÓN PARA PERSONAS REALES
           </h1>
           <p className="hero-subtitle">
-            Mejorá un 1% cada día. 
+            Somos más que un cuerpo. 
           </p>
           <div className="hero-actions">
             <button onClick={scrollToPlans} className="btn-primary-landing">
@@ -151,12 +151,12 @@ function LandingPage() {
           <div className="divider-line"></div>
           
           <p className="lead-text">
-            Este programa está creado para personas como vos y como yo, que buscan cada día mejorar un 1 por ciento más, encontrando un equilibrio entre el entrenamiento, las responsabilidades laborales diarias, la familia, los amigos y el disfrute.
+           Este programa esta creado para personas como vos y como yo, que buscan mejorar un 1% más cada dia. Que buscan el equilibrio entre el entrenamiento, las responsabilidades diarias, los amigos, la familia y el disfrute.
           </p>
           
           <p>
-            Personas que buscan enamorarse del proceso y alcanzar sus objetivos sin perder el foco, sentirse bien.<br/><br/>
-            <strong>Spoiler:</strong> si vos estás bien, tu rendimiento va a ir al máximo. No siempre más es más, hacerlo bien y consciente sí lo es. Somos cuerpo, mente, alma, no te olvides.
+            Personas que buscan enamorarse del proceso y alcanzar sus objetivos sin perder el foco, <strong style={{ fontSize: '1.2rem', fontWeight: '600', color: '#FAF3EF' }}>sentirse bien.</strong><br/><br/>
+            <strong  style={{ fontSize: '1.2rem', fontWeight: '600', color: '#FAF3EF' }}>Spoiler:</strong> si vos estás bien, tu rendimiento va a ir al máximo. No siempre más es más, hacerlo bien y consciente sí lo es. Somos cuerpo, mente, alma, no te olvides.
           </p>
 
           <div style={{ marginTop: '50px', marginBottom: '30px' }} className="divider-line"></div>
