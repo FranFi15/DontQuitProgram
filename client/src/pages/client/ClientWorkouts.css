@@ -272,6 +272,7 @@
   line-height: 0.95;
   margin: 0 0 1.5rem 0;
   letter-spacing: -1px;
+  color: #000;
 }
 
 /* Tarjetas de Ejercicios */
@@ -301,13 +302,25 @@
 }
 
 .exercise-notes-html {
-  font-size: 0.95rem;
+ font-size: 0.95rem;
   line-height: 1.6;
   color: #4b5563;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%; 
+  overflow: hidden;
 }
-.exercise-notes-html p { margin-bottom: 0.5rem; }
+.exercise-notes-html p { margin-bottom: 0.5rem; max-width: 100%; }
 .exercise-notes-html ul { padding-left: 1.2rem; margin-bottom: 0.5rem; }
 .exercise-notes-html strong { color: #111; }
+.exercise-notes-html img, 
+.exercise-notes-html iframe, 
+.exercise-notes-html video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
 
 .finish-workout-btn {
   background: #000;

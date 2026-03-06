@@ -155,7 +155,7 @@ function LandingPage() {
               <button 
                 onClick={() => handleBuyClick(freePlan.id)} 
                 className="btn-secondary-landing" 
-                style={{ borderColor: '#10b981', color: '#10b981' }}
+                style={{ borderColor: '#faf3ef5a', color: '#FAF3EF' }}
               >
                 <Gift size={18} /> Prueba Gratis
               </button>
