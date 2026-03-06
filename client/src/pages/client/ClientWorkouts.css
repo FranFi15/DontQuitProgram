@@ -241,7 +241,6 @@
 /* --- VISTA DE DETALLE --- */
 .workout-detail-view {
   background: #f9fafb;
-  min-height: 100vh;
   height: auto;
   padding: 1.5rem;
   padding-bottom: 120px;
