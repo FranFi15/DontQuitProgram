@@ -193,3 +193,59 @@ export const togglePlanStatus = async (req, res) => {
     res.status(500).json({ error: "Error al cambiar el estado del plan" });
   }
 };
+
+export const duplicatePlan = async (req, res) => {
+  try {
+    const { id } = req.params; // ID del plan original
+    const { 
+      newTitle, 
+      newPrice, 
+      newInternationalPrice, 
+      newTransferDiscount, 
+      newHasFollowUp 
+    } = req.body;
+
+    // 1. Buscamos el plan original CON todas sus rutinas
+    const originalPlan = await prisma.plan.findUnique({
+      where: { id: parseInt(id) },
+      include: { workouts: true }
+    });
+
+    if (!originalPlan) {
+      return res.status(404).json({ error: "El plan original no existe." });
+    }
+
+    // 2. Creamos el nuevo plan usando la info original, pero pisando los precios/títulos
+    const duplicatedPlan = await prisma.plan.create({
+      data: {
+        title: newTitle || `${originalPlan.title} (Copia)`,
+        description: originalPlan.description,
+        duration: originalPlan.duration,
+        levelDefinitions: originalPlan.levelDefinitions,
+        planTypeId: originalPlan.planTypeId,
+        
+        // Valores nuevos proporcionados por Rocío
+        price: parseFloat(newPrice),
+        internationalPrice: parseFloat(newInternationalPrice || 0),
+        transferDiscount: parseInt(newTransferDiscount || 0),
+        hasFollowUp: newHasFollowUp || false,
+        isActive: false, 
+        
+        workouts: {
+          create: originalPlan.workouts.map(workout => ({
+            weekNumber: workout.weekNumber,
+            dayNumber: workout.dayNumber,
+            title: workout.title,
+            blocks: workout.blocks
+          }))
+        }
+      }
+    });
+
+    res.json({ message: "Plan duplicado con éxito", plan: duplicatedPlan });
+
+  } catch (error) {
+    console.error("Error al duplicar el plan:", error);
+    res.status(500).json({ error: "Error interno al duplicar el plan y sus rutinas." });
+  }
+};
