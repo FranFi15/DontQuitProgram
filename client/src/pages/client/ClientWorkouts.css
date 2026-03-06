@@ -241,10 +241,17 @@
 /* --- VISTA DE DETALLE --- */
 .workout-detail-view {
   background: #f9fafb;
-  height: auto;
+  /* 👇 CLAVE: Posicionamiento absoluto para cubrir toda la pantalla */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* 👇 CLAVE: Controla su propio scroll interno */
+  overflow-y: auto; 
   padding: 1.5rem;
   padding-bottom: 120px;
-  overflow-y: auto;
+  z-index: 50; /* Para que quede por encima de otras cosas si es necesario */
 }
 
 .detail-navbar {
