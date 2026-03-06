@@ -242,8 +242,10 @@
 .workout-detail-view {
   background: #f9fafb;
   min-height: 100vh;
+  height: auto;
   padding: 1.5rem;
   padding-bottom: 120px;
+  overflow-y: auto;
 }
 
 .detail-navbar {
@@ -288,6 +290,8 @@
   border-radius: 16px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+  height: auto;
+  min-height: min-content;
 }
 
 .exercise-name {
@@ -309,7 +313,7 @@
   overflow-wrap: break-word;
   word-break: break-word;
   max-width: 100%; 
-  overflow: hidden;
+  overflow-x: hidden;
 }
 .exercise-notes-html p { margin-bottom: 0.5rem; max-width: 100%; }
 .exercise-notes-html ul { padding-left: 1.2rem; margin-bottom: 0.5rem; }
