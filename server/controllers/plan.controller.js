@@ -83,7 +83,9 @@ export const createPlan = async (req, res) => {
     // 1. AGREGAMOS transferDiscount AQUÍ
     const { title, description, price, duration, internationalPrice, transferDiscount, planTypeId, hasFollowUp } = req.body;
 
-    if (!title || !price) return res.status(400).json({ error: 'Título y Precio son obligatorios' });
+   if (!title || price === undefined || price === null || price < 0) {
+      return res.status(400).json({ error: 'El Título es obligatorio y el Precio no puede ser negativo.' });
+    }
 
     const newPlan = await prisma.plan.create({
       data: {
