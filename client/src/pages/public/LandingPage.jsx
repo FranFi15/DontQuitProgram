@@ -262,12 +262,6 @@ function LandingPage() {
                         {showSubFilters && (
                           <div className="subfilter-container">
                             <button 
-                              className={`subfilter-btn ${currentSubFilter === 'ALL' ? 'active' : ''}`}
-                              onClick={() => handleSubFilterChange(category.id, 'ALL')}
-                            >
-                              Ver Todos
-                            </button>
-                            <button 
                               className={`subfilter-btn ${currentSubFilter === 'WITH' ? 'active' : ''}`}
                               onClick={() => handleSubFilterChange(category.id, 'WITH')}
                             >
