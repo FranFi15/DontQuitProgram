@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../api/axios'; 
-import { Menu, X, ChevronRight, CheckCircle2, AlertCircle, Instagram, Mail, Youtube} from 'lucide-react';
+import { Menu, X, ChevronRight, CheckCircle2, AlertCircle, Instagram, Mail, Youtube, Gift} from 'lucide-react'; // 👈 Importamos Gift
 import './LandingPage.css';
 
 function LandingPage() {
@@ -17,8 +17,11 @@ function LandingPage() {
   // Filtro principal (Categorías)
   const [activeFilter, setActiveFilter] = useState('ALL');
   
-  // 👈 NUEVO: Sub-filtro individual por categoría { categoryId: 'ALL' | 'WITH' | 'WITHOUT' }
+  // Sub-filtro individual por categoría
   const [subFilters, setSubFilters] = useState({}); 
+
+  // 👈 NUEVO: Buscamos si hay algún plan gratuito disponible para el botón del Header
+  const freePlan = plans.find(p => p.price === 0);
 
   // 1. Efecto para el Navbar
   useEffect(() => {
@@ -70,7 +73,7 @@ function LandingPage() {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [loading, plans, activeFilter, subFilters]); // 👈 Añadimos subFilters como dependencia
+  }, [loading, plans, activeFilter, subFilters]);
 
   // 4. Función de Scroll Suave
   const scrollToPlans = () => {
@@ -85,7 +88,6 @@ function LandingPage() {
     navigate(`/checkout/${planId}`);
   };
 
-  // 👈 NUEVA FUNCIÓN: Manejar el cambio de sub-filtro
   const handleSubFilterChange = (categoryId, filterValue) => {
     setSubFilters(prev => ({
       ...prev,
@@ -147,9 +149,21 @@ function LandingPage() {
             <button onClick={scrollToPlans} className="btn-primary-landing">
               Ver Programas <ChevronRight size={20} />
             </button>
-            <button onClick={() => navigate('/login')} className="btn-secondary-landing">
-              Ya soy alumno
-            </button>
+            
+            {/* 👈 NUEVO: Si hay un plan gratuito, mostramos el botón especial. Si no, el de "Ya soy alumno" */}
+            {freePlan ? (
+              <button 
+                onClick={() => handleBuyClick(freePlan.id)} 
+                className="btn-secondary-landing" 
+                style={{ borderColor: '#10b981', color: '#10b981' }}
+              >
+                <Gift size={18} /> Prueba Gratis
+              </button>
+            ) : (
+              <button onClick={() => navigate('/login')} className="btn-secondary-landing">
+                Ya soy alumno
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -200,7 +214,6 @@ function LandingPage() {
           <div className="catalog-loading">Cargando programas disponibles...</div>
         ) : (
           <>
-            {/* --- FILTROS DE CATEGORÍAS PRINCIPALES --- */}
             {categories.length > 0 && (
               <div className="catalog-filters reveal">
                 <button 
@@ -231,26 +244,22 @@ function LandingPage() {
               {categories
                 .filter(category => activeFilter === 'ALL' || category.id === activeFilter)
                 .map(category => {
-                  // Todos los planes de esta categoría
                   const allCategoryPlans = plans.filter(p => p.planTypeId === category.id);
                   if (allCategoryPlans.length === 0) return null;
 
-                  // Lógica del sub-filtro actual para esta categoría
                   const currentSubFilter = subFilters[category.id] || 'ALL';
                   
-                  // Averiguamos si la categoría tiene de ambos tipos para mostrar o no los botones
                   const hasFollowUpPlans = allCategoryPlans.some(p => p.hasFollowUp);
                   const hasNoFollowUpPlans = allCategoryPlans.some(p => !p.hasFollowUp);
                   const showSubFilters = hasFollowUpPlans && hasNoFollowUpPlans;
 
-                  // Filtramos los planes según el sub-filtro elegido
                   const displayedPlans = allCategoryPlans.filter(p => {
                     if (currentSubFilter === 'WITH') return p.hasFollowUp === true;
                     if (currentSubFilter === 'WITHOUT') return p.hasFollowUp === false;
-                    return true; // 'ALL'
+                    return true; 
                   });
 
-                  if (displayedPlans.length === 0) return null; // Por si acaso
+                  if (displayedPlans.length === 0) return null; 
 
                   return (
                     <div key={category.id} className="category-block">
@@ -258,9 +267,14 @@ function LandingPage() {
                         <h3>{category.name}</h3>
                         {category.description && <p>{category.description}</p>}
                         
-                        {/* 👈 NUEVO: BOTONES DE SUB-FILTRO */}
                         {showSubFilters && (
                           <div className="subfilter-container">
+                            <button 
+                              className={`subfilter-btn ${currentSubFilter === 'ALL' ? 'active' : ''}`}
+                              onClick={() => handleSubFilterChange(category.id, 'ALL')}
+                            >
+                              Todos
+                            </button>
                             <button 
                               className={`subfilter-btn ${currentSubFilter === 'WITH' ? 'active' : ''}`}
                               onClick={() => handleSubFilterChange(category.id, 'WITH')}
@@ -278,66 +292,78 @@ function LandingPage() {
                       </div>
 
                       <div className="plans-grid-landing">
-                        {displayedPlans.map(plan => (
-                          <div key={plan.id} className="plan-card-landing reveal">
-                            
-                            <div className="plan-card-header">
-                              <h4>{plan.title}</h4>
-                              <span className="plan-duration">{plan.duration} Semanas</span>
-                            </div>
+                        {displayedPlans.map(plan => {
+                          const isFree = plan.price === 0; // 👈 Identificamos si es gratis
 
-                            <div className="plan-card-price">
-                              <span className="price-ars">${plan.price.toLocaleString()}</span>
-                              {plan.internationalPrice > 0 && (
-                                <span className="price-usd">/ {plan.internationalPrice} USD</span>
-                              )}
-                            </div>
-
-                            <p className="plan-description">
-                              {plan.description || "Planificación estructurada para llevar tu nivel al máximo."}
-                            </p>
-
-                            <div className="plan-features">
-                              <div className="feature-item">
-                                <CheckCircle2 size={16} className="text-yellow" />
-                                <span>Acceso a la App Exclusiva</span>
-                              </div>
-                              <div className="feature-item">
-                                <CheckCircle2 size={16} className="text-yellow" />
-                                <span>Videos Demostrativos</span>
-                              </div>
-                              <div className="feature-item">
-                                <CheckCircle2 size={16} className="text-yellow" />
-                                <span>Registro de Métricas</span>
-                              </div>
+                          return (
+                            <div key={plan.id} className={`plan-card-landing reveal ${isFree ? 'free-plan-card' : ''}`}>
                               
-                              {plan.hasFollowUp && (
+                              <div className="plan-card-header">
+                                <h4>{plan.title}</h4>
+                                <span className="plan-duration">{plan.duration} Semanas</span>
+                              </div>
+
+                              <div className="plan-card-price">
+                                {/* 👈 Lógica Visual para Gratis vs Pago */}
+                                {isFree ? (
+                                  <span className="price-free">¡GRATIS!</span>
+                                ) : (
+                                  <>
+                                    <span className="price-ars">${plan.price.toLocaleString()}</span>
+                                    {plan.internationalPrice > 0 && (
+                                      <span className="price-usd">/ {plan.internationalPrice} USD</span>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+
+                              <p className="plan-description">
+                                {plan.description || "Planificación estructurada para llevar tu nivel al máximo."}
+                              </p>
+
+                              <div className="plan-features">
                                 <div className="feature-item">
-                                  {plan.outOfStock ? (
-                                    <>
-                                      <AlertCircle size={16} className="text-red" />
-                                      <span className="text-red font-bold">Sin cupos de corrección</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <CheckCircle2 size={16} className="text-yellow" />
-                                      <span className="text-highlight">Corrección y Seguimiento 1 a 1</span>
-                                    </>
-                                  )}
+                                  <CheckCircle2 size={16} className="text-yellow" />
+                                  <span>Acceso a la App Exclusiva</span>
                                 </div>
-                              )}
+                                <div className="feature-item">
+                                  <CheckCircle2 size={16} className="text-yellow" />
+                                  <span>Videos Demostrativos</span>
+                                </div>
+                                <div className="feature-item">
+                                  <CheckCircle2 size={16} className="text-yellow" />
+                                  <span>Registro de Métricas</span>
+                                </div>
+                                
+                                {plan.hasFollowUp && (
+                                  <div className="feature-item">
+                                    {plan.outOfStock ? (
+                                      <>
+                                        <AlertCircle size={16} className="text-red" />
+                                        <span className="text-red font-bold">Sin cupos de corrección</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <CheckCircle2 size={16} className="text-yellow" />
+                                        <span className="text-highlight">Corrección y Seguimiento 1 a 1</span>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* 👈 Botón dinámico */}
+                              <button 
+                                className={`btn-buy-plan ${isFree ? 'btn-free-plan' : ''}`}
+                                onClick={() => handleBuyClick(plan.id)}
+                                disabled={plan.hasFollowUp && plan.outOfStock}
+                              >
+                                {(plan.hasFollowUp && plan.outOfStock) ? 'Agotado' : (isFree ? 'Empezar Prueba Gratis' : 'Quiero empezar')}
+                              </button>
+
                             </div>
-
-                            <button 
-                              className="btn-buy-plan"
-                              onClick={() => handleBuyClick(plan.id)}
-                              disabled={plan.hasFollowUp && plan.outOfStock}
-                            >
-                              {(plan.hasFollowUp && plan.outOfStock) ? 'Agotado' : 'Quiero empezar'}
-                            </button>
-
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )

@@ -93,7 +93,7 @@ export const createPlan = async (req, res) => {
         description,
         price: parseFloat(price),
         internationalPrice: parseFloat(internationalPrice || 0),
-        transferDiscount: parseInt(transferDiscount || 0), // 2. GUARDAMOS EL DESCUENTO
+        transferDiscount: parseInt(transferDiscount || 0), 
         duration: parseInt(duration) || 1,
         planTypeId: planTypeId ? parseInt(planTypeId) : null,
         levelDefinitions: "[]",
