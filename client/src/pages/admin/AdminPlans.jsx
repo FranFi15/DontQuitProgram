@@ -1,22 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
-import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
+import { useAlert } from '../../context/AlertContext'; 
 import './AdminPlans.css';
 import CreatePlanModal from './modals/CreatePlanModal';
 import PlanStudentsModal from './modals/PlanStudentsModal';
 import FollowUpControl from './modals/FollowUpControl';
-import { Trash2, Search, Filter, Power, MessageCircle } from 'lucide-react'; 
+import DuplicatePlanModal from './modals/DuplicatePlanModal';
+import { Trash2, Search, Filter, Power, MessageCircle, Copy } from 'lucide-react'; 
 
 function AdminPlans() {
   const navigate = useNavigate();
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Estados para Modal
+  // Estados para Modales
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [planToEdit, setPlanToEdit] = useState(null);
+  
+  // 👈 NUEVO: Estado para el modal de duplicar
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const [planToDuplicate, setPlanToDuplicate] = useState(null);
 
   // Filtros
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,7 +40,6 @@ function AdminPlans() {
       setPlans(res.data);
     } catch (error) {
       console.error(error);
-      // 👈 3. ALERTA DE ERROR DE RED
       showAlert("Error al cargar los planes.", "error");
     } finally {
       setLoading(false);
@@ -58,36 +62,36 @@ function AdminPlans() {
   const handleCreate = () => { setPlanToEdit(null); setIsModalOpen(true); };
   const handleEdit = (plan) => { setPlanToEdit(plan); setIsModalOpen(true); };
   
+  // 👈 NUEVA ACCIÓN: Abrir modal de duplicar
+  const handleDuplicate = (plan) => {
+    setPlanToDuplicate(plan);
+    setIsDuplicateModalOpen(true);
+  };
+  
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar este plan?")) return;
     try {
       await axios.delete(`/plans/${id}`);
       fetchPlans();
-      // 👈 4. ALERTA DE ÉXITO AL ELIMINAR
       showAlert("Plan eliminado correctamente.", "success");
     } catch (error) { 
         if(error.response?.status === 400) {
-            // 👈 5. ALERTA DE ERROR DEL BACKEND (Ej: Hay alumnos activos)
             showAlert(error.response.data.error, "error");
         } else {
-            // 👈 6. ALERTA DE ERROR GENÉRICO
             showAlert("Error al eliminar el plan.", "error"); 
         }
     }
   };
 
-  // TOGGLE STOCK (Activar/Pausar)
   const handleToggleStatus = async (plan) => {
     try {
        await axios.patch(`/plans/${plan.id}/toggle-status`);
        fetchPlans(); 
        
-       // 👈 7. ALERTA DE ÉXITO AL CAMBIAR ESTADO
        const newStatus = !plan.isActive ? "activado" : "pausado";
        showAlert(`El plan ha sido ${newStatus}.`, "success");
        
     } catch (error) {
-       // 👈 8. ALERTA DE ERROR AL CAMBIAR ESTADO
        showAlert("Error al cambiar el estado del plan.", "error");
     }
   };
@@ -104,10 +108,8 @@ function AdminPlans() {
         </button>
       </div>
 
-      {/* 1. CONTROL DE CUPOS (Arriba de todo) */}
       <FollowUpControl />
 
-      {/* 2. BARRA DE HERRAMIENTAS */}
       <div className="plans-toolbar">
         <div className="search-wrapper">
           <Search size={20} className="search-icon" />
@@ -133,7 +135,6 @@ function AdminPlans() {
         </div>
       </div>
 
-      {/* 3. GRID DE PLANES */}
       <div className="plans-grid">
         {filteredAndSortedPlans.length === 0 ? (
           <div className="empty-plans">
@@ -145,7 +146,6 @@ function AdminPlans() {
               
               <div className="plan-card-header">
                 <div>
-                    {/* CATEGORÍA (Si existe) */}
                     {plan.planType && <span className="category-tag">{plan.planType.name}</span>}
                     <h3>{plan.title}</h3>
                 </div>
@@ -158,15 +158,9 @@ function AdminPlans() {
                 </div>
               </div>
               
-              {/* BADGES DE ESTADO */}
               <div className="badges-row">
-                 {/* Si está pausado manual */}
                  {!plan.isActive && <span className="badge badge-paused">⏸ PAUSADO</span>}
-                 
-                 {/* Si es con seguimiento */}
                  {plan.hasFollowUp && <span className="badge badge-chat"><MessageCircle size={12}/> CHAT</span>}
-
-                 {/* Si no hay stock por cupos llenos */}
                  {plan.outOfStock && plan.hasFollowUp && (
                     <span className="badge badge-error">⛔ SIN CUPO</span>
                  )}
@@ -184,7 +178,6 @@ function AdminPlans() {
               </div>
 
               <div className="plan-actions">
-                {/* BOTÓN POWER (STOCK) */}
                 <button 
                     className={`btn-icon ${plan.isActive ? 'btn-power-on' : 'btn-power-off'}`}
                     onClick={() => handleToggleStatus(plan)}
@@ -195,6 +188,16 @@ function AdminPlans() {
 
                 <button className="btn-edit" onClick={() => handleEdit(plan)}>Editar</button>
                 <button className="btn-view" onClick={() => navigate(`/admin/plans/${plan.id}`)}>Rutina</button>
+                
+                {/* 👈 NUEVO BOTÓN: DUPLICAR */}
+                <button 
+                  className="btn-icon btn-duplicate" 
+                  onClick={() => handleDuplicate(plan)}
+                  title="Duplicar Plan (Copia todas las rutinas)"
+                >
+                  <Copy size={18} />
+                </button>
+
                 <button className="btn-delete-icon" onClick={() => handleDelete(plan.id)}>
                     <Trash2 size={18} />
                 </button>
@@ -211,6 +214,16 @@ function AdminPlans() {
           onSuccess={fetchPlans} 
         />
       )}
+
+      {/* 👈 NUEVO MODAL: DUPLICAR */}
+      {isDuplicateModalOpen && (
+        <DuplicatePlanModal 
+          plan={planToDuplicate}
+          onClose={() => setIsDuplicateModalOpen(false)}
+          onSuccess={fetchPlans}
+        />
+      )}
+
       {selectedPlanForStudents && (
         <PlanStudentsModal 
           plan={selectedPlanForStudents}

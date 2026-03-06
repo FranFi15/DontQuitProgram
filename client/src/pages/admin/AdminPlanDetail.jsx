@@ -51,7 +51,7 @@ function AdminPlanDetail() {
   const weekNumbers = Object.keys(weeks).map(Number).sort((a, b) => a - b);
 
   // --- LÓGICA DE LÍMITE DE SEMANAS ---
-  const maxWeeks = plan ? plan.duration * 4 : 0; 
+  const maxWeeks = plan ? plan.duration  : 0; 
   const currentWeeksCount = weekNumbers.length;
   const isMaxReached = currentWeeksCount >= maxWeeks;
 
@@ -179,9 +179,9 @@ function AdminPlanDetail() {
 
       <div className="detail-header">
         <div>
-          <h1 className="plan-title">{plan.title}</h1>
+          <h1 className="admin-plan-title">{plan.title}</h1>
           <div className="plan-meta">
-            <span>📅 {plan.duration} Meses</span>
+            <span>📅 {plan.duration} Semanas</span>
             <span >
               {currentWeeksCount} / {maxWeeks} Semanas creadas
             </span>

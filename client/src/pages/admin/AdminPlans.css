@@ -103,3 +103,6 @@
   .plans-toolbar { flex-direction: column; }
   .sort-wrapper { width: 100%; }
 }
+
+.btn-duplicate { background-color: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
+.btn-duplicate:hover { background-color: #3b82f6; color: white; border-color: #3b82f6; }

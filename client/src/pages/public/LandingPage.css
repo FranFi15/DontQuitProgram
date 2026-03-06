@@ -353,7 +353,36 @@
   font-size: 1.1rem;
   max-width: 600px;
 }
+.subfilter-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap; /* Para que no se rompa en móviles */
+}
 
+.subfilter-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #a1a1aa;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.subfilter-btn:hover {
+  border-color: rgba(250, 243, 239, 0.4);
+  color: #e5e5e5;
+}
+
+.subfilter-btn.active {
+  background-color: rgba(250, 243, 239, 0.1);
+  color: #FAF3EF;
+  border-color: #FAF3EF;
+}
 .plans-grid-landing {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

@@ -4,7 +4,6 @@ import axios from '../../api/axios';
 import { Menu, X, ChevronRight, CheckCircle2, AlertCircle, Instagram, Mail, Youtube} from 'lucide-react';
 import './LandingPage.css';
 
-
 function LandingPage() {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -15,7 +14,11 @@ function LandingPage() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Filtro principal (Categorías)
   const [activeFilter, setActiveFilter] = useState('ALL');
+  
+  // 👈 NUEVO: Sub-filtro individual por categoría { categoryId: 'ALL' | 'WITH' | 'WITHOUT' }
+  const [subFilters, setSubFilters] = useState({}); 
 
   // 1. Efecto para el Navbar
   useEffect(() => {
@@ -46,7 +49,7 @@ function LandingPage() {
   }, []);
 
   // 3. Efecto de Aparición (Scroll Reveal)
- useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       const observer = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
@@ -67,7 +70,7 @@ function LandingPage() {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [loading, plans, activeFilter]);
+  }, [loading, plans, activeFilter, subFilters]); // 👈 Añadimos subFilters como dependencia
 
   // 4. Función de Scroll Suave
   const scrollToPlans = () => {
@@ -80,6 +83,14 @@ function LandingPage() {
 
   const handleBuyClick = (planId) => {
     navigate(`/checkout/${planId}`);
+  };
+
+  // 👈 NUEVA FUNCIÓN: Manejar el cambio de sub-filtro
+  const handleSubFilterChange = (categoryId, filterValue) => {
+    setSubFilters(prev => ({
+      ...prev,
+      [categoryId]: filterValue
+    }));
   };
 
   return (
@@ -124,7 +135,6 @@ function LandingPage() {
           <div className="video-overlay"></div>
         </div>
 
-        {/* Agregamos la clase 'reveal' aquí */}
         <div className="hero-content reveal">
           <span className="hero-badge">PROGRAMACIÓN ONLINE</span>
           <h1 className="hero-title">
@@ -190,7 +200,7 @@ function LandingPage() {
           <div className="catalog-loading">Cargando programas disponibles...</div>
         ) : (
           <>
-            {/* --- FILTROS DE CATEGORÍAS --- */}
+            {/* --- FILTROS DE CATEGORÍAS PRINCIPALES --- */}
             {categories.length > 0 && (
               <div className="catalog-filters reveal">
                 <button 
@@ -201,7 +211,6 @@ function LandingPage() {
                 </button>
                 
                 {categories.map(cat => {
-                  // Solo mostramos el botón si esa categoría tiene planes activos
                   const hasPlans = plans.some(p => p.planTypeId === cat.id);
                   if (!hasPlans) return null;
 
@@ -220,23 +229,63 @@ function LandingPage() {
 
             <div className="categories-wrapper">
               {categories
-                // 👈 ACÁ ESTÁ LA MAGIA DEL FILTRO
                 .filter(category => activeFilter === 'ALL' || category.id === activeFilter)
                 .map(category => {
-                  const categoryPlans = plans.filter(p => p.planTypeId === category.id);
-                  if (categoryPlans.length === 0) return null;
+                  // Todos los planes de esta categoría
+                  const allCategoryPlans = plans.filter(p => p.planTypeId === category.id);
+                  if (allCategoryPlans.length === 0) return null;
+
+                  // Lógica del sub-filtro actual para esta categoría
+                  const currentSubFilter = subFilters[category.id] || 'ALL';
+                  
+                  // Averiguamos si la categoría tiene de ambos tipos para mostrar o no los botones
+                  const hasFollowUpPlans = allCategoryPlans.some(p => p.hasFollowUp);
+                  const hasNoFollowUpPlans = allCategoryPlans.some(p => !p.hasFollowUp);
+                  const showSubFilters = hasFollowUpPlans && hasNoFollowUpPlans;
+
+                  // Filtramos los planes según el sub-filtro elegido
+                  const displayedPlans = allCategoryPlans.filter(p => {
+                    if (currentSubFilter === 'WITH') return p.hasFollowUp === true;
+                    if (currentSubFilter === 'WITHOUT') return p.hasFollowUp === false;
+                    return true; // 'ALL'
+                  });
+
+                  if (displayedPlans.length === 0) return null; // Por si acaso
 
                   return (
                     <div key={category.id} className="category-block">
                       <div className="category-info reveal">
                         <h3>{category.name}</h3>
                         {category.description && <p>{category.description}</p>}
+                        
+                        {/* 👈 NUEVO: BOTONES DE SUB-FILTRO */}
+                        {showSubFilters && (
+                          <div className="subfilter-container">
+                            <button 
+                              className={`subfilter-btn ${currentSubFilter === 'ALL' ? 'active' : ''}`}
+                              onClick={() => handleSubFilterChange(category.id, 'ALL')}
+                            >
+                              Ver Todos
+                            </button>
+                            <button 
+                              className={`subfilter-btn ${currentSubFilter === 'WITH' ? 'active' : ''}`}
+                              onClick={() => handleSubFilterChange(category.id, 'WITH')}
+                            >
+                              Con Seguimiento
+                            </button>
+                            <button 
+                              className={`subfilter-btn ${currentSubFilter === 'WITHOUT' ? 'active' : ''}`}
+                              onClick={() => handleSubFilterChange(category.id, 'WITHOUT')}
+                            >
+                              Sin Seguimiento
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="plans-grid-landing">
-                        {categoryPlans.map(plan => (
+                        {displayedPlans.map(plan => (
                           <div key={plan.id} className="plan-card-landing reveal">
-                            {/* ... (Acá adentro va exactamente todo el contenido de tu tarjeta de plan que ya tenías) ... */}
                             
                             <div className="plan-card-header">
                               <h4>{plan.title}</h4>
@@ -244,7 +293,7 @@ function LandingPage() {
                             </div>
 
                             <div className="plan-card-price">
-                              <span className="price-ars">${plan.price}</span>
+                              <span className="price-ars">${plan.price.toLocaleString()}</span>
                               {plan.internationalPrice > 0 && (
                                 <span className="price-usd">/ {plan.internationalPrice} USD</span>
                               )}
@@ -303,13 +352,14 @@ function LandingPage() {
           </>
         )}
       </section>
-        {/* --- FOOTER --- */}
+        
+      {/* --- FOOTER --- */}
       <footer className="landing-footer">
         <div className="footer-content">
           
           <div className="footer-brand">
             <img src="/logob.png" alt="Don't Quit Logo" className="footer-logo" />
-            <p>Planificación inteligente para atletas reales. Encontrá el equilibrio y llevá tu rendimiento al máximo.</p>
+            <p>Planificación inteligente para personas reales. Encontrá el equilibrio y llevá tu rendimiento al máximo.</p>
           </div>
           
           <div className="footer-links">
@@ -322,7 +372,7 @@ function LandingPage() {
             <h4>Contacto y Redes</h4>
             
             <a href="mailto:dontquit.bahiablanca@gmail.com" className="contact-item">
-              <Mail size={18} /> dontquit.bahiablanca@gmail.com
+              <Mail size={18} /> dontquitprogram@gmail.com
             </a>
             
             <a href="https://www.instagram.com/rocioboxallcoach/" target="_blank" rel="noopener noreferrer" className="contact-item">
