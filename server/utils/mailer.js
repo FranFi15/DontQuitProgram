@@ -25,12 +25,12 @@ export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
           <div style="background-color: #000; padding: 25px; text-align: center;">
-            <h1 style="color: #FAF3EF; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;">DON'T QUIT.</h1>
+            <h1 style="color: #FAF3EF; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;">DON'T QUIT PROGRAM.</h1>
           </div>
           
           <div style="padding: 30px;">
-            <h2 style="color: #111; margin-top: 0;">¡Hola ${userName.split(' ')[0]}! Bienvenido/a al equipo.</h2>
-            <p style="font-size: 16px; line-height: 1.6;">Tu cuenta fue registrada con éxito en nuestra plataforma.</p>
+            <h2 style="color: #111; margin-top: 0;">¡Hola ${userName.split(' ')[0]}! Bienvenido/a a Don't Quit Program.</h2>
+            <p style="font-size: 16px; line-height: 1.6;">Tu cuenta fue registrada con éxito en la plataforma.</p>
             
             <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #000;">
               <p style="margin: 0; font-size: 16px;"><strong>Tu usuario para ingresar es:</strong><br/> ${userEmail}</p>
