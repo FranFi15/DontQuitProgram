@@ -10,7 +10,7 @@ function AdminLayout() {
   
   // --- ESTADOS ---
   const [badges, setBadges] = useState({ payments: 0, chat: 0, wall: 0 });
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // 👈 Controla el menú en celular
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
 
   const clearBadgeLocally = (type) => {
     setBadges(prevBadges => ({
@@ -82,7 +82,7 @@ function AdminLayout() {
       <aside className={`admin-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         
         <div className="sidebar-brand">
-          <img className="brand-logo" src="/src/assets/logob.png" alt="logo don't quit" />
+          <img className="brand-logo" src="/logob.png" alt="logo don't quit" />
           {/* Botón X para cerrar en móvil */}
           <button className="close-sidebar-btn" onClick={() => setIsMobileMenuOpen(false)}>
             <X size={24} />
