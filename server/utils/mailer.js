@@ -19,7 +19,7 @@ export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
     const { data, error } = await resend.emails.send({
       // ⚠️ IMPORTANTE: Mientras pruebas en Resend (sin dominio verificado), usa este correo.
       // Cuando verifiquen un dominio (ej: dontquit.com), lo cambian a "info@dontquit.com"
-      from: "Don't Quit Program <info@dontquitprogram.com>", 
+      from: "Don't Quit Program <onboarding@resend.dev>", 
       to: [userEmail],
       subject: '¡Bienvenido/a a Don\'t Quit! 🚀',
       html: `
