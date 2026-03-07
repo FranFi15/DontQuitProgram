@@ -1,60 +1,65 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Configuración REFORZADA para GMAIL (Optimizado para Render)
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // 👈 Para el puerto 587 esto DEBE ser false
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    // Esto es vital para que Google no rechace la conexión de Render
-    ciphers: 'SSLv3',
-    rejectUnauthorized: false
-  },
-  connectionTimeout: 20000, // Le damos 20 segundos
-});
+// Inicializamos Resend. La API Key la sacaremos de las variables de entorno (.env)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
   try {
     let paymentText = '';
+    
+    // Personalizamos el mensaje según el método de pago
     if (paymentMethod === 'TRANSFER') {
       paymentText = 'Recibimos tu comprobante de transferencia. Rocío está verificando el pago y en breve activará tu cuenta.';
+    } else if (paymentMethod === 'GRATUITO') {
+      paymentText = 'Tu plan de prueba gratuito ya está activo. ¡Podés ingresar ahora mismo a ver tus rutinas!';
     } else {
-      paymentText = 'Tu cuenta fue creada. Una vez que completes el pago, tu plan se activará automáticamente.';
+      paymentText = 'Tu cuenta fue creada. Una vez que se acredite el pago por la plataforma, tu plan se activará automáticamente.';
     }
 
-    const mailOptions = {
-      from: `"Don't Quit. Program" <${process.env.EMAIL_USER}>`,
-      to: userEmail,
+    const { data, error } = await resend.emails.send({
+      // ⚠️ IMPORTANTE: Mientras pruebas en Resend (sin dominio verificado), usa este correo.
+      // Cuando verifiquen un dominio (ej: dontquit.com), lo cambian a "info@dontquit.com"
+      from: "Don't Quit Program <info@dontquitprogram.com>", 
+      to: [userEmail],
       subject: '¡Bienvenido/a a Don\'t Quit! 🚀',
       html: `
-        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #000;">¡Hola ${userName.split(' ')[0]}! Bienvenido/a al equipo.</h2>
-          <p>Tu cuenta fue creada con éxito en nuestra plataforma.</p>
-          
-          <div style="background-color: #f4f4f4; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0;"><strong>Tu usuario para ingresar es:</strong> ${userEmail}</p>
-            <p style="margin: 0; font-size: 0.9em; color: #666;">(La contraseña es la que elegiste en el formulario)</p>
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
+          <div style="background-color: #000; padding: 25px; text-align: center;">
+            <h1 style="color: #FAF3EF; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;">DON'T QUIT.</h1>
           </div>
-
-          <p>${paymentText}</p>
           
-          <a href="https://dont-quit-program.vercel.app/login" style="display: inline-block; background-color: #000; color: #FAF3EF; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px;">
-            Ir a Iniciar Sesión
-          </a>
+          <div style="padding: 30px;">
+            <h2 style="color: #111; margin-top: 0;">¡Hola ${userName.split(' ')[0]}! Bienvenido/a al equipo.</h2>
+            <p style="font-size: 16px; line-height: 1.6;">Tu cuenta fue registrada con éxito en nuestra plataforma.</p>
+            
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #000;">
+              <p style="margin: 0; font-size: 16px;"><strong>Tu usuario para ingresar es:</strong><br/> ${userEmail}</p>
+              <p style="margin: 8px 0 0 0; font-size: 0.85em; color: #6b7280;">(La contraseña es la que elegiste al completar el formulario)</p>
+            </div>
+
+            <p style="font-size: 16px; line-height: 1.6; color: #4b5563;">${paymentText}</p>
+            
+            <div style="text-align: center; margin-top: 40px;">
+              <a href="https://dontquitprogram.com/login" style="display: inline-block; background-color: #000; color: #FAF3EF; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; text-transform: uppercase;">
+                Ingresar a la App
+              </a>
+            </div>
+          </div>
+          <div style="background-color: #f9fafb; text-align: center; padding: 15px; font-size: 12px; color: #9ca3af; border-top: 1px solid #eee;">
+            © ${new Date().getFullYear()} Don't Quit. Program
+          </div>
         </div>
       `
-    };
+    });
 
-    // Quitamos el await aquí para que el backend no se quede "colgado" esperando al mail
-    transporter.sendMail(mailOptions)
-      .then(() => console.log(`✉️ Mail de bienvenida enviado a ${userEmail}`))
-      .catch(err => console.error("❌ Error interno Nodemailer:", err));
+    if (error) {
+      console.error("❌ Error en la API de Resend:", error);
+      return;
+    }
+
+    console.log(`✉️ Mail de bienvenida enviado con éxito a ${userEmail} (ID: ${data?.id})`);
 
   } catch (error) {
-    console.error("❌ Error en la función sendWelcomeEmail:", error);
+    console.error("❌ Error crítico en la función sendWelcomeEmail:", error);
   }
 };
