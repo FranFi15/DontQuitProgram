@@ -21,7 +21,7 @@ export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
       // Cuando verifiquen un dominio (ej: dontquit.com), lo cambian a "info@dontquit.com"
       from: "Don't Quit Program <onboarding@resend.dev>", 
       to: [userEmail],
-      subject: '¡Bienvenido/a a Don\'t Quit! 🚀',
+      subject: '¡Bienvenido/a a Don\'t Quit Program! ',
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
           <div style="background-color: #000; padding: 25px; text-align: center;">
