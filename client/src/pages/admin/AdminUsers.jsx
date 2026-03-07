@@ -8,7 +8,7 @@ import UserSubscriptionsModal from './modals/UserSubscriptionsModal';
 import './AdminUsers.css';
 
 function AdminUsers() {
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

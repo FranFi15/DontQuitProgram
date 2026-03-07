@@ -1,16 +1,18 @@
 import { useEffect, useState, useCallback } from 'react';
 import axios from '../../api/axios';
-import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
+import { useAlert } from '../../context/AlertContext'; 
 import { CreditCard, Plus, Trash2, Calendar, CheckCircle, AlertCircle, Edit3 } from 'lucide-react';
 import CreateSubscriptionModal from './modals/CreateSubscriptionModal';
 import './AdminUsers.css';
 
 function AdminSubscriptions() {
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const [subs, setSubs] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [subToEdit, setSubToEdit] = useState(null);
 
+  // 👈 NUEVO: Estado para el modal de eliminación
+  const [subToDelete, setSubToDelete] = useState(null);
 
   const fetchSubs = useCallback(async () => {
     try {
@@ -18,7 +20,6 @@ function AdminSubscriptions() {
       setSubs(res.data);
     } catch (error) {
       console.error(error);
-      // 👈 3. ALERTA DE ERROR AL CARGAR
       showAlert("Error al cargar las suscripciones activas.", "error");
     }
   }, [showAlert]); 
@@ -27,28 +28,33 @@ function AdminSubscriptions() {
     fetchSubs();
   }, [fetchSubs]); 
 
-
   const handleCreate = () => {
     setSubToEdit(null); 
     setIsModalOpen(true);
   };
-
   
   const handleEdit = (sub) => {
     setSubToEdit(sub); 
     setIsModalOpen(true);
   };
 
-  const handleCancel = async (id) => {
-    if(!window.confirm('¿Cancelar esta suscripción? El alumno perderá acceso inmediato.')) return;
+  // 👈 1. Solo abre el modal
+  const handleDeleteClick = (sub) => {
+    setSubToDelete(sub);
+  };
+
+  // 👈 2. Ejecuta el borrado cuando Rocío confirma
+  const executeDelete = async () => {
+    if (!subToDelete) return;
+
     try {
-      await axios.delete(`/subscriptions/${id}`);
+      await axios.delete(`/subscriptions/${subToDelete.id}`);
       fetchSubs(); 
-      // 👈 4. ALERTA DE ÉXITO AL CANCELAR
       showAlert("Suscripción cancelada correctamente.", "success");
     } catch (error) {
-      // 👈 5. ALERTA DE ERROR AL CANCELAR
       showAlert("Error al cancelar la suscripción.", "error");
+    } finally {
+      setSubToDelete(null); // Cerramos siempre el modal
     }
   };
 
@@ -113,8 +119,8 @@ function AdminSubscriptions() {
                         <Edit3 size={16} />
                       </button>
                       
-                      {/* BOTÓN ELIMINAR */}
-                      <button className="action-btn delete" onClick={() => handleCancel(sub.id)} title="Cancelar acceso">
+                      {/* 👈 BOTÓN ELIMINAR ACTUALIZADO */}
+                      <button className="action-btn delete" onClick={() => handleDeleteClick(sub)} title="Cancelar acceso">
                         <Trash2 size={16} />
                       </button>
                     </td>
@@ -132,6 +138,42 @@ function AdminSubscriptions() {
           onClose={() => setIsModalOpen(false)}
           onSuccess={fetchSubs}
         />
+      )}
+
+      {/* --- MODAL DE CONFIRMACIÓN DE CANCELACIÓN --- */}
+      {subToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-content animate-enter" style={{ maxWidth: '450px', padding: '30px', textAlign: 'center' }}>
+            <div style={{ color: '#ef4444', marginBottom: '15px', display: 'flex', justifyContent: 'center' }}>
+              <AlertCircle size={50} />
+            </div>
+            
+            <h2 style={{ fontSize: '1.4rem', marginBottom: '15px', color: '#111', lineHeight: '1.2' }}>
+              ¿Cancelar Suscripción?
+            </h2>
+            
+            <p style={{ color: '#6b7280', marginBottom: '25px', lineHeight: '1.5' }}>
+              Estás por revocarle el acceso al plan <strong>"{subToDelete.plan?.title}"</strong> al alumno <strong>{subToDelete.user?.name}</strong>.
+              <br/><br/>
+              Si confirmás, dejará de ver sus rutinas y métricas inmediatamente.
+            </p>
+
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setSubToDelete(null)} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Volver
+              </button>
+              <button 
+                onClick={executeDelete} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Sí, Cancelar Acceso
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

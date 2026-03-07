@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
 import { useAlert } from '../../../context/AlertContext'; 
-import { Plus, Trash2, Edit3, Save, X } from 'lucide-react';
+import { Plus, Trash2, Edit3, Save, X, AlertCircle } from 'lucide-react'; // 👈 Importamos AlertCircle para el modal
 import './AdminScoreBoxManager.css';
 
 function AdminScoreBoxManager({ planId }) {
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -19,6 +19,9 @@ function AdminScoreBoxManager({ planId }) {
   const [editName, setEditName] = useState('');
   const [editUnitInput, setEditUnitInput] = useState('');
   const [editUnitsList, setEditUnitsList] = useState([]);
+
+  // 👈 NUEVO: Estado para el modal de eliminación
+  const [boxToDelete, setBoxToDelete] = useState(null);
 
   const fetchBoxes = async () => {
     setLoading(true);
@@ -55,7 +58,6 @@ function AdminScoreBoxManager({ planId }) {
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     if (!newName || newUnitsList.length === 0) {
-      // 👈 3. ALERTA DE VALIDACIÓN
       return showAlert("Ingresa un nombre y al menos una unidad de medida.", "error");
     }
     try {
@@ -67,23 +69,30 @@ function AdminScoreBoxManager({ planId }) {
       setNewName('');
       setNewUnitsList([]);
       fetchBoxes();
-      // 👈 4. ALERTA DE ÉXITO
       showAlert("Métrica creada correctamente.", "success");
     } catch (error) {
       showAlert("Error al crear la métrica.", "error");
     }
   };
 
-  // --- BORRAR ---
-  const handleDelete = async (id) => {
-    // Mantenemos confirm nativo por ser una acción destructiva
-    if (!window.confirm("¿Seguro? Se borrarán los registros de los alumnos asociados a esta métrica.")) return;
+  // --- BORRAR (Lógica Actualizada para el Modal) ---
+  
+  // 1. Función que solo abre el modal
+  const handleDeleteClick = (box) => {
+    setBoxToDelete(box);
+  };
+
+  // 2. Función que ejecuta el borrado real
+  const executeDelete = async () => {
+    if (!boxToDelete) return;
     try {
-      await axios.delete(`/scoreboxes/definition/${id}`);
+      await axios.delete(`/scoreboxes/definition/${boxToDelete.id}`);
       fetchBoxes();
       showAlert("Métrica eliminada.", "success");
     } catch (error) {
       showAlert("Error al intentar borrar la métrica.", "error");
+    } finally {
+      setBoxToDelete(null); // Siempre cerramos el modal
     }
   };
 
@@ -238,7 +247,8 @@ function AdminScoreBoxManager({ planId }) {
                   </div>
                   <div className="sb-actions">
                     <button onClick={() => startEdit(box)} className="icon-btn edit"><Edit3 size={16}/></button>
-                    <button onClick={() => handleDelete(box.id)} className="icon-btn delete"><Trash2 size={16}/></button>
+                    {/* 👈 BOTÓN DE ELIMINAR ACTUALIZADO */}
+                    <button onClick={() => handleDeleteClick(box)} className="icon-btn delete"><Trash2 size={16}/></button>
                   </div>
                 </>
               )}
@@ -247,6 +257,42 @@ function AdminScoreBoxManager({ planId }) {
         })}
         {boxes.length === 0 && !loading && <p className="empty-txt">No hay métricas definidas.</p>}
       </div>
+
+      {/* --- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN --- */}
+      {boxToDelete && (
+        <div className="modal-overlay" style={{ zIndex: 1050 }}>
+          <div className="modal-content animate-enter" style={{ maxWidth: '450px', padding: '30px', textAlign: 'center' }}>
+            <div style={{ color: '#ef4444', marginBottom: '15px', display: 'flex', justifyContent: 'center' }}>
+              <AlertCircle size={50} />
+            </div>
+            
+            <h2 style={{ fontSize: '1.4rem', marginBottom: '15px', color: '#111', lineHeight: '1.2' }}>
+              ¿Eliminar "{boxToDelete.name}"?
+            </h2>
+            
+            <p style={{ color: '#6b7280', marginBottom: '25px', lineHeight: '1.5' }}>
+              Esta acción es irreversible. <br/>
+              Si eliminás esta métrica, <strong>se borrarán todos los registros históricos</strong> que los alumnos hayan guardado para esta prueba.
+            </p>
+
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setBoxToDelete(null)} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={executeDelete} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Sí, Eliminar Métrica
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

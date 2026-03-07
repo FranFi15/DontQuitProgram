@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
-import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
-import { Search, Plus, Edit3, Trash2, ExternalLink, Dumbbell } from 'lucide-react';
+import { useAlert } from '../../context/AlertContext'; 
+import { Search, Plus, Edit3, Trash2, ExternalLink, Dumbbell, AlertCircle } from 'lucide-react'; // 👈 Importamos AlertCircle para el modal
 import CreateExerciseModal from './modals/CreateExerciseModal';
 import './AdminExercises.css'; 
 
 function AdminExercises() {
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [exerciseToEdit, setExerciseToEdit] = useState(null);
+
+  // 👈 NUEVO: Estado para el modal de eliminación
+  const [exerciseToDelete, setExerciseToDelete] = useState(null);
 
   useEffect(() => {
     fetchExercises();
@@ -25,24 +28,31 @@ function AdminExercises() {
       setExercises(res.data);
     } catch (error) {
       console.error(error);
-      // 👈 3. ALERTA SI FALLA LA CARGA
       showAlert("Error al cargar el glosario de ejercicios.", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id, name) => {
-    // Mantenemos confirm() nativo
-    if(!window.confirm(`¿Seguro que deseas eliminar "${name}" del glosario?`)) return;
+  // --- LÓGICA DE BORRADO ACTUALIZADA ---
+  
+  // 1. Solo abre el modal
+  const handleDeleteClick = (ex) => {
+    setExerciseToDelete(ex);
+  };
+
+  // 2. Ejecuta el borrado
+  const executeDelete = async () => {
+    if(!exerciseToDelete) return;
+
     try {
-      await axios.delete(`/exercises/${id}`);
+      await axios.delete(`/exercises/${exerciseToDelete.id}`);
       fetchExercises();
-      // 👈 4. ALERTA DE ÉXITO
-      showAlert("Ejercicio eliminado correctamente.", "success");
+      showAlert("Ejercicio eliminado del glosario.", "success");
     } catch (error) {
-      // 👈 5. ALERTA DE ERROR
       showAlert("Error al eliminar el ejercicio.", "error");
+    } finally {
+      setExerciseToDelete(null); // Cerramos el modal
     }
   };
 
@@ -129,7 +139,8 @@ function AdminExercises() {
                     <button className="action-btn edit" onClick={() => handleEdit(ex)}>
                       <Edit3 size={16} />
                     </button>
-                    <button className="action-btn delete" onClick={() => handleDelete(ex.id, ex.name)}>
+                    {/* 👈 BOTÓN DE ELIMINAR ACTUALIZADO */}
+                    <button className="action-btn delete" onClick={() => handleDeleteClick(ex)}>
                       <Trash2 size={16} />
                     </button>
                   </td>
@@ -147,6 +158,37 @@ function AdminExercises() {
           exerciseToEdit={exerciseToEdit}
         />
       )}
+
+      {/* --- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN --- */}
+      {exerciseToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-content animate-enter" style={{ maxWidth: '450px', padding: '30px', textAlign: 'center' }}>
+            <div style={{ color: '#ef4444', marginBottom: '15px', display: 'flex', justifyContent: 'center' }}>
+              <AlertCircle size={50} />
+            </div>
+            
+            <h2 style={{ fontSize: '1.4rem', marginBottom: '15px', color: '#111', lineHeight: '1.2' }}>
+              ¿Eliminar "{exerciseToDelete.name}"?
+            </h2>
+            
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setExerciseToDelete(null)} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={executeDelete} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Sí, Eliminar Ejercicio
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -23,6 +23,8 @@ function AdminPlans() {
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [planToDuplicate, setPlanToDuplicate] = useState(null);
 
+const [planToDelete, setPlanToDelete] = useState(null);
+
   // Filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('name-asc'); 
@@ -68,18 +70,26 @@ function AdminPlans() {
     setIsDuplicateModalOpen(true);
   };
   
-  const handleDelete = async (id) => {
-    if (!window.confirm("¿Seguro que quieres eliminar este plan?")) return;
+ const handleDeleteClick = (plan) => {
+    setPlanToDelete(plan);
+  };
+
+  // 2. Función que EJECUTA el borrado al confirmar
+  const executeDelete = async () => {
+    if (!planToDelete) return;
+    
     try {
-      await axios.delete(`/plans/${id}`);
+      await axios.delete(`/plans/${planToDelete.id}`);
       fetchPlans();
-      showAlert("Plan eliminado correctamente.", "success");
+      showAlert("Plan y todas sus rutinas eliminadas correctamente.", "success");
     } catch (error) { 
         if(error.response?.status === 400) {
             showAlert(error.response.data.error, "error");
         } else {
             showAlert("Error al eliminar el plan.", "error"); 
         }
+    } finally {
+      setPlanToDelete(null); // Cerramos el modal siempre
     }
   };
 
@@ -198,7 +208,11 @@ function AdminPlans() {
                   <Copy size={18} />
                 </button>
 
-                <button className="btn-delete-icon" onClick={() => handleDelete(plan.id)}>
+                <button 
+                  className="btn-delete-icon" 
+                  onClick={() => handleDeleteClick(plan)}
+                  title="Eliminar Plan"
+                >
                     <Trash2 size={18} />
                 </button>
               </div>
@@ -230,6 +244,39 @@ function AdminPlans() {
           onClose={() => setSelectedPlanForStudents(null)}
           onUpdate={fetchPlans} 
         />
+      )}
+      {planToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-content animate-enter" style={{ maxWidth: '450px', padding: '30px', textAlign: 'center' }}>
+            <div style={{ color: '#ef4444', marginBottom: '15px', display: 'flex', justifyContent: 'center' }}>
+              <Trash2 size={50} />
+            </div>
+            
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '15px', color: '#111', lineHeight: '1.2' }}>
+              ¿Eliminar "{planToDelete.title}"?
+            </h2>
+            
+            <p style={{ color: '#6b7280', marginBottom: '25px', lineHeight: '1.5' }}>
+              Esta acción es irreversible. Se borrarán todas las rutinas y el historial asociado a este plan.<br/><br/>
+              <strong style={{color: '#4b5563'}}>Nota:</strong> Si hay alumnos activos usándolo hoy, el sistema no te dejará borrarlo.
+            </p>
+
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setPlanToDelete(null)} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={executeDelete} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Sí, Eliminar Plan
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
