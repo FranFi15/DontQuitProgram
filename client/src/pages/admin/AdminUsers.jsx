@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
-import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
-import { Search, UserPlus, Edit3, Trash2, ClipboardList } from 'lucide-react';
+import { useAlert } from '../../context/AlertContext'; 
+import { Search, UserPlus, Edit3, Trash2, ClipboardList, History } from 'lucide-react';
 import CreateUserModal from './modals/CreateUserModal';
 import AdminUserScoresModal from '../admin/modals/AdminUserScoresModal';
+import UserSubscriptionsModal from './modals/UserSubscriptionsModal';
 import './AdminUsers.css';
 
 function AdminUsers() {
@@ -20,6 +21,9 @@ function AdminUsers() {
   const [selectedScoreUser, setSelectedScoreUser] = useState(null);
 
   const [userToDelete, setUserToDelete] = useState(null);
+
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedHistoryUser, setSelectedHistoryUser] = useState(null);
 
   // Carga inicial
   useEffect(() => {
@@ -59,6 +63,11 @@ function AdminUsers() {
 
   const handleDeleteClick = (user) => {
     setUserToDelete(user);
+  };
+
+  const handleViewHistory = (user) => {
+    setSelectedHistoryUser(user);
+    setShowHistoryModal(true);
   };
 
   // 2. Función que EJECUTA el borrado (se llama desde el modal)
@@ -172,6 +181,14 @@ function AdminUsers() {
                       <ClipboardList size={16} />
                     </button>
                     <button 
+                      className="action-btn history" 
+                      onClick={() => handleViewHistory(user)}
+                      title="Ver Historial de Planes"
+                      style={{ backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}
+                    >
+                      <History size={16} />
+                    </button>
+                    <button 
                       className="action-btn edit" 
                       onClick={() => handleEdit(user)} 
                       title="Editar Ficha"
@@ -250,6 +267,16 @@ function AdminUsers() {
             </div>
           </div>
         </div>
+      )}
+      {showHistoryModal && selectedHistoryUser && (
+        <UserSubscriptionsModal 
+          userId={selectedHistoryUser.id}
+          userName={selectedHistoryUser.name}
+          onClose={() => {
+            setShowHistoryModal(false);
+            setSelectedHistoryUser(null);
+          }} 
+        />
       )}
     </div>
   );

@@ -137,10 +137,9 @@ export const updatePlan = async (req, res) => {
 // deletePlan (LA VERSIÓN SEGURA QUE HABLAMOS)
 export const deletePlan = async (req, res) => {
   try {
-    const { id } = req.params;
-    const planId = parseInt(id);
+    const planId = parseInt(req.params.id);
 
-    // 1. Verificar si hay alumnos cursando este plan
+    // 1. Verificamos si hay alumnos ACTUALMENTE cursando este plan
     const activeSubscriptions = await prisma.subscription.count({
       where: {
         planId: planId,
@@ -149,22 +148,54 @@ export const deletePlan = async (req, res) => {
       }
     });
 
+    // Si hay alumnos entrenando hoy con este plan, bloqueamos el borrado
     if (activeSubscriptions > 0) {
       return res.status(400).json({ 
-        error: `No se puede eliminar. Hay ${activeSubscriptions} alumno(s) activos. Usa la opción de 'Sacar de Stock' (Pausar).` 
+        error: `No se puede eliminar. Hay ${activeSubscriptions} alumno(s) usando este plan actualmente. Usa la opción de 'Pausar' para sacarlo de venta.` 
       });
     }
 
-    // 2. Si está libre, borramos (Hard Delete)
-    await prisma.plan.delete({ where: { id: planId } });
+    // 2. Si no hay alumnos activos, ejecutamos la PURGA TOTAL en una sola transacción.
+    // El orden es fundamental: primero borramos los "hijos" que dependen del plan, y por último el plan.
+    await prisma.$transaction([
+      
+      // A. Borramos todos los pagos asociados a este plan en el historial
+      prisma.payment.deleteMany({
+        where: { planId: planId }
+      }),
+
+      // B. Borramos todas las suscripciones (incluso las vencidas/viejas) de este plan
+      prisma.subscription.deleteMany({
+        where: { planId: planId }
+      }),
+
+      // C. Borramos el historial de feedback/resultados de los entrenamientos de este plan
+      // (Primero buscamos los IDs de las rutinas de este plan)
+      prisma.workoutResult.deleteMany({
+        where: { workout: { planId: planId } }
+      }),
+
+      // D. Borramos todas las rutinas (Workouts/Semanas/Días) creadas adentro del plan
+      prisma.workout.deleteMany({
+        where: { planId: planId }
+      }),
+
+      // E. Borramos las "cajas" de puntaje/métricas asociadas a este plan
+      prisma.scoreBox.deleteMany({
+        where: { planId: planId }
+      }),
+
+      // F. Finalmente, borramos el Plan en sí mismo
+      prisma.plan.delete({
+        where: { id: planId }
+      })
+    ]);
     
-    res.json({ message: 'Plan eliminado correctamente' });
+    res.json({ message: 'Plan y todo su historial han sido eliminados correctamente.' });
+
   } catch (error) {
-    // Si hay rutinas asociadas y no pusiste Cascade en el schema:
-    if (error.code === 'P2003') { 
-        return res.status(400).json({ error: "El plan tiene rutinas o historial asociado. Borra esos datos primero." });
-    }
-    res.status(500).json({ error: 'Error al eliminar el plan' });
+    console.error("Error al ejecutar purga del plan:", error);
+    res.status(500).json({ error: 'Error interno al intentar eliminar el plan y sus dependencias.' });
   }
 };
 
