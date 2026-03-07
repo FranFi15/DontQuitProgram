@@ -225,3 +225,22 @@ export const changePassword = async (req, res) => {
     res.status(500).json({ error: "Error al cambiar contraseña" });
   }
 };
+
+export const getUserSubscriptions = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const subscriptions = await prisma.subscription.findMany({
+      where: { userId: parseInt(id) },
+      include: { 
+        plan: { select: { title: true, duration: true } } 
+      },
+      orderBy: { startDate: 'desc' } 
+    });
+
+    res.json(subscriptions);
+  } catch (error) {
+    console.error("Error obteniendo suscripciones del usuario:", error);
+    res.status(500).json({ error: 'Error al obtener historial de suscripciones' });
+  }
+};

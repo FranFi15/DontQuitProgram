@@ -63,3 +63,74 @@ export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
     console.error("❌ Error crítico en la función sendWelcomeEmail:", error);
   }
 };
+
+export const sendTransferApprovedEmail = async (userEmail, userName, planName) => {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: "Don't Quit Program <onboarding@resend.dev>", 
+      to: [userEmail],
+      subject: '¡Pago Aprobado! Ya podés empezar ',
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
+          <div style="background-color: #10b981; padding: 25px; text-align: center;">
+            <h1 style="color: #fff; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;">¡PAGO APROBADO!</h1>
+          </div>
+          
+          <div style="padding: 30px;">
+            <h2 style="color: #111; margin-top: 0;">¡Hola ${userName.split(' ')[0]}!</h2>
+            <p style="font-size: 16px; line-height: 1.6;">Te avisamos que Rocío ya verificó tu transferencia y tu plan <strong>"${planName}"</strong> ha sido activado con éxito.</p>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #4b5563;">Ya tenés acceso total a tu rutina y métricas. ¡Es hora de darlo todo!</p>
+            
+            <div style="text-align: center; margin-top: 40px;">
+              <a href="https://dontquitprogram.com/login" style="display: inline-block; background-color: #000; color: #FAF3EF; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; text-transform: uppercase;">
+                Ir a Entrenar
+              </a>
+            </div>
+          </div>
+        </div>
+      `
+    });
+
+    if (error) console.error("❌ Error en Resend (Transferencia):", error);
+    else console.log(`✉️ Mail de aprobación enviado a ${userEmail}`);
+  } catch (error) {
+    console.error("❌ Error en sendTransferApprovedEmail:", error);
+  }
+};
+
+// --- MAIL DE COMPRA CONFIRMADA (AUTOMÁTICA MP/PAYPAL) ---
+export const sendPurchaseConfirmationEmail = async (userEmail, userName, planName) => {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: "Don't Quit Program <onboarding@resend.dev>", 
+      to: [userEmail],
+      subject: '¡Compra Exitosa! ',
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
+          <div style="background-color: #000; padding: 25px; text-align: center;">
+            <h1 style="color: #FAF3EF; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;">DON'T QUIT.</h1>
+          </div>
+          
+          <div style="padding: 30px;">
+            <h2 style="color: #111; margin-top: 0;">¡Hola ${userName.split(' ')[0]}! Tu compra está confirmada.</h2>
+            <p style="font-size: 16px; line-height: 1.6;">Recibimos el pago por tu suscripción al plan <strong>"${planName}"</strong>.</p>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #4b5563;">Tu acceso ya está habilitado. Entrá a la plataforma para ver tu planificación y empezar tu proceso.</p>
+            
+            <div style="text-align: center; margin-top: 40px;">
+              <a href="https://dontquitprogram.com/login" style="display: inline-block; background-color: #000; color: #FAF3EF; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; text-transform: uppercase;">
+                Ingresar a la App
+              </a>
+            </div>
+          </div>
+        </div>
+      `
+    });
+
+    if (error) console.error("❌ Error en Resend (Compra Exitosa):", error);
+    else console.log(`✉️ Mail de compra exitosa enviado a ${userEmail}`);
+  } catch (error) {
+    console.error("❌ Error en sendPurchaseConfirmationEmail:", error);
+  }
+};
