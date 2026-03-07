@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'; 
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import axios from '../api/axios';
-import { Users, Dumbbell, Calendar, LayoutDashboard, LogOut, MessageCircle, DollarSign, ClipboardList, MessageSquare, Tag, Ticket} from 'lucide-react';
+import { Users, Dumbbell, Calendar, LayoutDashboard, LogOut, MessageCircle, DollarSign, ClipboardList, MessageSquare, Tag, Ticket, Menu, X } from 'lucide-react'; // 👈 Importamos Menu y X
 import './AdminLayout.css'; 
 
 function AdminLayout() {
   const navigate = useNavigate();
+  const location = useLocation(); // Para saber cuándo cambia la ruta
   
-  // --- ESTADO PARA LAS NOTIFICACIONES ---
+  // --- ESTADOS ---
   const [badges, setBadges] = useState({ payments: 0, chat: 0, wall: 0 });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // 👈 Controla el menú en celular
 
   const clearBadgeLocally = (type) => {
     setBadges(prevBadges => ({
@@ -17,11 +19,9 @@ function AdminLayout() {
     }));
   };
 
-  // --- FUNCIÓN PARA BUSCAR NOTIFICACIONES ---
- const fetchBadges = async () => {
+  const fetchBadges = async () => {
     try {
       const res = await axios.get('/payments/badges'); 
-      // Guardamos los 3 datos que nos manda el backend
       setBadges({ 
         payments: res.data.payments || 0,
         chat: res.data.chat || 0,
@@ -32,24 +32,61 @@ function AdminLayout() {
     }
   };
 
-  // --- EFECTO: CONSULTAR CADA 15 SEGUNDOS ---
   useEffect(() => {
-    fetchBadges(); // Consulta inicial al montar el componente
-    const interval = setInterval(fetchBadges, 15000); // Polling cada 15s
-    return () => clearInterval(interval); // Limpieza al desmontar
+    fetchBadges(); 
+    const interval = setInterval(fetchBadges, 15000); 
+    return () => clearInterval(interval); 
   }, []);
+
+  // 👈 NUEVO EFECTO: Si cambia la ruta (hace clic en un link), cerramos el menú en móvil
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     navigate('/login');
   };
 
+  // Función para hacer scroll del celular y que el contenido no quede bloqueado cuando el menú está abierto
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isMobileMenuOpen]);
+
   return (
     <div className="admin-layout">
       
-      {/* SIDEBAR FIJO IZQUIERDA */}
-      <aside className="admin-sidebar">
+      {/* 👈 HEADER MÓVIL (Solo visible en celulares) */}
+      <div className="admin-mobile-header">
+        <button 
+          className="mobile-menu-btn" 
+          onClick={() => setIsMobileMenuOpen(true)}
+        >
+          <Menu size={28} />
+        </button>
+        <span className="mobile-brand">Don't Quit.</span>
+      </div>
+
+      {/* 👈 OVERLAY OSCURO PARA CERRAR EL MENÚ (Solo en celular) */}
+      {isMobileMenuOpen && (
+        <div 
+          className="admin-mobile-overlay"
+          onClick={() => setIsMobileMenuOpen(false)}
+        ></div>
+      )}
+
+      {/* SIDEBAR FIJO IZQUIERDA (Con clase dinámica para móviles) */}
+      <aside className={`admin-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
+        
         <div className="sidebar-brand">
           <img className="brand-logo" src="/src/assets/logob.png" alt="logo don't quit" />
+          {/* Botón X para cerrar en móvil */}
+          <button className="close-sidebar-btn" onClick={() => setIsMobileMenuOpen(false)}>
+            <X size={24} />
+          </button>
         </div>
         
         <nav className="sidebar-nav">

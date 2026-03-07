@@ -141,8 +141,102 @@
   0% { transform: scale(0); }
   100% { transform: scale(1); }
 }
-/* Responsive: En celulares el Admin Sidebar se esconde (Opcional por ahora) */
-@media (max-width: 768px) {
-  .admin-sidebar { display: none; } 
-  .admin-content { margin-left: 0; width: 100%; }
+.admin-mobile-header {
+  display: none;
+  background-color: #000;
+  color: white;
+  padding: 15px 20px;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-brand {
+  margin-left: 15px;
+  font-weight: 900;
+  font-size: 1.2rem;
+  letter-spacing: -0.5px;
+}
+
+.close-sidebar-btn {
+  display: none; /* Oculto en PC */
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.admin-mobile-overlay {
+  display: none;
+}
+
+/* ==============================================
+   RESPONSIVE (MÓVILES Y TABLETS CHICAS)
+   ============================================== */
+@media (max-width: 900px) {
+  
+  /* 1. Mostramos la barra negra arriba */
+  .admin-mobile-header {
+    display: flex;
+  }
+
+  /* 2. El contenido ya no tiene margen izquierdo y baja un poco para no pisar la barra */
+  .admin-content {
+    margin-left: 0;
+    width: 100%;
+    padding-top: 60px; /* Deja espacio para el header móvil */
+  }
+
+  /* 3. Ocultamos el Sidebar por defecto y lo preparamos para deslizar */
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: none;
+  }
+
+  /* 4. Cuando el estado de React le pone la clase .open, se desliza adentro */
+  .admin-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 10px 0 25px rgba(0,0,0,0.5);
+  }
+
+  /* 5. Ajustes dentro del Sidebar móvil */
+  .sidebar-brand {
+    justify-content: space-between;
+    padding: 0 15px;
+  }
+  .brand-logo {
+    height: 150px; /* Un poco más chico en el celu */
+  }
+  .close-sidebar-btn {
+    display: block; /* Mostramos la X para cerrar */
+  }
+
+  /* 6. El fondo oscurecido cuando el menú está abierto */
+  .admin-mobile-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+    z-index: 95; /* Debajo del sidebar, pero encima del contenido */
+    animation: fadeIn 0.3s ease-out;
+  }
 }
