@@ -1,10 +1,14 @@
 /* client/src/pages/admin/AdminExercises.css */
 
 .admin-container {
-  padding: 2rem;
+  padding: 2rem 3rem; /* Lo igualo al padding que usaste en Usuarios y Planes */
   width: 100%;
   box-sizing: border-box;
   animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
 }
 
 .admin-header {
@@ -12,13 +16,16 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  flex-wrap: wrap; /* Importante para que baje en móviles */
+  gap: 15px;
 }
 
 .admin-title {
-  font-size: 1.8rem;
+  font-size: 2rem; /* Lo igualo a los otros títulos */
   font-weight: 900;
   text-transform: uppercase;
   margin: 0;
+  color: #fffafa; /* Mantengo tu color blanco para fondos oscuros */
 }
 
 .new-btn {
@@ -31,8 +38,12 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   text-transform: uppercase;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+  white-space: nowrap; /* Evita que el texto se rompa */
 }
 .new-btn:hover { background-color: #333; }
 
@@ -60,19 +71,20 @@
 }
 .search-bar input:focus { border-color: #000; }
 
-/* TABLE */
+/* TABLE CONTENEDOR (Scroll Horizontal Habilitado) */
 .table-container {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  overflow-x: auto;
+  overflow-x: auto; /* Activa el scroll horizontal */
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  -webkit-overflow-scrolling: touch; /* Suaviza el scroll en iOS */
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  min-width: 700px; /* Asegura que las columnas no se aplasten */
 }
 
 .admin-table th {
@@ -84,6 +96,7 @@
   text-transform: uppercase;
   color: #6b7280;
   border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
 }
 
 .admin-table td {
@@ -94,7 +107,10 @@
   vertical-align: middle;
 }
 
-.fw-bold { font-weight: 700; }
+.admin-table tr:hover { background-color: #f9fafb; }
+.admin-table tr:last-child td { border-bottom: none; }
+
+.fw-bold { font-weight: 700; color: #111; }
 .text-gray { color: #9ca3af; font-size: 0.9rem; }
 .desc-cell { max-width: 300px; color: #4b5563; font-size: 0.9rem; }
 .empty-msg { text-align: center; padding: 2rem; color: #9ca3af; }
@@ -108,6 +124,7 @@
   align-items: center;
   justify-content: center;
   color: #6b7280;
+  flex-shrink: 0;
 }
 
 /* Link de Video */
@@ -123,6 +140,7 @@
   border-radius: 4px;
   background-color: #eff6ff;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 .video-link:hover { background-color: #dbeafe; }
 
@@ -142,3 +160,46 @@
 .action-btn.edit:hover { background-color: #eff6ff; }
 .action-btn.delete { color: #dc2626; }
 .action-btn.delete:hover { background-color: #fef2f2; }
+
+/* ==============================================
+   RESPONSIVE PARA MÓVILES (Max 768px)
+   ============================================== */
+@media (max-width: 768px) {
+  /* Achicamos el padding general */
+  .admin-container {
+    padding: 1.5rem 1rem;
+  }
+
+  /* Ajustamos el header */
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-title {
+    font-size: 1.6rem;
+  }
+
+  /* Botón de ancho completo */
+  .new-btn {
+    width: 100%;
+  }
+
+  /* Buscador ocupando todo el ancho */
+  .search-bar {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  /* Reducimos el padding interno de las celdas en móvil para que entre más data */
+  .admin-table th,
+  .admin-table td {
+    padding: 0.8rem 0.5rem;
+  }
+
+  /* Modales rojos en celulares */
+  .modal-content.animate-enter {
+    width: 95% !important;
+    padding: 20px !important;
+  }
+}

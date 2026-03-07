@@ -287,7 +287,7 @@ function LandingPage() {
 
                       <div className="plans-grid-landing">
                         {displayedPlans.map(plan => {
-                          const isFree = plan.price === 0; // 👈 Identificamos si es gratis
+                          const isFree = plan.price === 0; 
 
                           return (
                             <div key={plan.id} className={`plan-card-landing reveal ${isFree ? 'free-plan-card' : ''}`}>

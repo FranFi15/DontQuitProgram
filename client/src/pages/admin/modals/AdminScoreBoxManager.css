@@ -37,6 +37,7 @@
   display: flex;
   gap: 10px;
   width: 100%;
+  flex-wrap: wrap; /* Importante para que baje en móviles */
 }
 
 .sb-input { 
@@ -46,9 +47,10 @@
   font-size: 0.9rem; 
   color: #111;
   outline: none;
+  box-sizing: border-box; /* Previene desbordes */
 }
 .sb-input:focus { border-color: #000; }
-.sb-input.flex-2 { flex: 2; }
+.sb-input.flex-2 { flex: 2; min-width: 200px; } /* min-width fuerza el salto en móvil */
 .sb-input.short { width: 100px; flex: none; }
 
 .sb-unit-adder {
@@ -75,11 +77,13 @@
   border-radius: 6px; 
   display: flex; 
   align-items: center; 
+  justify-content: center;
   gap: 6px; 
   cursor: pointer; 
   font-weight: 700;
   font-size: 0.85rem;
   text-transform: uppercase;
+  min-height: 40px; /* Asegura altura clickeable */
 }
 .sb-add-btn:hover { background: #333; }
 
@@ -133,12 +137,13 @@
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  gap: 10px; /* Evita que los botones choquen con el texto */
 }
 
-.sb-info { display: flex; flex-direction: column; gap: 6px; }
-.sb-info .name { font-weight: 800; color: #111; text-transform: uppercase;}
+.sb-info { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.sb-info .name { font-weight: 800; color: #111; text-transform: uppercase; word-break: break-word;}
 
-.unit-tags { display: flex; gap: 6px; }
+.unit-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .unit-badge {
   background: #f3f4f6;
   color: #4b5563;
@@ -148,7 +153,7 @@
   font-weight: 700;
 }
 
-.sb-actions { display: flex; gap: 6px; }
+.sb-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
 .icon-btn { 
   width: 32px; 
@@ -176,6 +181,12 @@
   display: flex;
   gap: 10px;
   width: 100%;
+  flex-wrap: wrap; /* Permite salto en móvil */
+}
+
+.sb-edit-inputs .sb-input {
+  flex: 1; /* El input de nombre toma todo el espacio posible */
+  min-width: 150px;
 }
 
 .sb-edit-actions {
@@ -190,3 +201,61 @@
 .icon-btn.cancel { background: #f3f4f6; color: #6b7280; }
 
 .empty-txt { font-size: 0.9rem; color: #9ca3af; font-style: italic; text-align: center; padding: 1rem; }
+
+/* ==============================================
+   RESPONSIVE PARA MÓVILES (Max 768px)
+   ============================================== */
+@media (max-width: 768px) {
+  .admin-sb-manager {
+    padding: 1rem;
+  }
+
+  /* Formulario de Agregar: Convertimos fila en columna */
+  .sb-add-row {
+    flex-direction: column;
+  }
+
+  .sb-input.flex-2 {
+    width: 100%;
+  }
+
+  /* El bloque para agregar unidad ("Input Corto" + "Botón +") */
+  .sb-unit-adder {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sb-input.short {
+    flex: 1; /* El input de unidad se estira */
+    width: auto;
+  }
+
+  .sb-btn-secondary {
+    height: 30px;
+    padding: 0 15px; /* Botón + un poco más grande */
+  }
+
+  .sb-add-btn {
+    width: 100%;
+    padding: 12px;
+  }
+
+  /* Modo Edición: Igual que el formulario de agregar */
+  .sb-edit-inputs {
+    flex-direction: column;
+  }
+
+  .sb-edit-actions {
+    justify-content: space-between; /* Botones a los lados para no tocarlos mal */
+  }
+  .sb-edit-actions .icon-btn {
+    flex: 1; /* Hacemos los botones Save/Cancel anchos */
+  }
+
+  /* Modales rojos en celulares */
+  .modal-content.animate-enter {
+    width: 95% !important;
+    padding: 20px !important;
+  }
+}

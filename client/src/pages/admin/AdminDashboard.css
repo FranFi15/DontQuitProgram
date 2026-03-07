@@ -69,7 +69,7 @@
 /* STAT CARDS GRID */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2.5rem;
 }
@@ -163,11 +163,6 @@
   gap: 1.5rem;
 }
 
-@media (max-width: 900px) {
-  .dashboard-content { grid-template-columns: 1fr; }
-  .dashboard-container { padding: 1.5rem; }
-}
-
 .dashboard-section {
   background: white;
   border-radius: 16px;
@@ -181,6 +176,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap; /* Para móvil */
+  gap: 10px;
 }
 
 .section-header h2 {
@@ -248,6 +245,7 @@
   font-weight: 800;
   color: #374151;
   margin-right: 1rem;
+  flex-shrink: 0; /* Evita que el avatar se achique */
 }
 
 .expiring-info { 
@@ -275,6 +273,7 @@
   border-radius: 99px;
   font-size: 0.75rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 .expiring-badge.urgent {
   background: #fee2e2;
@@ -301,6 +300,7 @@
   cursor: pointer;
   transition: all 0.2s;
   color: #374151;
+  position: relative; /* 👈 Fundamental para que las burbujas queden pegadas al botón */
 }
 
 .quick-action-card:hover {
@@ -356,18 +356,19 @@
 /* Badge en acciones rápidas */
 .qa-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: -5px;
+  right: -5px;
   background: #dc2626;
   color: white;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   font-size: 0.7rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
+  border: 2px solid white;
 }
 
 @keyframes pulse {
@@ -378,5 +379,72 @@
 
 /* Estilo adicional para ícono ARS */
 .stat-icon.revenue-ars { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.fw-bold { font-weight: 800; }
 
-.fw-bold { font-weight: 800; }USD
+
+/* ==============================================
+   RESPONSIVE PARA MÓVILES (Max 900px y 768px)
+   ============================================== */
+@media (max-width: 900px) {
+  .dashboard-content { 
+    grid-template-columns: 1fr; 
+  }
+}
+
+@media (max-width: 768px) {
+  /* 1. Achicamos los márgenes laterales de toda la pantalla */
+  .dashboard-container { 
+    padding: 1.5rem 1rem; 
+  }
+
+  /* 2. Ajustamos el Header */
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dashboard-title {
+    font-size: 1.8rem;
+  }
+  
+  /* El calendario ocupa todo el ancho */
+  .date-badge {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  /* 3. Las tarjetas estadísticas se apilan 100% a lo ancho */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* 4. Reducimos el padding de las secciones para ganar espacio */
+  .dashboard-section {
+    padding: 1.2rem;
+  }
+
+  /* 5. Ajustes en la lista de vencimientos */
+  .expiring-item {
+    flex-direction: column; /* Apila el usuario y el estado */
+    align-items: flex-start;
+    gap: 10px;
+    position: relative;
+  }
+  .expiring-info {
+    margin-left: 50px; /* Deja espacio para el avatar que queda arriba */
+    margin-top: -30px; 
+  }
+  .expiring-badge {
+    align-self: flex-start;
+    margin-left: 50px;
+  }
+
+  /* 6. Botones de acciones rápidas un poco más compactos */
+  .quick-action-card {
+    padding: 1rem;
+  }
+  .quick-action-card span {
+    font-size: 0.8rem;
+  }
+}

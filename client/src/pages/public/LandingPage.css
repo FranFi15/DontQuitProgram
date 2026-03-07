@@ -85,7 +85,7 @@
 }
 
 .mobile-menu-btn {
-  display: none;
+  display: none !important;; 
   background: none;
   border: none;
   color: #fff;
@@ -596,7 +596,7 @@
    ========================================= */
 @media (max-width: 768px) {
   .desktop-only { display: none; }
-  .mobile-menu-btn { display: block; }
+  .mobile-menu-btn { display: block !important; }
   
   .hero-title { font-size: 2.5rem; }
   .hero-subtitle { font-size: 1rem; }

@@ -1,4 +1,4 @@
-/* CONTENEDOR PRINCIPAL - Igualamos padding y animación */
+/* CONTENEDOR PRINCIPAL */
 .categories-page {
   padding: 2rem 3rem;
   width: 100%;
@@ -10,12 +10,14 @@
   from { opacity: 0; } to { opacity: 1; }
 }
 
-/* HEADER - Estilo idéntico a Users */
+/* HEADER */
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  flex-wrap: wrap; /* Importante para móvil */
+  gap: 1rem;
 }
 
 .header-title {
@@ -29,14 +31,10 @@
   font-weight: 900;
   text-transform: uppercase;
   margin: 0;
-  color: #fffafa; /* Título en blanco para destacar sobre el fondo oscuro */
+  color: #fffafa; /* Mantengo tu color blanco */
 }
 
-.icon-tag {
-  color: #fffafa; /* Icono blanco para coincidir con el título */
-}
-
-/* BOTÓN NUEVO - Estilo negro sólido */
+/* BOTÓN NUEVO */
 .new-btn {
   background-color: #000;
   color: #fff;
@@ -51,6 +49,7 @@
   text-transform: uppercase;
   font-size: 0.85rem;
   transition: background-color 0.2s;
+  white-space: nowrap; /* Evita que el texto se rompa */
 }
 
 .new-btn:hover {
@@ -62,17 +61,26 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  overflow-x: auto;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  overflow: hidden; /* Para que los bordes redondeados no se rompan */
+}
+
+/* 👇 NUEVO: Wrapper para el scroll horizontal en móviles. 
+  La tabla mantiene su ancho mínimo y se scrollea por dentro.
+*/
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Suaviza el scroll en iOS */
 }
 
 .categories-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  min-width: 600px; /* Asegura que no se aplaste en móvil */
 }
 
-/* CABECERAS DE TABLA - Uppercase y letra pequeña */
+/* CABECERAS DE TABLA */
 .categories-table th {
   background-color: #f9fafb;
   text-align: left;
@@ -83,6 +91,7 @@
   color: #6b7280;
   border-bottom: 1px solid #e5e7eb;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 /* CELDAS DE TABLA */
@@ -177,6 +186,7 @@
   display: inline-flex;
   align-items: center;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .btn-view-plans:hover:not(:disabled) {
@@ -190,4 +200,43 @@
   cursor: not-allowed;
   background: transparent;
   border-color: transparent;
+}
+
+
+/* ==============================================
+   RESPONSIVE PARA MÓVILES (Max 768px)
+   ============================================== */
+@media (max-width: 768px) {
+  /* Reducimos el padding general de la página para que la tabla ocupe más ancho */
+  .categories-page {
+    padding: 1.5rem 1rem;
+  }
+
+  /* Ajustamos el header */
+  .header-title h1 {
+    font-size: 1.5rem; /* Título un poco más chico */
+  }
+
+  /* El botón de Nueva Categoría se vuelve un cuadrado con el ícono para ahorrar espacio, o un botón ancho abajo */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .new-btn {
+    width: 100%; /* Botón de ancho completo en móvil */
+    justify-content: center;
+  }
+
+  /* Reducimos el padding de las celdas en móvil para que entre más info */
+  .categories-table th,
+  .categories-table td {
+    padding: 0.8rem 0.5rem;
+  }
+
+  /* El modal rojo toma más ancho en la pantalla chica */
+  .modal-content.animate-enter {
+    width: 95% !important;
+    padding: 20px !important;
+  }
 }

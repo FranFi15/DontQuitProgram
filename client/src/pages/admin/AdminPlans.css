@@ -1,12 +1,84 @@
 /* client/src/pages/admin/AdminPlans.css */
 
-.plans-container { padding: 2rem 3rem; animation: fadeIn 0.5s ease-out; }
-.plans-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-.plans-title { font-size: 2rem; font-weight: 900; text-transform: uppercase; margin: 0;  color: #fffafa; }
-.new-plan-btn { background-color: #000; color: #fff; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+.plans-container { 
+  padding: 2rem 3rem; 
+  animation: fadeIn 0.5s ease-out; 
+  box-sizing: border-box;
+}
+
+.plans-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 2rem; 
+  flex-wrap: wrap; /* Importante para que el botón baje en móvil */
+  gap: 15px;
+}
+
+.plans-title { 
+  font-size: 2rem; 
+  font-weight: 900; 
+  text-transform: uppercase; 
+  margin: 0;  
+  color: #fffafa; 
+}
+
+.new-plan-btn { 
+  background-color: #000; 
+  color: #fff; 
+  padding: 0.75rem 1.5rem; 
+  border: none; 
+  border-radius: 6px; 
+  font-weight: 700; 
+  cursor: pointer; 
+  text-transform: uppercase; 
+  transition: 0.2s; 
+  white-space: nowrap;
+}
 .new-plan-btn:hover { background-color: #333; }
 
-.plans-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+/* TOOLS (Buscador y Filtro) */
+.plans-toolbar { 
+  display: flex; 
+  gap: 1rem; 
+  margin-bottom: 2rem; 
+}
+
+.search-wrapper { flex: 2; position: relative; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+.search-input { 
+  width: 100%; 
+  padding: 0.8rem 1rem 0.8rem 2.5rem; 
+  border: 1px solid #e5e7eb; 
+  border-radius: 8px; 
+  font-size: 0.95rem; 
+  outline: none; 
+  box-sizing: border-box; /* Previene desbordes */
+}
+.search-input:focus { border-color: #000; }
+
+.sort-wrapper { flex: 1; position: relative; min-width: 200px; }
+.sort-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; }
+.sort-select { 
+  width: 100%; 
+  padding: 0.8rem 1rem 0.8rem 2.5rem; 
+  border: 1px solid #e5e7eb; 
+  border-radius: 8px; 
+  appearance: none; 
+  background-color: white; 
+  font-size: 0.95rem; 
+  cursor: pointer; 
+  box-sizing: border-box;
+}
+.sort-select:focus { border-color: #000; }
+
+/* GRILLA DE TARJETAS */
+.plans-grid { 
+  display: grid; 
+  /* 👇 Bajamos de 320 a 280px para que entren en celulares chicos */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+  gap: 1.5rem; 
+}
 
 /* TARJETA */
 .plan-card {
@@ -14,7 +86,8 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 1.5rem;
-  display: flex; flex-direction: column;
+  display: flex; 
+  flex-direction: column;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 2px 5px rgba(0,0,0,0.02);
   position: relative;
@@ -27,7 +100,8 @@
   border-color: #e5e7eb;
   opacity: 0.9;
 }
-.card-paused h3 { color: #ffffff !important; }
+/* Se quita el color blanco forzado porque con fondo blanco desaparece el texto */
+.card-paused h3 { color: #6b7280; }
 
 .plan-card-header {
   display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;
@@ -40,7 +114,7 @@
 .plan-card-header h3 { margin: 0; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; color: #111; line-height: 1.2;}
 
 /* PRECIOS */
-.price-tag-container { text-align: right; display: flex; flex-direction: column; }
+.price-tag-container { text-align: right; display: flex; flex-direction: column; flex-shrink: 0; margin-left: 10px;}
 .plan-price { font-size: 1.2rem; font-weight: 900; color: #059669; }
 .usd-price { font-size: 0.8rem; font-weight: 600; color: #6b7280; }
 
@@ -58,29 +132,31 @@
   display: flex; justify-content: space-between;
   font-size: 0.85rem; font-weight: 600; color: #374151;
   margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #f3f4f6;
+  flex-wrap: wrap; gap: 8px;
 }
 .plan-users { cursor: pointer; display: flex; align-items: center; gap: 6px; }
 .plan-users:hover { color: #000; text-decoration: underline; }
 
 /* ACCIONES */
-.plan-actions { display: flex; gap: 0.5rem; }
+.plan-actions { 
+  display: flex; 
+  gap: 0.5rem; 
+  flex-wrap: wrap; /* En celulares angostos, los botones pueden bajar */
+}
 
 /* BOTONES COMUNES */
-.btn-edit, .btn-view { flex: 1; padding: 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; border: none; transition: 0.2s; }
+.btn-edit, .btn-view { flex: 1; min-width: 60px; padding: 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; border: none; transition: 0.2s; }
 .btn-edit { background-color: #f3f4f6; color: #374151; }
 .btn-edit:hover { background-color: #e5e7eb; color: #000; }
 .btn-view { background-color: #000; color: #fff; }
 .btn-view:hover { background-color: #333; }
 
-/* BOTON BORRAR */
-.btn-delete-icon {
-  background-color: #fff; border: 1px solid #fee2e2; color: #ef4444; 
-  border-radius: 6px; width: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+/* BOTONES ICONO (Borrar, Stock, Duplicar) */
+.btn-icon, .btn-delete-icon { 
+  width: 36px; height: 36px; border-radius: 6px; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s; 
 }
-.btn-delete-icon:hover { background-color: #ef4444; color: white; border-color: #ef4444; }
-
-/* BOTON POWER (STOCK) */
-.btn-icon { width: 36px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; border: none; transition: all 0.2s; }
+.btn-icon { border: none; }
 
 .btn-power-on { background: #dcfce7; color: #16a34a; }
 .btn-power-on:hover { background: #bbf7d0; }
@@ -88,21 +164,55 @@
 .btn-power-off { background: #f3f4f6; color: #9ca3af; }
 .btn-power-off:hover { background: #e5e7eb; color: #6b7280; }
 
-/* TOOLS Y RESPONSIVE */
-.plans-toolbar { display: flex; gap: 1rem; margin-bottom: 2rem; }
-.search-wrapper { flex: 2; position: relative; }
-.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
-.search-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; outline: none; }
-.search-input:focus { border-color: #000; }
-.sort-wrapper { flex: 1; position: relative; min-width: 200px; }
-.sort-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; }
-.sort-select { width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; border: 1px solid #e5e7eb; border-radius: 8px; appearance: none; background-color: white; font-size: 0.95rem; cursor: pointer; }
-.sort-select:focus { border-color: #000; }
-
-@media (max-width: 768px) {
-  .plans-toolbar { flex-direction: column; }
-  .sort-wrapper { width: 100%; }
-}
-
 .btn-duplicate { background-color: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
 .btn-duplicate:hover { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+
+.btn-delete-icon { background-color: #fff; border: 1px solid #fee2e2; color: #ef4444; }
+.btn-delete-icon:hover { background-color: #ef4444; color: white; border-color: #ef4444; }
+
+
+/* ==============================================
+   RESPONSIVE PARA MÓVILES (Max 768px)
+   ============================================== */
+@media (max-width: 768px) {
+  /* Achicamos el padding general y permitimos scroll total */
+  .plans-container { 
+    padding: 1.5rem 1rem; 
+  }
+  
+  /* Hacemos que la barra de búsqueda y filtros ocupen 100% de ancho */
+  .plans-toolbar { 
+    flex-direction: column; 
+    gap: 10px;
+  }
+  .sort-wrapper { 
+    width: 100%; 
+  }
+
+  /* Ajuste de título y botón principal */
+  .plans-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .plans-title {
+    font-size: 1.6rem;
+  }
+  .new-plan-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Ajustes mínimos en la tarjeta para celulares chicos */
+  .plan-card {
+    padding: 1.2rem;
+  }
+  .plan-card-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  /* Modales rojos en celulares */
+  .modal-content.animate-enter {
+    width: 95% !important;
+    padding: 20px !important;
+  }
+}
