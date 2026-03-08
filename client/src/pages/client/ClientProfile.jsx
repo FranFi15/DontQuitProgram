@@ -63,7 +63,7 @@ function ClientProfile() {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.put(`/users/profile/${user.id}`, formData);
+      await axios.put(`/users/${user.id}`, formData);
       // 👈 3. ALERTA DE ÉXITO AL GUARDAR PERFIL
       showAlert("Perfil actualizado correctamente", "success");
       
