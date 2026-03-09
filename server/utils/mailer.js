@@ -138,7 +138,7 @@ export const sendPurchaseConfirmationEmail = async (userEmail, userName, planNam
 export const sendPasswordResetLinkEmail = async (userEmail, userName, resetLink) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: "Don't Quit Program <hola@dontquitprogram.com>", // Ajustalo a tu gusto
+      from: "Don't Quit Program <info@dontquitprogram.com>", 
       to: [userEmail],
       subject: 'Restablecer tu contraseña 🔐',
       html: `
