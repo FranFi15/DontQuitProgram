@@ -19,7 +19,7 @@ export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
     const { data, error } = await resend.emails.send({
       // ⚠️ IMPORTANTE: Mientras pruebas en Resend (sin dominio verificado), usa este correo.
       // Cuando verifiquen un dominio (ej: dontquit.com), lo cambian a "info@dontquit.com"
-      from: "Don't Quit Program <onboarding@resend.dev>", 
+      from: "Don't Quit Program <info@dontquitprogram.com>", 
       to: [userEmail],
       subject: '¡Bienvenido/a a Don\'t Quit Program! ',
       html: `
@@ -67,7 +67,7 @@ export const sendWelcomeEmail = async (userEmail, userName, paymentMethod) => {
 export const sendTransferApprovedEmail = async (userEmail, userName, planName) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: "Don't Quit Program <onboarding@resend.dev>", 
+      from: "Don't Quit Program <info@dontquitprogram.com>", 
       to: [userEmail],
       subject: '¡Pago Aprobado! Ya podés empezar ',
       html: `
@@ -103,7 +103,7 @@ export const sendTransferApprovedEmail = async (userEmail, userName, planName) =
 export const sendPurchaseConfirmationEmail = async (userEmail, userName, planName) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: "Don't Quit Program <onboarding@resend.dev>", 
+      from: "Don't Quit Program <info@dontquitprogram.com>", 
       to: [userEmail],
       subject: '¡Compra Exitosa! ',
       html: `
