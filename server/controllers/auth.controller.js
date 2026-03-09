@@ -166,7 +166,7 @@ export const resetPassword = async (req, res) => {
     // Verificamos si el token es válido y no expiró
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.SECRET_KEY);
+      decoded = jwt.verify(token, SECRET_KEY);
     } catch (err) {
       return res.status(400).json({ error: "El enlace es inválido o ha expirado. Volvé a solicitar uno nuevo." });
     }
