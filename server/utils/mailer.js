@@ -134,3 +134,47 @@ export const sendPurchaseConfirmationEmail = async (userEmail, userName, planNam
     console.error("❌ Error en sendPurchaseConfirmationEmail:", error);
   }
 };
+
+export const sendPasswordResetLinkEmail = async (userEmail, userName, resetLink) => {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: "Don't Quit Program <hola@dontquitprogram.com>", // Ajustalo a tu gusto
+      to: [userEmail],
+      subject: 'Restablecer tu contraseña 🔐',
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
+          <div style="background-color: #000; padding: 25px; text-align: center;">
+            <h1 style="color: #FAF3EF; margin: 0; font-size: 24px; text-transform: uppercase;">DON'T QUIT.</h1>
+          </div>
+          
+          <div style="padding: 30px;">
+            <h2 style="color: #111; margin-top: 0;">¡Hola ${userName.split(' ')[0]}!</h2>
+            <p style="font-size: 16px; line-height: 1.6;">Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+            
+            <p style="font-size: 16px; line-height: 1.6;">Hacé clic en el siguiente botón para crear una nueva contraseña. <strong>Este enlace es válido por 15 minutos.</strong></p>
+            
+            <div style="text-align: center; margin: 40px 0;">
+              <a href="${resetLink}" style="display: inline-block; background-color: #000; color: #FAF3EF; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; text-transform: uppercase;">
+                Restablecer Contraseña
+              </a>
+            </div>
+
+            <p style="font-size: 14px; line-height: 1.6; color: #6b7280;">
+              Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br/>
+              <a href="${resetLink}" style="color: #2563eb; word-break: break-all;">${resetLink}</a>
+            </p>
+
+            <p style="font-size: 14px; line-height: 1.6; color: #9ca3af; margin-top: 30px;">
+              Si no solicitaste este cambio, podés ignorar este correo.
+            </p>
+          </div>
+        </div>
+      `
+    });
+
+    if (error) console.error("❌ Error en Resend (Link de Recuperación):", error);
+    else console.log(`✉️ Link de recuperación enviado a ${userEmail}`);
+  } catch (error) {
+    console.error("❌ Error en sendPasswordResetLinkEmail:", error);
+  }
+};

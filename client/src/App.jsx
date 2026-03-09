@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { AlertProvider } from './context/AlertContext';
 
 import LoginPage from './pages/public/LoginPage';
+import ResetPassword from './pages/public/ResetPassword';
 
 import LandingPage from './pages/public/LandingPage';
 import CheckoutPage from './pages/public/CheckoutPage';
@@ -37,6 +38,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} /> 
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/checkout/:planId" element={<CheckoutPage />} />
           
         
