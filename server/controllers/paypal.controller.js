@@ -1,4 +1,5 @@
 import prisma from '../db.js';
+import { sendPurchaseConfirmationEmail } from '../utils/mailer.js';
 
 // 1. Función interna: Le pide la "llave de paso" temporal a PayPal
 const generateAccessToken = async () => {
@@ -97,6 +98,8 @@ export const captureOrder = async (req, res) => {
           isActive: true
         }
       });
+
+      await sendPurchaseConfirmationEmail(user.email, user.name, plan.title);
 
       res.json({ success: true, message: "Pago procesado en USD y suscripción activada." });
     } else {

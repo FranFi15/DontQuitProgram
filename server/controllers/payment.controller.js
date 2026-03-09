@@ -1,4 +1,5 @@
 import prisma from '../db.js';
+import { sendTransferApprovedEmail } from '../utils/mailer.js';
 
 // --- CLIENTE: REPORTAR UNA TRANSFERENCIA ---
 export const reportTransfer = async (req, res) => {
@@ -58,16 +59,19 @@ export const approvePayment = async (req, res) => {
     // 1. Buscamos el pago y los detalles del plan
     const payment = await prisma.payment.findUnique({
       where: { id: parseInt(id) },
-      include: { plan: true }
+      include: { 
+        plan: true,
+        user: true // 👈 Traemos al usuario para saber a qué email mandarle
+      }
     });
 
     if (!payment || payment.status !== 'PENDING') {
       return res.status(400).json({ error: "El pago no existe o ya fue procesado." });
     }
 
-    // 2. Calculamos la fecha de fin (IGUAL QUE EN SUBSCRIPTION CONTROLLER)
+    // 2. Calculamos la fecha de fin 
     const startDate = new Date();
-    const weeksTotal = (payment.plan.duration || 4) + 2; // Sumamos las 2 semanas extra
+    const weeksTotal = (payment.plan.duration || 4) + 2; 
     
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + (weeksTotal * 7));
@@ -82,18 +86,20 @@ export const approvePayment = async (req, res) => {
         data: {
           userId: payment.userId,
           planId: payment.planId,
-          startDate: startDate, // Usamos la fecha que creamos arriba
-          endDate: endDate,     // Usamos la fecha calculada con las semanas extra
+          startDate: startDate, 
+          endDate: endDate,     
           isActive: true
         }
       })
     ]);
 
-    // Opcional pero recomendado: Asegurarnos de que el perfil del usuario esté Activo
     await prisma.user.update({
       where: { id: payment.userId },
       data: { isActive: true }
     });
+
+    // 👇 4. ENVIAMOS EL MAIL AL APROBAR
+    await sendTransferApprovedEmail(payment.user.email, payment.user.name, payment.plan.title);
 
     res.json({ message: "Pago aprobado. El alumno ya tiene acceso al plan." });
 
@@ -120,24 +126,19 @@ export const rejectPayment = async (req, res) => {
 // --- ADMIN: CONTADOR MAESTRO DE NOTIFICACIONES ---
 export const getAdminBadges = async (req, res) => {
   try {
-    // 1. Cobros Pendientes
     const pendingPayments = await prisma.payment.count({
       where: { status: 'PENDING' }
     });
 
-    // 2. Chat: Mensajes sin leer dirigidos a Ro (Admin ID: 1)
-    // Cambia 'message' por el nombre de tu tabla de chat en Prisma
     const unreadMessages = await prisma.message.count({
       where: { 
         receiverId: 1, 
-        isRead: false // Asumiendo que tienes este campo en tu BD
+        isRead: false 
       }
     });
 
-    // 3. Muro: Posteos pendientes de aprobación
-    // Cambia 'wallPost' por el nombre de tu tabla del muro
     const pendingWallPosts = await prisma.wallPost.count({
-      where: { status: 'PENDING' } // Asumiendo que requieren aprobación
+      where: { status: 'PENDING' } 
     });
 
     res.json({ 

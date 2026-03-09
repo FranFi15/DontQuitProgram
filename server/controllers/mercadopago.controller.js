@@ -1,5 +1,6 @@
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'; // 👈 ¡Agregamos Payment acá!
 import prisma from '../db.js';
+import { sendPurchaseConfirmationEmail } from '../utils/mailer.js'; 
 
 const client = new MercadoPagoConfig({ 
   accessToken: process.env.MP_ACCESS_TOKEN 
@@ -107,6 +108,8 @@ export const receiveWebhook = async (req, res) => {
           ]);
 
           console.log(`✅ ¡ÉXITO! Acceso otorgado al usuario ${userId} por MP.`);
+
+          await sendPurchaseConfirmationEmail(user.email, user.name, plan.title);
 
         } catch (dbError) {
           // Si el error es P2002, significa que el candado de la BD funcionó y frenó al duplicado.
