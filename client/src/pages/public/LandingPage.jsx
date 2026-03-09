@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../api/axios'; 
-import { Menu, X, ChevronRight, CheckCircle2, AlertCircle, Instagram, Mail, Youtube, Gift} from 'lucide-react'; // 👈 Importamos Gift
+import { Menu, X, ChevronRight, CheckCircle2, AlertCircle, Instagram, Mail, Youtube, Gift} from 'lucide-react';
 import './LandingPage.css';
 
 function LandingPage() {
@@ -20,8 +20,13 @@ function LandingPage() {
   // Sub-filtro individual por categoría
   const [subFilters, setSubFilters] = useState({}); 
 
-  // 👈 NUEVO: Buscamos si hay algún plan gratuito disponible para el botón del Header
-  const freePlan = plans.find(p => p.price === 0);
+  // 👈 NUEVO: Buscamos si existe alguna categoría que tenga planes gratis
+  // Buscamos si alguna de las categorías tiene la palabra "FREE" o "GRATIS" en el nombre, 
+  // o si simplemente querés guiarte por los planes cuyo precio es 0.
+  // En este caso, buscaremos si hay AL MENOS UN plan gratis, y encontraremos su categoría.
+  const freePlanCategory = categories.find(cat => 
+    plans.some(p => p.price === 0 && p.planTypeId === cat.id)
+  );
 
   // 1. Efecto para el Navbar
   useEffect(() => {
@@ -75,13 +80,21 @@ function LandingPage() {
     return () => clearTimeout(timer);
   }, [loading, plans, activeFilter, subFilters]);
 
-  // 4. Función de Scroll Suave
+  // 4. Función de Scroll Suave al catálogo general
   const scrollToPlans = () => {
     const section = document.getElementById('catalogo-section');
     if (section) {
       section.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMobileMenuOpen(false);
+  };
+
+  // 👈 NUEVO: Función para scrollear e ir directo a la pestaña Free
+  const handleScrollToFree = () => {
+    if (freePlanCategory) {
+      setActiveFilter(freePlanCategory.id); // Selecciona la pestaña "Free"
+    }
+    scrollToPlans(); // Baja al catálogo
   };
 
   const handleBuyClick = (planId) => {
@@ -150,10 +163,10 @@ function LandingPage() {
               Ver Programas <ChevronRight size={20} />
             </button>
             
-            {/* 👈 NUEVO: Si hay un plan gratuito, mostramos el botón especial. Si no, el de "Ya soy alumno" */}
-            {freePlan ? (
+            {/* 👈 ACTUALIZADO: Si hay planes gratis, lleva a la pestaña FREE */}
+            {freePlanCategory ? (
               <button 
-                onClick={() => handleBuyClick(freePlan.id)} 
+                onClick={handleScrollToFree} 
                 className="btn-secondary-landing" 
                 style={{ borderColor: '#faf3ef5a', color: '#FAF3EF' }}
               >
@@ -298,7 +311,6 @@ function LandingPage() {
                               </div>
 
                               <div className="plan-card-price">
-                                {/* 👈 Lógica Visual para Gratis vs Pago */}
                                 {isFree ? (
                                   <span className="price-free">¡GRATIS!</span>
                                 ) : (
@@ -346,7 +358,6 @@ function LandingPage() {
                                 )}
                               </div>
 
-                              {/* 👈 Botón dinámico */}
                               <button 
                                 className={`btn-buy-plan ${isFree ? 'btn-free-plan' : ''}`}
                                 onClick={() => handleBuyClick(plan.id)}
