@@ -60,7 +60,7 @@ function ResetPassword() {
     <div className="login-container">
       <div className="login-box">
 
-        <h1 className="login-title animate-enter" style={{fontSize: '1.5rem'}}>CREAR NUEVA CONTRASEÑA</h1>
+        <h1 className="login-title animate-enter" >CREAR NUEVA CONTRASEÑA</h1>
         
         {success ? (
           <div className="animate-enter delay-200" style={{ textAlign: 'center', marginTop: '20px' }}>
@@ -112,7 +112,7 @@ function ResetPassword() {
             </button>
           </form>
         )}
-        <div className="footer-logo animate-enter" style={{marginBottom: '20px'}}>
+        <div className="footer-logo animate-enter" >
           <img src={logo} alt="Don't Quit Logo" />
         </div>
       </div>
