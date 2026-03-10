@@ -29,7 +29,7 @@ export const processCheckout = async (req, res) => {
         password: hashedPassword,
         phone: phone || null,
         role: 'ATLETA',
-        isActive: true // La cuenta existe, pero la Suscripción es lo que le da acceso
+        isActive: true 
       }
     });
 
@@ -37,6 +37,8 @@ export const processCheckout = async (req, res) => {
     sendWelcomeEmail(newUser.email, newUser.name, paymentMethod);
 
     // 5. Bifurcación según Método de Pago
+    
+    // --- PLAN GRATUITO ---
     if (plan.price === 0) {
       await prisma.subscription.create({
         data: {
@@ -47,7 +49,6 @@ export const processCheckout = async (req, res) => {
         }
       });
 
-      // Guardamos un registro de pago "SIMBÓLICO" por $0 para que no queden huecos en las métricas
       await prisma.payment.create({
         data: {
           userId: newUser.id,
@@ -55,20 +56,19 @@ export const processCheckout = async (req, res) => {
           amount: 0,
           currency: 'ARS',
           method: 'GRATUITO',
-          status: 'APPROVED', // Ya está aprobado
+          status: 'APPROVED',
         }
       });
 
-      // Le decimos al frontend que todo fue un éxito y que no hace falta ir a ninguna pasarela
       return res.json({ success: true, isFree: true });
     }
+
     // --- A. TRANSFERENCIA BANCARIA ---
     if (paymentMethod === 'TRANSFER') {
       if (!req.file) {
         return res.status(400).json({ error: 'Falta el comprobante de pago.' });
       }
 
-      // Guardamos el pago como Pendiente
       await prisma.payment.create({
         data: {
           userId: newUser.id,
@@ -77,7 +77,7 @@ export const processCheckout = async (req, res) => {
           currency: 'ARS',
           method: 'TRANSFERENCIA',
           status: 'PENDING',
-          receiptUrl: req.file.path // Suponiendo que usás Cloudinary/Multer
+          receiptUrl: req.file.path
         }
       });
 
@@ -86,6 +86,12 @@ export const processCheckout = async (req, res) => {
 
     // --- B. MERCADO PAGO ---
     if (paymentMethod === 'MERCADOPAGO') {
+      // 🛡️ ESCUDO DE SEGURIDAD PARA MP
+      if (!process.env.MP_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN.trim() === '') {
+        console.error("❌ ERROR CRÍTICO: MP_ACCESS_TOKEN no está definido en las variables de entorno.");
+        return res.status(500).json({ error: "Falta configurar la pasarela de pago en el servidor." });
+      }
+
       const preference = new Preference(client);
       const result = await preference.create({
         body: {
@@ -110,7 +116,6 @@ export const processCheckout = async (req, res) => {
         }
       });
 
-      // Le devolvemos la URL de MP al Frontend para que lo redirija
       return res.json({ success: true, initPoint: result.init_point });
     }
 
@@ -133,18 +138,23 @@ export const processCheckout = async (req, res) => {
             description: `Plan: ${plan.title}`,
             amount: { currency_code: "USD", value: plan.internationalPrice }
           }],
-          // 👇 AGREGAMOS ESTO PARA QUE SEPA A DÓNDE VOLVER 👇
           application_context: {
             return_url: "https://dontquitprogram.com/login",
             cancel_url: "https://dontquitprogram.com/login",
           }
         }),
       });
+      
       const orderData = await orderRes.json();
       
+      // 🛡️ ESCUDO DE SEGURIDAD PARA PAYPAL
+      if (!orderData.links) {
+        console.error("❌ Error de PayPal (Respuesta cruda):", orderData);
+        return res.status(400).json({ error: "No se pudo conectar con PayPal. Revisá las credenciales en Render." });
+      }
+
       const approveLink = orderData.links.find(link => link.rel === "approve").href;
 
-      // Devolvemos el link y el ID del usuario que creamos recién
       return res.json({ success: true, initPoint: approveLink, userId: newUser.id });
     }
 
