@@ -85,38 +85,53 @@ export const processCheckout = async (req, res) => {
     }
 
     // --- B. MERCADO PAGO ---
-    if (paymentMethod === 'MERCADOPAGO') {
-      // 🛡️ ESCUDO DE SEGURIDAD PARA MP
+   if (paymentMethod === 'MERCADOPAGO') {
       if (!process.env.MP_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN.trim() === '') {
-        console.error("❌ ERROR CRÍTICO: MP_ACCESS_TOKEN no está definido en las variables de entorno.");
-        return res.status(500).json({ error: "Falta configurar la pasarela de pago en el servidor." });
+        return res.status(500).json({ error: "Falta configurar la pasarela de pago." });
       }
 
-      const preference = new Preference(client);
-      const result = await preference.create({
-        body: {
-          items: [{
-            id: String(plan.id),
-            title: `Plan: ${plan.title}`,
-            quantity: 1,
-            unit_price: Number(plan.price),
-            currency_id: 'ARS',
-          }],
-          back_urls: {
-            success: "https://dontquitprogram.com/login", 
-            failure: "https://dontquitprogram.com/login",
-            pending:"https://dontquitprogram.com/login"
-          },
-          auto_return: "approved",
-          notification_url: "https://dontquitprogram.onrender.com/api/payments/mp/webhook",
-          metadata: {
-            user_id: String(newUser.id),
-            plan_id: String(plan.id)
-          }
-        }
-      });
+      // 🔍 MODO ESPÍA: Vamos a ver qué le estamos mandando a MP
+      console.log("💳 Iniciando pago con MP...");
+      console.log("Token usado (primeros 15 caract.):", process.env.MP_ACCESS_TOKEN.substring(0, 15) + "...");
+      console.log("Plan a cobrar:", plan.title);
+      console.log("Precio original:", plan.price, " | Convertido:", Number(plan.price));
 
-      return res.json({ success: true, initPoint: result.init_point });
+      try {
+        const preference = new Preference(client);
+        
+        const payloadMP = {
+          body: {
+            items: [{
+              id: String(plan.id),
+              title: `Plan: ${plan.title}`,
+              quantity: 1,
+              unit_price: Number(plan.price),
+              currency_id: 'ARS',
+            }],
+            back_urls: {
+              success: "https://dontquitprogram.com/login", 
+              failure: "https://dontquitprogram.com/login",
+              pending: "https://dontquitprogram.com/login"
+            },
+            auto_return: "approved",
+            notification_url: "https://dontquitprogram.onrender.com/api/payments/mp/webhook",
+            metadata: {
+              user_id: String(newUser.id),
+              plan_id: String(plan.id)
+            }
+          }
+        };
+
+        console.log("📦 Payload enviado a MP:", JSON.stringify(payloadMP.body.items, null, 2));
+
+        const result = await preference.create(payloadMP);
+        return res.json({ success: true, initPoint: result.init_point });
+
+      } catch (mpError) {
+        console.error("❌ Error CRÍTICO devuelto por Mercado Pago:");
+        console.error(mpError);
+        return res.status(500).json({ error: "Mercado Pago rechazó la solicitud. Revisá la consola del servidor." });
+      }
     }
 
     // --- C. PAYPAL ---
