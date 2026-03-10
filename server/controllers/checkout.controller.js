@@ -85,20 +85,17 @@ export const processCheckout = async (req, res) => {
     }
 
     // --- B. MERCADO PAGO ---
-   if (paymentMethod === 'MERCADOPAGO') {
+if (paymentMethod === 'MERCADOPAGO') {
       if (!process.env.MP_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN.trim() === '') {
         return res.status(500).json({ error: "Falta configurar la pasarela de pago." });
       }
 
-      // 🔍 MODO ESPÍA: Vamos a ver qué le estamos mandando a MP
-      console.log("💳 Iniciando pago con MP...");
-      console.log("Token usado (primeros 15 caract.):", process.env.MP_ACCESS_TOKEN.substring(0, 15) + "...");
-      console.log("Plan a cobrar:", plan.title);
-      console.log("Precio original:", plan.price, " | Convertido:", Number(plan.price));
+      // 👇 ACÁ ESTÁ LA MAGIA: Limpiamos la clave y armamos el cliente en el momento
+      const cleanToken = process.env.MP_ACCESS_TOKEN.trim();
+      const clientMP = new MercadoPagoConfig({ accessToken: cleanToken });
+      const preference = new Preference(clientMP);
 
       try {
-        const preference = new Preference(client);
-        
         const payloadMP = {
           body: {
             items: [{
@@ -122,15 +119,12 @@ export const processCheckout = async (req, res) => {
           }
         };
 
-        console.log("📦 Payload enviado a MP:", JSON.stringify(payloadMP.body.items, null, 2));
-
         const result = await preference.create(payloadMP);
         return res.json({ success: true, initPoint: result.init_point });
 
       } catch (mpError) {
-        console.error("❌ Error CRÍTICO devuelto por Mercado Pago:");
-        console.error(mpError);
-        return res.status(500).json({ error: "Mercado Pago rechazó la solicitud. Revisá la consola del servidor." });
+        console.error("❌ Error CRÍTICO devuelto por Mercado Pago:", mpError);
+        return res.status(500).json({ error: "Mercado Pago rechazó la solicitud. Revisá la consola." });
       }
     }
 

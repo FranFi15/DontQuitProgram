@@ -1,16 +1,17 @@
-import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'; // 👈 ¡Agregamos Payment acá!
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import prisma from '../db.js';
 import { sendPurchaseConfirmationEmail } from '../utils/mailer.js'; 
 
-const client = new MercadoPagoConfig({ 
-  accessToken: process.env.MP_ACCESS_TOKEN 
-});
-
 export const createPreference = async (req, res) => {
   try {
-    if (!process.env.MP_ACCESS_TOKEN) {
+    if (!process.env.MP_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN.trim() === '') {
       throw new Error("Falta el MP_ACCESS_TOKEN en el archivo .env");
     }
+
+    // 👇 1. INICIALIZAMOS EL CLIENTE ACÁ ADENTRO CON .trim()
+    const client = new MercadoPagoConfig({ 
+      accessToken: process.env.MP_ACCESS_TOKEN.trim() 
+    });
 
     const { title, price, planId, userId } = req.body;
 
@@ -31,18 +32,13 @@ export const createPreference = async (req, res) => {
             currency_id: 'ARS',
           }
         ],
-        // 👇 1. URLs ACTUALIZADAS A VERCEL (Tu Frontend) 👇
         back_urls: {
-          success: "https://dont-quit-program.vercel.app/login", 
-          failure: "https://dont-quit-program.vercel.app/login",
-          pending: "https://dont-quit-program.vercel.app/login"
+          success: "https://dontquitprogram.com/login", 
+          failure: "https://dontquitprogram.com/login",
+          pending: "https://dontquitprogram.com/login"
         },
-        // 👇 2. VOLVEMOS A PRENDER EL RETORNO AUTOMÁTICO 👇
         auto_return: "approved",
-        
-        // 👇 3. FORZAMOS A MP A AVISARLE A RENDER (Tu Backend) 👇
         notification_url: "https://dontquitprogram.onrender.com/api/payments/mp/webhook",
-        
         metadata: {
           user_id: String(userId),
           plan_id: String(planId)
@@ -70,21 +66,29 @@ export const receiveWebhook = async (req, res) => {
 
     if ((type === 'payment' || type === 'payment.created' || type === 'payment.updated') && paymentId) {
       
+      // 👇 2. INICIALIZAMOS EL CLIENTE ACÁ TAMBIÉN CON .trim()
+      const client = new MercadoPagoConfig({ 
+        accessToken: process.env.MP_ACCESS_TOKEN.trim() 
+      });
       const paymentClient = new Payment(client);
       const paymentInfo = await paymentClient.get({ id: paymentId });
 
       if (paymentInfo.status === 'approved') {
         const userId = parseInt(paymentInfo.metadata.user_id);
         const planId = parseInt(paymentInfo.metadata.plan_id);
-        const receiptCode = `MP-${paymentId}`; // Este es el valor ÚNICO
+        const receiptCode = `MP-${paymentId}`; 
 
         try {
-          const plan = await prisma.plan.findUnique({ where: { id: planId } });
+          // 👇 3. CORRECCIÓN CRÍTICA: Buscamos plan Y user al mismo tiempo
+          const [plan, user] = await Promise.all([
+            prisma.plan.findUnique({ where: { id: planId } }),
+            prisma.user.findUnique({ where: { id: userId } })
+          ]);
+
           const startDate = new Date();
           const endDate = new Date();
           endDate.setDate(endDate.getDate() + (plan.duration * 7) + 14);
 
-          // Disparamos la creación en bloque. Si receiptCode ya existe en la BD, falla todo automáticamente.
           await prisma.$transaction([
             prisma.payment.create({
               data: {
@@ -109,10 +113,10 @@ export const receiveWebhook = async (req, res) => {
 
           console.log(`✅ ¡ÉXITO! Acceso otorgado al usuario ${userId} por MP.`);
 
+          // 👇 Ahora sí enviamos el mail, porque "user" ya existe
           await sendPurchaseConfirmationEmail(user.email, user.name, plan.title);
 
         } catch (dbError) {
-          // Si el error es P2002, significa que el candado de la BD funcionó y frenó al duplicado.
           if (dbError.code === 'P2002') {
             console.log(`🛡️ Webhook duplicado frenado por la base de datos (Pago: ${paymentId})`);
           } else {
