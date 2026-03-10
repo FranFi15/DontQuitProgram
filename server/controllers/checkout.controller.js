@@ -3,8 +3,7 @@ import prisma from '../db.js';
 import { sendWelcomeEmail } from '../utils/mailer.js';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 
-// Config de MP
-const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
+// ❌ ACÁ ESTABA EL ERROR: BORRAMOS EL "const client = ..." GLOBAL
 
 export const processCheckout = async (req, res) => {
   try {
@@ -85,12 +84,12 @@ export const processCheckout = async (req, res) => {
     }
 
     // --- B. MERCADO PAGO ---
-if (paymentMethod === 'MERCADOPAGO') {
+    if (paymentMethod === 'MERCADOPAGO') {
       if (!process.env.MP_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN.trim() === '') {
         return res.status(500).json({ error: "Falta configurar la pasarela de pago." });
       }
 
-      // 👇 ACÁ ESTÁ LA MAGIA: Limpiamos la clave y armamos el cliente en el momento
+      // 👇 ACÁ ESTÁ LA MAGIA: Limpiamos la clave y armamos el cliente ADENTRO de la función
       const cleanToken = process.env.MP_ACCESS_TOKEN.trim();
       const clientMP = new MercadoPagoConfig({ accessToken: cleanToken });
       const preference = new Preference(clientMP);
@@ -156,7 +155,6 @@ if (paymentMethod === 'MERCADOPAGO') {
       
       const orderData = await orderRes.json();
       
-      // 🛡️ ESCUDO DE SEGURIDAD PARA PAYPAL
       if (!orderData.links) {
         console.error("❌ Error de PayPal (Respuesta cruda):", orderData);
         return res.status(400).json({ error: "No se pudo conectar con PayPal. Revisá las credenciales en Render." });
