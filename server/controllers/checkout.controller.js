@@ -137,14 +137,14 @@ export const processCheckout = async (req, res) => {
     // --- C. PAYPAL ---
     if (paymentMethod === 'PAYPAL') {
       const auth = Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`).toString("base64");
-      const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
+      const tokenRes = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
         method: "POST", body: "grant_type=client_credentials",
         headers: { Authorization: `Basic ${auth}` },
       });
       const tokenData = await tokenRes.json();
 
       // Creamos la orden
-      const orderRes = await fetch("https://api-m.sandbox.paypal.com/v2/checkout/orders", {
+      const orderRes = await fetch("https://api-m.paypal.com/v2/checkout/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${tokenData.access_token}` },
         body: JSON.stringify({

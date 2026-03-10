@@ -19,7 +19,7 @@ export const createOrder = async (req, res) => {
     const { price, title } = req.body;
     const accessToken = await generateAccessToken();
 
-    const response = await fetch("https://api-m.sandbox.paypal.com/v2/checkout/orders", {
+    const response = await fetch("https://api-m.paypal.com/v2/checkout/orders", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -53,7 +53,7 @@ export const captureOrder = async (req, res) => {
     const { orderID, userId, planId } = req.body;
     const accessToken = await generateAccessToken();
 
-    const response = await fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`, {
+    const response = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderID}/capture`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
