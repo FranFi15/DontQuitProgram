@@ -199,6 +199,7 @@ model WallPost {
   content   String
   createdAt DateTime @default(now())
   status    String   @default("PENDING") // "PENDING", "APPROVED", "REJECTED"
+  isPinned  Boolean  @default(false)
 
   planId    Int
   plan      Plan     @relation(fields: [planId], references: [id])
