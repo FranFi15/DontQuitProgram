@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext'; 
 import { useAlert } from '../../context/AlertContext'; 
-import { MessageSquare, Send, Users, Trash2, Pin, PinOff } from 'lucide-react'; // 👈 Íconos nuevos
+import { MessageSquare, Send, Users, Trash2, Pin, PinOff } from 'lucide-react';
 import './AdminWall.css';
 
 function AdminWall() {
@@ -14,6 +14,9 @@ function AdminWall() {
   const [posts, setPosts] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loadingPosts, setLoadingPosts] = useState(false);
+
+  // 👇 NUEVO ESTADO PARA EL MODAL DE ELIMINAR 👇
+  const [postToDelete, setPostToDelete] = useState(null); 
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -67,20 +70,26 @@ function AdminWall() {
     }
   };
 
-  // 👇 Lógica para ELIMINAR un post
-  const handleDeletePost = async (postId) => {
-    if (!window.confirm("¿Seguro que querés eliminar este mensaje para siempre?")) return;
+  // 👇 AHORA SOLO ABRE EL MODAL 👇
+  const handleDeleteClick = (postId) => {
+    setPostToDelete(postId);
+  };
+
+  // 👇 ESTA FUNCIÓN EJECUTA EL BORRADO REAL 👇
+  const executeDeletePost = async () => {
+    if (!postToDelete) return;
     try {
-      await axios.delete(`/wall/${postId}`);
+      await axios.delete(`/wall/${postToDelete}`);
       showAlert("Mensaje eliminado.", "success");
       fetchPosts();
     } catch (error) {
       console.error(error);
       showAlert("Error al eliminar el mensaje.", "error");
+    } finally {
+      setPostToDelete(null); // Cerramos el modal
     }
   };
 
-  // 👇 Lógica para FIJAR un post
   const handlePinPost = async (postId) => {
     try {
       await axios.put(`/wall/${postId}/pin`);
@@ -96,7 +105,6 @@ function AdminWall() {
     return date.toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
   };
 
-  // Buscamos si hay un mensaje fijado para mostrarlo en el banner
   const pinnedPost = posts.find(p => p.isPinned);
 
   return (
@@ -117,7 +125,6 @@ function AdminWall() {
         </div>
       ) : (
         <>
-          {/* TABS DE PLANES */}
           <div className="wall-tabs-container">
             {plans.map(plan => (
               <button
@@ -130,10 +137,8 @@ function AdminWall() {
             ))}
           </div>
 
-          {/* CHAT CONTAINER */}
           <div className="admin-chat-box">
             
-            {/* 👇 BANNER DE MENSAJE FIJADO 👇 */}
             {pinnedPost && (
               <div className="pinned-banner animate-enter">
                 <div className="pinned-icon-box">
@@ -178,7 +183,6 @@ function AdminWall() {
                         <span className="bubble-time">{formatTime(post.createdAt)}</span>
                       </div>
                       
-                      {/* 👇 BOTONES DE ACCIÓN PARA EL ADMIN 👇 */}
                       <div className="bubble-actions">
                         <button 
                           className={`action-bubble-btn ${post.isPinned ? 'pinned-active' : ''}`} 
@@ -189,7 +193,7 @@ function AdminWall() {
                         </button>
                         <button 
                           className="action-bubble-btn delete" 
-                          onClick={() => handleDeletePost(post.id)}
+                          onClick={() => handleDeleteClick(post.id)} /* 👇 LLAMA A LA NUEVA FUNCIÓN 👇 */
                           title="Eliminar mensaje"
                         >
                           <Trash2 size={14} />
@@ -202,7 +206,6 @@ function AdminWall() {
               )}
             </div>
 
-            {/* INPUT AREA */}
             <div className="chat-input-wrapper">
               <form onSubmit={handleSend} className="chat-form">
                 <input
@@ -220,6 +223,41 @@ function AdminWall() {
           </div>
         </>
       )}
+
+      {/* 👇 ACÁ ESTÁ TU MODAL DE ELIMINAR HERMOSO 👇 */}
+      {postToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-content animate-enter" style={{ maxWidth: '450px', padding: '30px', textAlign: 'center', width: '90%' }}>
+            <div style={{ color: '#ef4444', marginBottom: '15px', display: 'flex', justifyContent: 'center' }}>
+              <Trash2 size={50} />
+            </div>
+            
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '15px', color: '#111' }}>
+              ¿Eliminar este mensaje?
+            </h2>
+            
+            <p style={{ color: '#6b7280', marginBottom: '25px', lineHeight: '1.5' }}>
+              Esta acción es irreversible. El mensaje desaparecerá permanentemente del muro para todos los alumnos.
+            </p>
+
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setPostToDelete(null)} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: '600', flex: 1 }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={executeDeletePost} 
+                style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', cursor: 'pointer', fontWeight: '600', flex: 1 }}
+              >
+                Sí, Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
