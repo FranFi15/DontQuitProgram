@@ -1,13 +1,14 @@
 import { Router } from "express";
 
 import {getFollowUpLimit, updateFollowUpLimit, getBankSettings, updateBankSettings} from '../controllers/settings.controller.js';
+import { verifyToken, isAdmin } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-router.get('/followup-stats', getFollowUpLimit);
-router.put('/followup-limit', updateFollowUpLimit);
+router.get('/followup-stats', verifyToken, isAdmin, getFollowUpLimit);
+router.put('/followup-limit', verifyToken, isAdmin, updateFollowUpLimit);
 
-router.get('/bank', getBankSettings);
-router.put('/bank', updateBankSettings);
+router.get('/bank', verifyToken, isAdmin, getBankSettings);
+router.put('/bank', verifyToken, isAdmin, updateBankSettings);
 
 export default router;

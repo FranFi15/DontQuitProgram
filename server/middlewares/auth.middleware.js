@@ -29,3 +29,22 @@ export const verifyToken = (req, res, next) => {
     return res.status(403).json({ error: "Token inválido o expirado." });
   }
 };
+
+// 👇 NUEVO MIDDLEWARE: ESCUDO PARA ADMIN
+export const isAdmin = (req, res, next) => {
+  // Como lo vamos a poner siempre DESPUÉS de verifyToken, 
+  // req.user ya va a estar cargado con los datos.
+  
+  if (!req.user) {
+    return res.status(401).json({ error: "Acceso denegado. No estás autenticado." });
+  }
+
+  // Comparamos el rol exacto
+  if (req.user.role !== 'ADMIN') {
+    console.warn(`🚨 Alerta de seguridad: El usuario ID ${req.user.id} intentó acceder a una zona de Admin.`);
+    return res.status(403).json({ error: "Acceso denegado. Esta acción es exclusiva para la Coach." });
+  }
+
+  // Si es Ro (ADMIN), le abrimos la puerta al controlador
+  next();
+};

@@ -10,12 +10,13 @@ updateScoreBox,
   updateScoreEntry,
   getUserPlanHistory
 } from '../controllers/scorebox.controller.js';
+import { verifyToken, isAdmin } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-router.post('/definition', createScoreBox);
-router.put('/definition/:id', updateScoreBox);
-router.delete('/definition/:id', deleteScoreBox);
+router.post('/definition', verifyToken, isAdmin, createScoreBox);
+router.put('/definition/:id', verifyToken, isAdmin, updateScoreBox);
+router.delete('/definition/:id', verifyToken, isAdmin, deleteScoreBox);
 router.get('/plan/:planId', getPlanScoreBoxes);
 router.post('/entry', addScoreEntry);
 router.put('/entry/:id', updateScoreEntry); 
