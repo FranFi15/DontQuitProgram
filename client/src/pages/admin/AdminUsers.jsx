@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
 import { useAlert } from '../../context/AlertContext'; 
-import { Search, UserPlus, Edit3, Trash2, ClipboardList, History } from 'lucide-react';
+import { Search, UserPlus, Edit3, Trash2, ClipboardList, History, Dumbbell } from 'lucide-react';
 import CreateUserModal from './modals/CreateUserModal';
 import AdminUserScoresModal from '../admin/modals/AdminUserScoresModal';
 import UserSubscriptionsModal from './modals/UserSubscriptionsModal';
+import AdminUserRMsModal from './modals/AdminUserRMsModal';
 import './AdminUsers.css';
 
 function AdminUsers() {
@@ -24,6 +25,9 @@ function AdminUsers() {
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedHistoryUser, setSelectedHistoryUser] = useState(null);
+
+const [showRMsModal, setShowRMsModal] = useState(false);
+const [selectedRMUser, setSelectedRMUser] = useState(null);
 
   // Carga inicial
   useEffect(() => {
@@ -68,6 +72,11 @@ function AdminUsers() {
     setSelectedHistoryUser(user);
     setShowHistoryModal(true);
   };
+
+  const handleViewRMs = (user) => {
+  setSelectedRMUser(user);
+  setShowRMsModal(true);
+};
 
   // Función que EJECUTA el borrado
   const executeDelete = async () => {
@@ -181,6 +190,9 @@ function AdminUsers() {
                       >
                         <ClipboardList size={16} />
                       </button>
+                      <button className="action-btn rms" onClick={() => handleViewRMs(user)} title="Ver RMs / Marcas Personales">
+                      <Dumbbell size={16} />
+                      </button>
                       <button 
                         className="action-btn history" 
                         onClick={() => handleViewHistory(user)}
@@ -280,6 +292,16 @@ function AdminUsers() {
           }} 
         />
       )}
+      {showRMsModal && selectedRMUser && (
+  <AdminUserRMsModal 
+    userId={selectedRMUser.id}
+    userName={selectedRMUser.name}
+    onClose={() => {
+      setShowRMsModal(false);
+      setSelectedRMUser(null);
+    }} 
+  />
+)}
     </div>
   );
 }

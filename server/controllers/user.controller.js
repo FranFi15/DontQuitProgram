@@ -244,3 +244,19 @@ export const getUserSubscriptions = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener historial de suscripciones' });
   }
 };
+
+export const getUserRMs = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const rms = await prisma.personalRecord.findMany({
+      where: { userId: parseInt(id) },
+      orderBy: { date: 'desc' } 
+    });
+
+    res.json(rms);
+  } catch (error) {
+    console.error("Error obteniendo RMs del usuario:", error);
+    res.status(500).json({ error: 'Error al obtener el historial de RMs' });
+  }
+};
