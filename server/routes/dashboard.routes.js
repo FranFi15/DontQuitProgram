@@ -4,6 +4,6 @@ import { verifyToken, isAdmin } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-router.get('/', isAdmin, getDashboardStats);
+router.get('/', verifyToken, isAdmin, getDashboardStats);
 
 export default router;

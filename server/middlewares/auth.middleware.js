@@ -30,21 +30,20 @@ export const verifyToken = (req, res, next) => {
   }
 };
 
-// 👇 NUEVO MIDDLEWARE: ESCUDO PARA ADMIN
 export const isAdmin = (req, res, next) => {
-  // Como lo vamos a poner siempre DESPUÉS de verifyToken, 
-  // req.user ya va a estar cargado con los datos.
-  
+  console.log("🕵️‍♂️ [MIDDLEWARE isAdmin] Chequeando permisos...");
+  console.log("🕵️‍♂️ Datos del usuario que llegaron:", req.user);
+
   if (!req.user) {
+    console.log("❌ ERROR: req.user no existe. ¿Se ejecutó verifyToken antes?");
     return res.status(401).json({ error: "Acceso denegado. No estás autenticado." });
   }
 
-  // Comparamos el rol exacto
   if (req.user.role !== 'ADMIN') {
-    console.warn(`🚨 Alerta de seguridad: El usuario ID ${req.user.id} intentó acceder a una zona de Admin.`);
-    return res.status(403).json({ error: "Acceso denegado. Esta acción es exclusiva para la Coach." });
+    console.log(`❌ ERROR: El usuario tiene rol '${req.user.role}', pero se requiere 'ADMIN'.`);
+    return res.status(403).json({ error: "Acceso denegado. Solo para Coach." });
   }
 
-  // Si es Ro (ADMIN), le abrimos la puerta al controlador
+  console.log("✅ Acceso permitido. El usuario es ADMIN.");
   next();
 };
