@@ -251,3 +251,109 @@
     padding: 1rem; 
   }
 }
+
+.pinned-banner {
+  display: flex;
+  align-items: center;
+  background-color: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.pinned-icon-box {
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+}
+
+.pinned-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pinned-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #2563eb;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.pinned-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Corta textos largos con "..." */
+}
+
+.unpin-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.unpin-btn:hover {
+  color: #ef4444;
+  background-color: #fee2e2;
+}
+
+/* Acciones al lado de las burbujas */
+.bubble-wrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Envolvemos la burbuja y le damos espacio para los botones abajo */
+.bubble-actions {
+  display: flex;
+  gap: 5px;
+  margin-top: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* Si es mío (Admin), los botones van a la derecha */
+.chat-bubble-row.mine .bubble-actions {
+  justify-content: flex-end;
+}
+
+/* Mostramos los botones solo cuando el mouse está encima del mensaje (o en móvil siempre) */
+.bubble-wrapper:hover .bubble-actions {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .bubble-actions {
+    opacity: 1; /* En celular se ven siempre porque no hay hover */
+  }
+}
+
+.action-bubble-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.action-bubble-btn:hover { color: #111; background-color: #f3f4f6; }
+.action-bubble-btn.delete:hover { color: #ef4444; background-color: #fee2e2; }
+.action-bubble-btn.pinned-active { color: #2563eb; } /* Si está fijado, el pin queda azul */

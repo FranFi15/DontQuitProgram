@@ -235,3 +235,46 @@
 }
 .wall-empty-state h3 { margin: 0; color: #374151; font-weight: 700; }
 .wall-empty-state p { margin: 0; font-size: 0.9rem; }
+.client-pinned-banner {
+  display: flex;
+  align-items: flex-start;
+  background-color: #fffbeb; /* Fondo amarillo muy suave */
+  border-bottom: 2px solid #fde68a; /* Borde dorado */
+  padding: 14px 18px;
+  gap: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 4px 6px -1px rgba(251, 191, 36, 0.1);
+}
+
+.client-pinned-icon {
+  color: #d97706; /* Naranja/Dorado oscuro */
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.client-pinned-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.client-pinned-title {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #d97706;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.client-pinned-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #111;
+  font-weight: 600;
+  line-height: 1.4;
+  word-break: break-word; /* Para que el texto baje de línea si es largo */
+}

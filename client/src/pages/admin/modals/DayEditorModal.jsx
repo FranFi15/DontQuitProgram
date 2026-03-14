@@ -3,7 +3,7 @@ import axios from '../../../api/axios';
 import { useAlert } from '../../../context/AlertContext'; 
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
-import { Plus, Trash2, Save, X, Edit3 } from 'lucide-react';
+import { Plus, Trash2, Save, X, Edit3, ChevronUp, ChevronDown } from 'lucide-react'; // 👈 Sumamos ChevronUp y ChevronDown
 import './DayEditorModal.css';
 
 function DayEditorModal({ workout, onClose, onSuccess }) {
@@ -58,6 +58,25 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
   const updateBlockContent = (index, value) => {
     const newBlocks = [...blocks];
     newBlocks[index].content = value;
+    setBlocks(newBlocks);
+  };
+
+  // 👇 NUEVO: Funciones para mover bloques arriba y abajo 👇
+  const moveBlockUp = (index) => {
+    if (index === 0) return; // Si ya es el primero, no hace nada
+    const newBlocks = [...blocks];
+    const temp = newBlocks[index - 1];
+    newBlocks[index - 1] = newBlocks[index];
+    newBlocks[index] = temp;
+    setBlocks(newBlocks);
+  };
+
+  const moveBlockDown = (index) => {
+    if (index === blocks.length - 1) return; // Si ya es el último, no hace nada
+    const newBlocks = [...blocks];
+    const temp = newBlocks[index + 1];
+    newBlocks[index + 1] = newBlocks[index];
+    newBlocks[index] = temp;
     setBlocks(newBlocks);
   };
 
@@ -135,9 +154,29 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
                       placeholder={`Nombre del Bloque (Ej: Sentadilla)`}
                     />
                   </div>
-                  <button onClick={() => removeBlock(index)} className="dem-delete-btn" title="Eliminar bloque">
-                    <Trash2 size={18} />
-                  </button>
+                  
+                  {/* 👇 NUEVO: Botonera de acciones del bloque 👇 */}
+                  <div className="dem-block-actions">
+                    <button 
+                      onClick={() => moveBlockUp(index)} 
+                      disabled={index === 0} 
+                      className="dem-move-btn" 
+                      title="Mover hacia arriba"
+                    >
+                      <ChevronUp size={18} />
+                    </button>
+                    <button 
+                      onClick={() => moveBlockDown(index)} 
+                      disabled={index === blocks.length - 1} 
+                      className="dem-move-btn" 
+                      title="Mover hacia abajo"
+                    >
+                      <ChevronDown size={18} />
+                    </button>
+                    <button onClick={() => removeBlock(index)} className="dem-delete-btn" title="Eliminar bloque">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="dem-editor-container">

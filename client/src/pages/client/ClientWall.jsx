@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
-import { MessageSquare, Send, Users } from 'lucide-react';
+import { useAlert } from '../../context/AlertContext'; 
+import { MessageSquare, Send, Users, Pin } from 'lucide-react'; // 👈 Agregamos el ícono Pin
 import './ClientWall.css';
 
 function ClientWall() {
   const { user } = useAuth();
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   
   const [plans, setPlans] = useState([]);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
@@ -26,7 +26,6 @@ function ClientWall() {
         }
       } catch (error) {
         console.error("Error cargando planes", error);
-        // 👈 3. ALERTA DE ERROR AL CARGAR PLANES
         showAlert("Error al cargar tus planes.", "error");
       }
     };
@@ -46,7 +45,6 @@ function ClientWall() {
       setPosts(res.data);
     } catch (error) {
       console.error(error);
-      // 👈 4. ALERTA DE ERROR AL CARGAR MENSAJES
       showAlert("Error al cargar los mensajes del muro.", "error");
     } finally {
       setLoadingPosts(false);
@@ -65,11 +63,8 @@ function ClientWall() {
       });
       setNewMessage("");
       fetchPosts(); 
-      // Nota: No ponemos alerta de "éxito" aquí para no ser molestos cada vez que mandan un mensaje, 
-      // con ver que el mensaje aparece en la pantalla es suficiente feedback.
     } catch (error) {
       console.error(error);
-      // 👈 5. ALERTA DE ERROR AL ENVIAR
       showAlert("Error al enviar el mensaje. Inténtalo de nuevo.", "error");
     }
   };
@@ -78,6 +73,9 @@ function ClientWall() {
     const date = new Date(dateString);
     return date.toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
   };
+
+  // 👇 Buscamos si hay un mensaje fijado
+  const pinnedPost = posts.find(p => p.isPinned);
 
   return (
     <div className="wall-page-container">
@@ -109,6 +107,20 @@ function ClientWall() {
           </div>
 
           <div className="wall-chat-container">
+            
+            {/* 👇 BANNER DE MENSAJE FIJADO PARA EL CLIENTE 👇 */}
+            {pinnedPost && (
+              <div className="client-pinned-banner animate-enter">
+                <div className="client-pinned-icon">
+                  <Pin size={20} fill="currentColor" />
+                </div>
+                <div className="client-pinned-content">
+                  <span className="client-pinned-title">Mensaje de la Coach</span>
+                  <p className="client-pinned-text">{pinnedPost.content}</p>
+                </div>
+              </div>
+            )}
+
             <div className="wall-messages-area">
               {loadingPosts ? (
                 <p className="wall-loading-txt">Cargando comentarios...</p>

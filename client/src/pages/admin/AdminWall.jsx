@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext'; 
 import { useAlert } from '../../context/AlertContext'; 
-import { MessageSquare, Send, Users } from 'lucide-react';
+import { MessageSquare, Send, Users, Trash2, Pin, PinOff } from 'lucide-react'; // 👈 Íconos nuevos
 import './AdminWall.css';
 
 function AdminWall() {
-  const { user } = useAuth(); // Este user es el Admin
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { user } = useAuth(); 
+  const { showAlert } = useAlert(); 
   
   const [plans, setPlans] = useState([]);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
@@ -15,30 +15,22 @@ function AdminWall() {
   const [newMessage, setNewMessage] = useState("");
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  // 1. Cargar TODOS los planes activos (Endpoint de Admin)
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        // Limpiamos los posteos pendientes del Muro en segundo plano
         axios.put('/wall/approve-all').catch(err => console.error("Error limpiando notificaciones del muro:", err));
-
         const res = await axios.get('/plans'); 
         const activePlans = res.data.filter(p => p.isActive !== false); 
         setPlans(activePlans);
-        
-        if (activePlans.length > 0) {
-          setSelectedPlanId(activePlans[0].id);
-        }
+        if (activePlans.length > 0) setSelectedPlanId(activePlans[0].id);
       } catch (error) {
         console.error("Error cargando planes", error);
-        // 👈 3. ALERTA SI FALLA LA CARGA DE PLANES
         showAlert("Error al cargar la lista de planes del muro.", "error");
       }
     };
     fetchPlans();
   }, [showAlert]);
 
-  // 2. Cargar Mensajes del Plan seleccionado
   useEffect(() => {
     if (!selectedPlanId) return;
     fetchPosts();
@@ -52,7 +44,6 @@ function AdminWall() {
       setPosts(res.data);
     } catch (error) {
       console.error(error);
-      // 👈 4. ALERTA SI FALLA LA CARGA DE POSTS
       showAlert("No se pudieron cargar los mensajes de este muro.", "error");
     } finally {
       setLoadingPosts(false);
@@ -62,19 +53,41 @@ function AdminWall() {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
-
     try {
       await axios.post('/wall', {
         planId: selectedPlanId,
-        userId: user.id, // ID del Admin
+        userId: user.id, 
         content: newMessage
       });
       setNewMessage("");
       fetchPosts(); 
     } catch (error) {
       console.error(error);
-      // 👈 5. ALERTA SI FALLA EL ENVÍO
       showAlert("Error al enviar el mensaje al muro.", "error");
+    }
+  };
+
+  // 👇 Lógica para ELIMINAR un post
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("¿Seguro que querés eliminar este mensaje para siempre?")) return;
+    try {
+      await axios.delete(`/wall/${postId}`);
+      showAlert("Mensaje eliminado.", "success");
+      fetchPosts();
+    } catch (error) {
+      console.error(error);
+      showAlert("Error al eliminar el mensaje.", "error");
+    }
+  };
+
+  // 👇 Lógica para FIJAR un post
+  const handlePinPost = async (postId) => {
+    try {
+      await axios.put(`/wall/${postId}/pin`);
+      fetchPosts();
+    } catch (error) {
+      console.error(error);
+      showAlert("Error al modificar el mensaje fijado.", "error");
     }
   };
 
@@ -82,6 +95,9 @@ function AdminWall() {
     const date = new Date(dateString);
     return date.toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
   };
+
+  // Buscamos si hay un mensaje fijado para mostrarlo en el banner
+  const pinnedPost = posts.find(p => p.isPinned);
 
   return (
     <div className="admin-wall-container">
@@ -117,6 +133,22 @@ function AdminWall() {
           {/* CHAT CONTAINER */}
           <div className="admin-chat-box">
             
+            {/* 👇 BANNER DE MENSAJE FIJADO 👇 */}
+            {pinnedPost && (
+              <div className="pinned-banner animate-enter">
+                <div className="pinned-icon-box">
+                  <Pin size={18} fill="currentColor" />
+                </div>
+                <div className="pinned-content">
+                  <span className="pinned-title">Mensaje Fijado</span>
+                  <p className="pinned-text">{pinnedPost.content}</p>
+                </div>
+                <button className="unpin-btn" onClick={() => handlePinPost(pinnedPost.id)} title="Desfijar">
+                  <PinOff size={18} />
+                </button>
+              </div>
+            )}
+
             <div className="messages-area">
               {loadingPosts ? (
                 <p className="loading-txt">Cargando...</p>
@@ -135,15 +167,34 @@ function AdminWall() {
                       </div>
                     )}
 
-                    <div className={`chat-bubble ${post.userId === user.id ? 'admin-bubble' : ''}`}>
-                      {post.userId !== user.id && (
-                        <div className="bubble-author">
-                           {post.user.name}
-                        </div>
-                      )}
+                    <div className="bubble-wrapper">
+                      <div className={`chat-bubble ${post.userId === user.id ? 'admin-bubble' : ''}`}>
+                        {post.userId !== user.id && (
+                          <div className="bubble-author">
+                             {post.user.name}
+                          </div>
+                        )}
+                        <p className="bubble-text">{post.content}</p>
+                        <span className="bubble-time">{formatTime(post.createdAt)}</span>
+                      </div>
                       
-                      <p className="bubble-text">{post.content}</p>
-                      <span className="bubble-time">{formatTime(post.createdAt)}</span>
+                      {/* 👇 BOTONES DE ACCIÓN PARA EL ADMIN 👇 */}
+                      <div className="bubble-actions">
+                        <button 
+                          className={`action-bubble-btn ${post.isPinned ? 'pinned-active' : ''}`} 
+                          onClick={() => handlePinPost(post.id)}
+                          title={post.isPinned ? "Desfijar" : "Fijar mensaje"}
+                        >
+                          <Pin size={14} />
+                        </button>
+                        <button 
+                          className="action-bubble-btn delete" 
+                          onClick={() => handleDeletePost(post.id)}
+                          title="Eliminar mensaje"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
 
                   </div>
