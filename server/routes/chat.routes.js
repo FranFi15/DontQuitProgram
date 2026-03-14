@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { sendMessage, getConversation, markAsRead, getChatUsers} from '../controllers/chat.controller.js';
-import { verifyToken, isAdmin } from '../middleware/auth.middleware.js';
+import { verifyToken, isAdmin } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
