@@ -2,6 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AlertProvider } from './context/AlertContext';
 
+// 👇 1. IMPORTAMOS LOS PATOVICAS
+import AdminRoute from './components/AdminRoute';
+import ProtectedRoute from './components/ProtectedRoute';
+
 import LoginPage from './pages/public/LoginPage';
 import ResetPassword from './pages/public/ResetPassword';
 
@@ -36,48 +40,45 @@ function App() {
       <AlertProvider>
       <BrowserRouter>
         <Routes>
+          {/* 🟢 RUTAS 100% PÚBLICAS */}
           <Route path="/" element={<LandingPage />} /> 
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/checkout/:planId" element={<CheckoutPage />} />
           
         
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="categories" element={<AdminCategories />} />
-            <Route path="plans" element={<AdminPlans />} />
-            <Route path="plans/:id" element={<AdminPlanDetail />} />
-            <Route path="scoreboxes" element={<AdminScoreBoxes />} />
-            <Route path="chat" element={<AdminChat />} />
-            <Route path="wall" element={<AdminWall />} />
-            <Route path="subscriptions" element={<AdminSubscriptions />} />
-            <Route path="exercises" element={<AdminExercises />} />
-            <Route path="payments" element={<AdminPayments />} />
+          {/* 🔴 RUTAS DE ADMIN (SOLO PARA RO) */}
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="plans" element={<AdminPlans />} />
+              <Route path="plans/:id" element={<AdminPlanDetail />} />
+              <Route path="scoreboxes" element={<AdminScoreBoxes />} />
+              <Route path="chat" element={<AdminChat />} />
+              <Route path="wall" element={<AdminWall />} />
+              <Route path="subscriptions" element={<AdminSubscriptions />} />
+              <Route path="exercises" element={<AdminExercises />} />
+              <Route path="payments" element={<AdminPayments />} />
+            </Route>
           </Route>
 
-          <Route path="/app" element={<ClientLayout />}>
-        {/* Redirección: Si entra a /app, lo mandamos a /app/home */}
-        <Route index element={<Navigate to="home" replace />} />
-        
-        {/* 1. Inicio */}
-        <Route path="home" element={<ClientHome />} />
-        
-        {/* 2. Rutinas (Placeholder por ahora para que no de error) */}
-        <Route path="workouts" element={<ClientWorkouts />} />
+          {/* 🔵 RUTAS DE ATLETAS (SOLO LOGUEADOS) */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/app" element={<ClientLayout />}>
+              {/* Redirección: Si entra a /app, lo mandamos a /app/home */}
+              <Route index element={<Navigate to="home" replace />} />
+              
+              <Route path="home" element={<ClientHome />} />
+              <Route path="workouts" element={<ClientWorkouts />} />
+              <Route path="wall" element={<ClientWall />} />
+              <Route path="chat" element={<ClientChat />} />
+              <Route path="profile" element={<ClientProfile />} />
+              <Route path="store" element={<ClientStore />} />
+            </Route>
+          </Route>
 
-        {/* 3. Muro Social */}
-        <Route path="wall" element={<ClientWall />} />
-        
-        {/* 3. Chat (Placeholder) */}
-        <Route path="chat" element={<ClientChat />} />
-        
-        {/* 4. Perfil (Placeholder) */}
-        <Route path="profile" element={<ClientProfile />} />
-
-        {/* 5. Tienda */}
-        <Route path="store" element={<ClientStore />} />
-      </Route>
         </Routes>
       </BrowserRouter>
       </AlertProvider>
