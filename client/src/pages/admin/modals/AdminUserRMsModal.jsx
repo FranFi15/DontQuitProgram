@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
 import { useAlert } from '../../../context/AlertContext'; 
 import { X, Dumbbell } from 'lucide-react';
-import './AdminUserScoresModal.css'; // Usamos los mismos estilos que ya tenés
+import './AdminUserScoresModal.css'; 
 
 function AdminUserRMsModal({ userId, userName, onClose }) {
   const { showAlert } = useAlert();
