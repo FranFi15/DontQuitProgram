@@ -5,7 +5,7 @@ import { verifyToken, isAdmin } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-router.get('/', verifyToken, isAdmin, getAllPlans);
+router.get('/', getAllPlans);
 router.get('/:id', getPlanById);
 router.post('/', verifyToken, isAdmin, createPlan);
 router.post('/:id/duplicate', verifyToken, isAdmin, duplicatePlan);
