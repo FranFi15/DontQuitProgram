@@ -11,7 +11,7 @@ router.post('/', verifyToken, isAdmin, createPlan);
 router.post('/:id/duplicate', verifyToken, isAdmin, duplicatePlan);
 router.put('/:id', verifyToken, isAdmin, updatePlan);
 router.delete('/:id', verifyToken, isAdmin, deletePlan);
-router.patch('/:id/toggle-status', togglePlanStatus);
+router.patch('/:id/toggle-status',verifyToken, isAdmin, togglePlanStatus);
 
 
 
