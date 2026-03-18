@@ -52,7 +52,7 @@
   padding: 12px 16px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* 👈 CLAVE: Mantiene el icono arriba si hay muchos resultados */
   border: 1px solid #e5e7eb;
   box-shadow: 0 2px 4px rgba(0,0,0,0.01);
 }
@@ -62,6 +62,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-top: 2px; /* Alineación fina con el primer texto */
 }
 
 .score-icon-box {
@@ -90,25 +91,41 @@
   text-align: right;
   border-left: 1px solid #f3f4f6;
   padding-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* 👈 Separación vertical entre los resultados */
 }
 
 .score-value { 
   display: block;
-  font-weight: 900; 
-  font-size: 1.2rem; 
-  color: #000; 
   line-height: 1;
+}
+
+/* Resultado más nuevo */
+.score-value.current {
+  font-weight: 900; 
+  font-size: 1rem; 
+  color: #000; 
+}
+
+/* Resultados viejos (Historial) */
+.score-value.history {
+  font-weight: 600; 
+  font-size: 0.85rem; 
+  color: #9ca3af; /* Gris sutil */
 }
 
 .score-value small { 
   font-size: 0.7rem; 
-  color: #6b7280; 
+  color: inherit; /* Hereda el color del padre (negro o gris) */
   font-weight: 800; 
   text-transform: uppercase; 
-  margin-left: 2px;
+  margin-left: 4px;
 }
 
 .score-value.empty { 
   color: #cbd5e1; 
   letter-spacing: 2px; 
+  font-weight: 900;
+  font-size: 1rem;
 }

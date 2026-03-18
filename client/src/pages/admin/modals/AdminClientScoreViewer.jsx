@@ -4,7 +4,7 @@ import { useAlert } from '../../../context/AlertContext';
 import './AdminClientScoreViewer.css';
 
 function AdminClientScoreViewer({ planId, userId }) {
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -14,19 +14,17 @@ function AdminClientScoreViewer({ planId, userId }) {
     const fetchScores = async () => {
       setLoading(true);
       try {
-        // Este endpoint trae la definición de las cajas Y el último resultado del usuario
         const res = await axios.get(`/scoreboxes/plan/${planId}?userId=${userId}`);
         setScores(res.data);
       } catch (error) {
         console.error("Error cargando scores:", error);
-        // 👈 3. ALERTA SI FALLA LA CARGA
         showAlert("Error al cargar las marcas del atleta.", "error");
       } finally {
         setLoading(false);
       }
     };
     fetchScores();
-  }, [planId, userId, showAlert]); // Agregamos showAlert a las dependencias
+  }, [planId, userId, showAlert]); 
 
   if (loading) return <div className="loader-mini">Cargando datos...</div>;
   
@@ -38,36 +36,72 @@ function AdminClientScoreViewer({ planId, userId }) {
     <div className="client-score-viewer">
       <div className="score-table-header">
         <span className="th-name">Prueba </span>
-        <span className="th-val">Resultado</span>
+        <span className="th-val">Historial de Resultados</span>
         <span className="th-date">Fecha</span>
       </div>
       
       <div className="score-table-body">
         {scores.map(box => {
-          // Extraemos la entrada más reciente (si existe)
-          const entry = box.entries && box.entries.length > 0 ? box.entries[0] : null;
           
+          // CASO 1: Nunca registró nada
+          if (!box.entries || box.entries.length === 0) {
+            return (
+              <div key={box.id} className="score-row">
+                <div className="td-name">
+                  <span className="test-name">{box.name}</span>
+                  <span className="test-unit">{box.measureUnit}</span>
+                </div>
+                <div className="td-val">
+                  <span className="val-empty">- -</span>
+                </div>
+                <div className="td-date"></div>
+              </div>
+            );
+          }
+
+          // CASO 2: Tiene registros. Mapeamos la prueba 1 sola vez y apilamos los resultados.
           return (
-            <div key={box.id} className="score-row">
-              {/* NOMBRE DE LA PRUEBA */}
+            <div key={box.id} className="score-row" style={{ alignItems: 'flex-start' }}>
+              
+              {/* COLUMNA 1: Nombre de la prueba */}
               <div className="td-name">
                 <span className="test-name">{box.name}</span>
                 <span className="test-unit">{box.measureUnit}</span>
               </div>
               
-              {/* VALOR CARGADO */}
+              {/* COLUMNA 2: Resultados apilados uno abajo del otro (usando div) */}
               <div className="td-val">
-                {entry ? (
-                  <span className="val-txt">{entry.value}</span>
-                ) : (
-                  <span className="val-empty">- -</span>
-                )}
+                {box.entries.map((entry, index) => (
+                  <div 
+                    key={entry.id || index}
+                    style={{
+                      fontWeight: index === 0 ? '800' : '500',
+                      color: index === 0 ? '#111' : '#6b7280',
+                      marginBottom: '10px' // 👈 Esto asegura que haya espacio hacia abajo
+                    }}
+                  >
+                    {entry.value}
+                  </div>
+                ))}
               </div>
 
-              {/* FECHA */}
+              {/* COLUMNA 3: Fechas apiladas respetando el orden de los resultados (usando div) */}
               <div className="td-date">
-                {entry ? new Date(entry.date).toLocaleDateString() : ''}
+                {box.entries.map((entry, index) => (
+                  <div 
+                    key={entry.id || index}
+                    style={{
+                      fontSize: index === 0 ? '0.8rem' : '0.75rem',
+                      color: index === 0 ? '#666' : '#9ca3af',
+                      fontWeight: index === 0 ? '600' : '500',
+                      marginBottom: '10px' // 👈 Mismo espacio para que queden en la misma línea que el resultado
+                    }}
+                  >
+                    {new Date(entry.date).toLocaleDateString()}
+                  </div>
+                ))}
               </div>
+
             </div>
           );
         })}

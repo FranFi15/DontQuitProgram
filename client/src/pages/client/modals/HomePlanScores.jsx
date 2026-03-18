@@ -1,24 +1,22 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
-import { useAlert } from '../../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
+import { useAlert } from '../../../context/AlertContext'; 
 import { ClipboardList, Edit2, Target } from 'lucide-react'; 
 import ScoreBoxModal from '../modals/ScoreBoxModal';
 import './HomePlanScores.css';
 
 function HomePlanScores({ planId, planName, userId }) {
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 3. MOVEMOS LA FUNCIÓN ADENTRO PARA EVITAR WARNINGS Y PODER USAR showAlert BIEN
   const fetchBoxes = async () => {
     try {
       const res = await axios.get(`/scoreboxes/plan/${planId}?userId=${userId}`);
       setBoxes(res.data);
     } catch (error) {
       console.error("Error cargando scores", error);
-      // 👈 4. ALERTA DE ERROR SI FALLA LA CARGA
       showAlert("Error al cargar tus marcas.", "error");
     } finally {
       setLoading(false);
@@ -48,7 +46,6 @@ function HomePlanScores({ planId, planName, userId }) {
         {/* FORMATO LISTA */}
         <div className="score-list">
           {boxes.map(box => {
-            const entry = box.entries && box.entries.length > 0 ? box.entries[0] : null;
             return (
               <div key={box.id} className="score-list-item">
                 
@@ -60,14 +57,19 @@ function HomePlanScores({ planId, planName, userId }) {
                   <span className="score-label">{box.name}</span>
                 </div>
 
-                {/* Lado Derecho: Valor y Unidad */}
+                {/* Lado Derecho: Historial de Valores Apilados */}
                 <div className="score-item-right">
-                  {entry ? (
-                    <span className="score-value filled">
-                      {entry.value} <small>{box.measureUnit}</small>
-                    </span>
+                  {box.entries && box.entries.length > 0 ? (
+                    box.entries.map((entry, index) => (
+                      <div 
+                        key={entry.id || index} 
+                        className={`score-value ${index === 0 ? 'current' : 'history'}`}
+                      >
+                        {entry.value} 
+                      </div>
+                    ))
                   ) : (
-                    <span className="score-value empty">- -</span>
+                    <div className="score-value empty">- -</div>
                   )}
                 </div>
 
