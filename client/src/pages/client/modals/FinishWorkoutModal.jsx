@@ -22,7 +22,7 @@ function FinishWorkoutModal({ workoutTitle, userId, onClose, onSuccess }) {
 
       await axios.post('/chat', {
         senderId: userId,
-        receiverId: 1, 
+        receiverId: 41, 
         content: messageContent,
         mediaType: 'TEXT'
       });

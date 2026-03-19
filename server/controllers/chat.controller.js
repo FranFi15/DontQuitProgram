@@ -158,7 +158,7 @@ export const getChatUsers = async (req, res) => {
           include: { plan: true }
         },
         sentMessages: {
-          where: { receiverId: 1, isRead: false },
+          where: { receiverId: 41, isRead: false },
           take: 1 
         }
       }
