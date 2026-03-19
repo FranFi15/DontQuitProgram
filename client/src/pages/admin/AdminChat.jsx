@@ -41,7 +41,7 @@ function AdminChat() {
     if (selectedUser) {
       const fetchChat = async () => {
         try {
-          const myId = 1; 
+          const myId = 41; 
           const res = await axios.get(`/chat/${myId}/${selectedUser.id}`);
           setMessages(res.data);
           scrollToBottom();
@@ -111,7 +111,7 @@ function AdminChat() {
 
     try {
       const payload = {
-        senderId: 1, 
+        senderId: 41, 
         receiverId: selectedUser.id,
         content: newMessage,
         mediaUrl: attachment?.url || null,
