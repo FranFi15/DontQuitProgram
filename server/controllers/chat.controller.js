@@ -4,50 +4,38 @@ export const sendMessage = async (req, res) => {
   try {
     const { senderId, receiverId, content, mediaUrl, mediaType } = req.body;
 
-    // 👇 1. ESCUDO ANTI-NAN: Verificamos que los IDs sean números reales
     const sId = parseInt(senderId);
     const rId = parseInt(receiverId);
 
     if (isNaN(sId) || isNaN(rId)) {
-      return res.status(400).json({ error: "IDs de usuario inválidos o no cargados." });
+      return res.status(400).json({ error: "IDs inválidos." });
     }
 
-    // --- NIVEL 1: VALIDAR REMITENTE ---
-    const sender = await prisma.user.findUnique({
-      where: { id: sId }
-    });
+    // --- 1. VALIDAR REMITENTE ---
+    const sender = await prisma.user.findUnique({ where: { id: sId } });
+    if (!sender) return res.status(404).json({ error: "Usuario no encontrado" });
 
-    if (!sender) {
-      return res.status(404).json({ error: "Usuario remitente no encontrado" });
-    }
-
-    // SI NO ES ADMIN, APLICAMOS RESTRICCIONES
     if (sender.role !== 'ADMIN') {
-
-      // --- NIVEL 2: VALIDAR PERMISO DE SEGUIMIENTO (PLAN) ---
-      const hasFollowUpAccess = await prisma.subscription.findFirst({
+      // --- 2. VALIDAR PLAN (A PRUEBA DE FALLOS) ---
+      // Traemos el plan entero en vez de filtrar adentro de Prisma para evitar errores si la BD está desactualizada
+      const userSub = await prisma.subscription.findFirst({
         where: {
           userId: sId,
-          isActive: true, 
-          // 👇 BUG CORREGIDO: Borramos el "endDate: { gt: new Date() }" de acá arriba 
-          // porque chocaba con la regla de abajo e impedía los planes "De por Vida"
-          plan: {
-            hasFollowUp: true 
-          },
+          isActive: true,
           OR: [
             { endDate: { gt: new Date() } },
-            { endDate: null } // Permite planes de por vida
+            { endDate: null } 
           ]
-        }
+        },
+        include: { plan: true } // Traemos la data del plan a JavaScript
       });
 
-      if (!hasFollowUpAccess) {
-        return res.status(403).json({ 
-          error: "Tu plan actual no incluye seguimiento por chat o tu suscripción ha vencido." 
-        });
+      // Validamos en JavaScript
+      if (!userSub || userSub.plan?.hasFollowUp !== true) {
+        return res.status(403).json({ error: "Tu plan no incluye chat." });
       }
 
-      // --- NIVEL 3: LÍMITE DE ARCHIVOS MULTIMEDIA ---
+      // --- 3. LÍMITE MULTIMEDIA ---
       if (mediaType === 'VIDEO' || mediaType === 'IMAGE') {
         const dateLimit = new Date();
         dateLimit.setDate(dateLimit.getDate() - 7); 
@@ -56,29 +44,27 @@ export const sendMessage = async (req, res) => {
           where: {
             senderId: sId,
             mediaType: { in: ['VIDEO', 'IMAGE'] }, 
-            createdAt: {
-              gte: dateLimit 
-            }
+            createdAt: { gte: dateLimit }
           }
         });
 
         if (mediaCount >= 3) {
-          return res.status(403).json({ 
-            error: "Límite semanal alcanzado (3 archivos). Podrás enviar más cuando pasen 7 días desde tu último envío." 
-          });
+          return res.status(403).json({ error: "Límite semanal alcanzado." });
         }
       }
     }
-    // ---------------------------------------------------------
 
-    // --- 4. SI PASÓ TODAS LAS BARRERAS, CREAMOS EL MENSAJE ---
+    // --- 4. PREVENCIÓN DE ERROR DE TIPO ---
+    // Si envían 'TEXT', lo convertimos a null para que Prisma no explote esperando una imagen/video
+    const safeMediaType = mediaType === 'TEXT' ? null : mediaType;
+
     const newMessage = await prisma.message.create({
       data: {
         senderId: sId,
         receiverId: rId,
-        content,
-        mediaUrl,
-        mediaType,
+        content: content || "",
+        mediaUrl: mediaUrl || null,
+        mediaType: safeMediaType,
         isRead: false
       }
     });
@@ -86,8 +72,9 @@ export const sendMessage = async (req, res) => {
     res.json(newMessage);
 
   } catch (error) {
-    console.error("🚨 Error en sendMessage:", error);
-    res.status(500).json({ error: 'Error interno al enviar el mensaje' });
+    console.error("🚨 Error crítico en sendMessage:", error);
+    // 👇 Esto nos va a devolver exactamente qué le molestó a Prisma
+    res.status(500).json({ error: 'Error interno', details: error.message });
   }
 };
 
@@ -96,13 +83,10 @@ export const getConversation = async (req, res) => {
   try {
     const { userId1, userId2 } = req.params;
     
-    // 👇 ESCUDO ANTI-NAN PARA LEER EL CHAT
     const u1 = parseInt(userId1);
     const u2 = parseInt(userId2);
 
-    if (isNaN(u1) || isNaN(u2)) {
-      return res.json([]); // Si llega basura, le devolvemos un chat vacío para que no explote
-    }
+    if (isNaN(u1) || isNaN(u2)) return res.json([]); 
 
     const messages = await prisma.message.findMany({
       where: {
@@ -163,37 +147,37 @@ export const getChatUsers = async (req, res) => {
             OR: [
               { endDate: { gt: today } },
               { endDate: null }
-            ],
-            plan: {
-              hasFollowUp: true 
-            }
+            ]
           }
         }
       },
-      select: {
-        id: true,
-        name: true,
+      // Hacemos un include para traernos todo y filtrarlo más seguro en JS
+      include: {
+        subscriptions: {
+          where: { isActive: true },
+          include: { plan: true }
+        },
         sentMessages: {
-          where: {
-            receiverId: 1,
-            isRead: false
-          },
+          where: { receiverId: 1, isRead: false },
           take: 1 
         }
       }
     });
 
-    const formattedUsers = users.map(user => ({
-      id: user.id,
-      name: user.name,
-      hasUnread: user.sentMessages.length > 0 
-    }));
+    // Filtramos en JS para no romper Prisma
+    const formattedUsers = users
+      .filter(u => u.subscriptions.some(sub => sub.plan?.hasFollowUp === true))
+      .map(user => ({
+        id: user.id,
+        name: user.name,
+        hasUnread: user.sentMessages.length > 0 
+      }));
 
     formattedUsers.sort((a, b) => (b.hasUnread === a.hasUnread ? 0 : b.hasUnread ? 1 : -1));
 
     res.json(formattedUsers);
   } catch (error) {
-    console.error(error);
+    console.error("🚨 Error en getChatUsers:", error);
     res.status(500).json({ error: 'Error al obtener usuarios del chat' });
   }
 };
