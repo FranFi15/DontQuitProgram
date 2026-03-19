@@ -8,7 +8,7 @@ const router = Router();
 router.get('/followup-stats', verifyToken, isAdmin, getFollowUpLimit);
 router.put('/followup-limit', verifyToken, isAdmin, updateFollowUpLimit);
 
-router.get('/bank', verifyToken, isAdmin, getBankSettings);
+router.get('/bank',  getBankSettings);
 router.put('/bank', verifyToken, isAdmin, updateBankSettings);
 
 export default router;
