@@ -195,7 +195,7 @@ function AdminChat() {
 
               <div className="messages-area">
                 {messages.map((msg, index) => {
-                  const isMe = msg.senderId === 1;
+                  const isMe = msg.senderId === 41;
                   return (
                     <div key={index} className={`message-bubble ${isMe ? 'me' : 'them'}`}>
                       {msg.mediaUrl && (
