@@ -15,7 +15,7 @@ function ClientChat() {
   const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef(null);
 
-  const ADMIN_ID = 1; 
+  const ADMIN_ID = 41; 
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET; 
 
