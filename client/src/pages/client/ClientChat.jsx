@@ -63,7 +63,7 @@ function ClientChat() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const limitMB = type === 'VIDEO' ? 50 : 10;
+    const limitMB = type === 'VIDEO' ? 100 : 20;
     if (file.size > limitMB * 1024 * 1024) {
       // 👈 3. USAMOS LA NUEVA ALERTA DE ERROR
       return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error'); 
