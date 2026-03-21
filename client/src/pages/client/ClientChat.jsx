@@ -1,18 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
+import { useAlert } from '../../context/AlertContext'; 
 import { Send, Video, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './ClientChat.css';
 
 function ClientChat() {
   const { user } = useAuth();
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
+  
+  // ESTADOS DE CARGA
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0); // 👈 NUEVO: Estado para el porcentaje
+  
   const messagesEndRef = useRef(null);
 
   const ADMIN_ID = 41; 
@@ -34,6 +38,7 @@ function ClientChat() {
       const interval = setInterval(fetchMessages, 5000);
       return () => clearInterval(interval);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -63,13 +68,15 @@ function ClientChat() {
     const file = e.target.files[0];
     if (!file) return;
 
+    // LÍMITES AMPLIADOS
     const limitMB = type === 'VIDEO' ? 100 : 20;
     if (file.size > limitMB * 1024 * 1024) {
-      // 👈 3. USAMOS LA NUEVA ALERTA DE ERROR
       return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error'); 
     }
 
     setUploading(true);
+    setUploadProgress(0); // Empezamos en 0%
+    
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -77,19 +84,21 @@ function ClientChat() {
 
       const resourceType = type === 'VIDEO' ? 'video' : 'image';
       
-      const cloudRes = await fetch(
+      // 👈 NUEVO: Usamos axios nativo para Cloudinary para poder leer el progreso
+      const cloudRes = await axios.post(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, 
-        { method: 'POST', body: formData }
+        formData,
+        {
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        }
       );
       
-      const cloudData = await cloudRes.json();
+      const uploadedUrl = cloudRes.data.secure_url;
 
-      if (!cloudRes.ok) {
-         throw new Error(cloudData.error?.message || "Error al subir a Cloudinary");
-      }
-
-      const uploadedUrl = cloudData.secure_url;
-
+      // Avisamos a la base de datos
       await axios.post('/chat', {
         senderId: user.id,
         receiverId: ADMIN_ID,
@@ -102,14 +111,13 @@ function ClientChat() {
       
     } catch (error) {
       if (error.response?.status === 403) {
-        // 👈 4. ALERTA DE ERROR (le saqué el emoji ⛔ porque tu toast ya tiene ícono)
         showAlert(error.response.data.error, 'error');
       } else {
-        // 👈 5. ALERTA DE ERROR GENÉRICO
         showAlert("Error al enviar el archivo.", 'error');
       }
     } finally {
       setUploading(false);
+      setUploadProgress(0); // Reiniciamos al terminar
       e.target.value = null;
     }
   };
@@ -164,10 +172,11 @@ function ClientChat() {
           );
         })}
 
+        {/* 👈 NUEVO: Burbuja mostrando el porcentaje */}
         {uploading && (
            <div className="pchat-row pchat-row-mine">
-             <div className="pchat-bubble pchat-bubble-mine pchat-uploading">
-               <Loader2 className="spin" size={16}/> Enviando archivo...
+             <div className="pchat-bubble pchat-bubble-mine pchat-uploading" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <Loader2 className="spin" size={16}/> Subiendo archivo... {uploadProgress}%
              </div>
            </div>
         )}
@@ -188,9 +197,10 @@ function ClientChat() {
             <ImageIcon size={22} />
           </label>
 
+          {/* 👈 NUEVO: Placeholder mostrando el porcentaje */}
           <input 
             type="text" 
-            placeholder={uploading ? "Subiendo archivo..." : "Mensaje..."}
+            placeholder={uploading ? `Subiendo archivo... ${uploadProgress}%` : "Mensaje..."}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={uploading}
