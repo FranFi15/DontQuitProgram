@@ -74,7 +74,7 @@ function AdminChat() {
 
     // 👈 5. VALIDACIÓN DE PESO (Igual que en ClientChat)
     const isVideo = file.type.startsWith('video/');
-    const limitMB = isVideo ? 50 : 10;
+    const limitMB = isVideo ? 100 : 20;
     if (file.size > limitMB * 1024 * 1024) {
       return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error');
     }
@@ -85,6 +85,7 @@ function AdminChat() {
     setUploading(true);
     try {
       const res = await axios.post('/upload', formData, {
+        withCredentials: false,
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setAttachment({ url: res.data.url, type: res.data.type });

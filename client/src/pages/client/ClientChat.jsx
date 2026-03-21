@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
+import axiosClean from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext'; 
 import { Send, Video, Image as ImageIcon, Loader2 } from 'lucide-react';
@@ -84,11 +85,10 @@ function ClientChat() {
 
       const resourceType = type === 'VIDEO' ? 'video' : 'image';
       
-      const cloudRes = await axios.post(
+      const cloudRes = await axiosClean.post(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, 
         formData,
         {
-          withCredentials: false,
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setUploadProgress(percentCompleted);
