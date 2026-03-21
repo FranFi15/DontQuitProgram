@@ -84,11 +84,11 @@ function ClientChat() {
 
       const resourceType = type === 'VIDEO' ? 'video' : 'image';
       
-      // 👈 NUEVO: Usamos axios nativo para Cloudinary para poder leer el progreso
       const cloudRes = await axios.post(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, 
         formData,
         {
+          withCredentials: false,
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setUploadProgress(percentCompleted);
