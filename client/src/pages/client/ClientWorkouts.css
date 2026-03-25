@@ -411,3 +411,14 @@
 .open-scorebox-btn svg {
   color: #4b5563; /* Gris oscuro para el icono */
 }
+
+.exercise-notes-html a {
+  color: #2563eb; /* Azul clásico de link */
+  text-decoration: underline; /* Subrayado para que sea obvio */
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.exercise-notes-html a:hover {
+  color: #1d4ed8; /* Azul más oscuro al pasar el mouse */
+}

@@ -147,12 +147,21 @@ function ClientWorkouts() {
            </div>
 
            <div className="blocks-list">
-             {blocks.map((block, i) => (
-                <div key={i} className="exercise-card">
-                   <span className="exercise-name">{block.name || block.title}</span>
-                   <div className="exercise-notes-html" dangerouslySetInnerHTML={{__html: block.content || block.notes}}/>
-                </div>
-             ))}
+             {blocks.map((block, i) => {
+               const safeHtmlContent = (block.content || block.notes || '')
+                 .replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')
+                 .replace(/href="(?!(?:http:\/\/|https:\/\/|mailto:|tel:))([^"]+)"/gi, 'href="https://$1"');
+
+               return (
+                 <div key={i} className="exercise-card">
+                    <span className="exercise-name">{block.name || block.title}</span>
+                    <div 
+                      className="exercise-notes-html" 
+                      dangerouslySetInnerHTML={{__html: safeHtmlContent}}
+                    />
+                 </div>
+               )
+             })}
              
             
             {hasChatAccess && (
