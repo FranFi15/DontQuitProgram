@@ -129,7 +129,7 @@ function ClientWorkouts() {
     </div>
   );
 
-  // VISTA 1: DETALLE DE LA RUTINA (Día específico)
+  // VISTA 1: DETALLE DE LA RUTINA 
   if (selectedDayWorkout) {
      const blocks = typeof selectedDayWorkout.blocks === 'string' ? JSON.parse(selectedDayWorkout.blocks) : selectedDayWorkout.blocks;
      
