@@ -13,10 +13,17 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
 
   const [blocks, setBlocks] = useState(() => {
     try {
+      let initialBlocks = workout.blocks;
       if (typeof workout.blocks === 'string') {
-        return JSON.parse(workout.blocks);
+        initialBlocks = JSON.parse(workout.blocks);
       }
-      return workout.blocks || [];
+      initialBlocks = initialBlocks || [];
+      
+      // 👇 NUEVO: Le inyectamos un ID temporal a cada bloque para que React los identifique
+      return initialBlocks.map(b => ({
+        ...b,
+        _uid: b._uid || Math.random().toString(36).substring(2, 9) 
+      }));
     } catch (e) {
       return [];
     }
@@ -25,18 +32,19 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, false] }],
-      ['bold', 'italic', 'underline'],
+      ['bold', 'italic', 'underline', 'link'],
       [{ 'color': [] }, { 'background': [] }],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
       ['clean']
     ],
   };
 
-  const addBlock = () => {
+ const addBlock = () => {
     const nextNum = blocks.length + 1;
     setBlocks([
       ...blocks, 
       { 
+        _uid: Math.random().toString(36).substring(2, 9), 
         title: `Bloque ${nextNum}`, 
         content: '' 
       }
@@ -142,7 +150,7 @@ function DayEditorModal({ workout, onClose, onSuccess }) {
           {/* LISTA DE BLOQUES */}
           <div className="dem-blocks-list">
             {blocks.map((block, index) => (
-              <div key={index} className="dem-workout-block animate-enter">
+              <div key={block._uid} className="dem-workout-block animate-enter">
                 
                 <div className="dem-block-header">
                   <div className="dem-block-title-wrapper">
