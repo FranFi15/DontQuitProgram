@@ -16,9 +16,10 @@ function ClientChat() {
   
   // ESTADOS DE CARGA
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0); // 👈 NUEVO: Estado para el porcentaje
+  const [uploadProgress, setUploadProgress] = useState(0); 
   
   const messagesEndRef = useRef(null);
+  const videoInputRef = useRef(null); // 👈 NUEVO: Referencia para abrir la cámara por código
 
   const ADMIN_ID = 41; 
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
@@ -65,18 +66,31 @@ function ClientChat() {
     }
   };
 
+  // 👇 NUEVO: Función que se ejecuta al TOCAR el ícono de video (antes de elegir el archivo)
+  const handleVideoIconClick = (e) => {
+    e.preventDefault(); // Evitamos que abra la cámara de golpe
+    if (uploading) return;
+
+    // Le tiramos la alerta educativa al usuario
+    showAlert("Recordá: Los videos deben durar máximo 30 segundos para enviarse rápido.", "info");
+    
+    // Le damos medio segundo para que lea y después abrimos la cámara
+    setTimeout(() => {
+      videoInputRef.current.click();
+    }, 600);
+  };
+
   const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // LÍMITES AMPLIADOS
     const limitMB = type === 'VIDEO' ? 100 : 20;
     if (file.size > limitMB * 1024 * 1024) {
       return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error'); 
     }
 
     setUploading(true);
-    setUploadProgress(0); // Empezamos en 0%
+    setUploadProgress(0); 
     
     try {
       const formData = new FormData();
@@ -98,7 +112,6 @@ function ClientChat() {
       
       const uploadedUrl = cloudRes.data.secure_url;
 
-      // Avisamos a la base de datos
       await axios.post('/chat', {
         senderId: user.id,
         receiverId: ADMIN_ID,
@@ -117,7 +130,7 @@ function ClientChat() {
       }
     } finally {
       setUploading(false);
-      setUploadProgress(0); // Reiniciamos al terminar
+      setUploadProgress(0); 
       e.target.value = null;
     }
   };
@@ -172,13 +185,23 @@ function ClientChat() {
           );
         })}
 
-        {/* 👈 NUEVO: Burbuja mostrando el porcentaje */}
+        {/* 👇 MEJORA: Burbuja de carga con tip visual incorporado */}
         {uploading && (
-           <div className="pchat-row pchat-row-mine">
-             <div className="pchat-bubble pchat-bubble-mine pchat-uploading" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <Loader2 className="spin" size={16}/> Subiendo archivo... {uploadProgress}%
+           <>
+             <div className="pchat-row pchat-row-mine">
+               <div className="pchat-bubble pchat-bubble-mine pchat-uploading" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <Loader2 className="spin" size={16}/> Subiendo archivo... {uploadProgress}%
+               </div>
              </div>
-           </div>
+             {/* Textito de advertencia solo visible mientras sube */}
+             {uploadProgress > 0 && uploadProgress < 100 && (
+               <div className="pchat-row pchat-row-mine" style={{ marginTop: '-2px' }}>
+                 <span style={{ fontSize: '0.65rem', color: '#9ca3af', width: '100%', textAlign: 'right', fontStyle: 'italic' }}>
+                   *Los videos grabados en 1080p se enviarán más rápido.
+                 </span>
+               </div>
+             )}
+           </>
         )}
 
         <div ref={messagesEndRef} />
@@ -187,8 +210,21 @@ function ClientChat() {
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
           
-          <label className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} title="Enviar Video">
-            <input type="file" accept="video/*" hidden onChange={(e) => handleFileUpload(e, 'VIDEO')} disabled={uploading}/>
+          <label 
+            className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
+            title="Enviar Video"
+            onClick={handleVideoIconClick} // 👈 NUEVO: Interceptamos el click
+          >
+            {/* 👇 MEJORA HTML: Sugiere baja resolución y cámara trasera a los celulares modernos 👇 */}
+            <input 
+              type="file" 
+              accept="video/mp4,video/x-m4v,video/*" 
+              capture="environment" 
+              hidden 
+              ref={videoInputRef} // 👈 NUEVO: Le ponemos nombre para llamarlo desde el código
+              onChange={(e) => handleFileUpload(e, 'VIDEO')} 
+              disabled={uploading}
+            />
             <Video size={22} />
           </label>
 
@@ -197,7 +233,6 @@ function ClientChat() {
             <ImageIcon size={22} />
           </label>
 
-          {/* 👈 NUEVO: Placeholder mostrando el porcentaje */}
           <input 
             type="text" 
             placeholder={uploading ? `Subiendo archivo... ${uploadProgress}%` : "Mensaje..."}
