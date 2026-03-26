@@ -19,7 +19,6 @@ function ClientChat() {
   
   const messagesEndRef = useRef(null);
   
-  // 👇 REFERENCIAS SEPARADAS PARA LOS INPUTS OCULTOS
   const videoInputRef = useRef(null); 
   const imageInputRef = useRef(null);
 
@@ -68,20 +67,26 @@ function ClientChat() {
     }
   };
 
-  // 👇 MANEJADOR LIMPIO PARA EL BOTÓN DE VIDEO
   const handleVideoIconClick = () => {
-    if (uploading) return;
+    // 👇 NUEVO: Si ya está subiendo, le avisamos que espere
+    if (uploading) {
+      return showAlert("Ya hay un archivo subiéndose. Por favor, esperá.", "warning");
+    }
+    
     showAlert("Recordá: Los videos deben durar máximo 30 segundos para enviarse rápido.", "info");
     
-    // Abre la cámara después de un ratito corto
+    // 2.5 segundos para que lea la advertencia
     setTimeout(() => {
       if(videoInputRef.current) videoInputRef.current.click();
     }, 1500);
   };
 
-  // 👇 MANEJADOR LIMPIO PARA EL BOTÓN DE IMAGEN
   const handleImageIconClick = () => {
-    if (uploading) return;
+    // 👇 NUEVO: Si ya está subiendo, le avisamos que espere
+    if (uploading) {
+      return showAlert("Ya hay un archivo subiéndose. Por favor, esperá.", "warning");
+    }
+    
     if(imageInputRef.current) imageInputRef.current.click();
   };
 
@@ -96,6 +101,9 @@ function ClientChat() {
 
     setUploading(true);
     setUploadProgress(0); 
+    
+    // 👇 NUEVO: Alerta de tranquilidad apenas arranca la subida
+    showAlert("Subiendo archivo... por favor no cierres esta pantalla.", "info");
     
     try {
       const formData = new FormData();
@@ -136,7 +144,7 @@ function ClientChat() {
     } finally {
       setUploading(false);
       setUploadProgress(0); 
-      e.target.value = null; // Limpiamos el input para poder subir el mismo archivo de nuevo si hace falta
+      e.target.value = null; 
     }
   };
 
@@ -213,12 +221,11 @@ function ClientChat() {
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
           
-          {/* 👇 INPUTS OCULTOS (Fuera de la vista y de los botones) 👇 */}
           <input 
             type="file" 
             accept="video/mp4,video/x-m4v,video/*" 
             capture="environment" 
-            style={{ display: 'none' }} // Usamos style en vez de hidden para asegurar compatibilidad
+            style={{ display: 'none' }} 
             ref={videoInputRef} 
             onChange={(e) => handleFileUpload(e, 'VIDEO')} 
           />
@@ -230,14 +237,12 @@ function ClientChat() {
             onChange={(e) => handleFileUpload(e, 'IMAGE')} 
           />
 
-          {/* 👇 BOTONES VISIBLES (Sin la etiqueta label que causaba el loop) 👇 */}
           <button 
-            type="button" // MUY IMPORTANTE: type="button" para que no envíe el formulario
+            type="button" 
             className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
             title="Enviar Video"
             onClick={handleVideoIconClick} 
-            disabled={uploading}
-            style={{ background: 'none', border: 'none', padding: 0 }} // Limpiamos estilos de botón nativo
+            style={{ background: 'none', border: 'none', padding: 0 }} 
           >
             <Video size={22} />
           </button>
@@ -247,7 +252,6 @@ function ClientChat() {
             className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
             title="Enviar Imagen"
             onClick={handleImageIconClick}
-            disabled={uploading}
             style={{ background: 'none', border: 'none', padding: 0 }}
           >
             <ImageIcon size={22} />
