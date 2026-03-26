@@ -112,7 +112,7 @@
 .score-value.history {
   font-weight: 600; 
   font-size: 0.85rem; 
-  color: #9ca3af; /* Gris sutil */
+  color: #000000; 
 }
 
 .score-value small { 
@@ -124,8 +124,35 @@
 }
 
 .score-value.empty { 
-  color: #cbd5e1; 
+  color: #000000; 
   letter-spacing: 2px; 
   font-weight: 900;
   font-size: 1rem;
+}
+
+.score-entry-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Espacio entre cada input individual (ej: entre kg y reps) */
+  margin-bottom: 8px; /* Espacio si hubiera un historial abajo */
+}
+
+.score-entry-group.history {
+  opacity: 0.6;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 4px;
+}
+
+/* Estilo de cada valor individual */
+.score-value {
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap; 
+  color: #000;
+  font-weight: 900;;
+}
+
+.score-value.current {
+  font-weight: 900;
+  font-size: 1rem;
+  color: #000;
 }

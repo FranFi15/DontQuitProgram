@@ -25,8 +25,7 @@ function HomePlanScores({ planId, planName, userId }) {
 
   useEffect(() => {
     fetchBoxes();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planId, userId, showAlert]);
+  }, [planId, userId]);
 
   if (!loading && boxes.length === 0) return null;
 
@@ -43,39 +42,44 @@ function HomePlanScores({ planId, planName, userId }) {
           </button>
         </div>
 
-        {/* FORMATO LISTA */}
         <div className="score-list">
-          {boxes.map(box => {
-            return (
-              <div key={box.id} className="score-list-item">
-                
-                {/* Lado Izquierdo: Icono y Nombre */}
-                <div className="score-item-left">
-                  <div className="score-icon-box">
-                    <Target size={16} className="score-target-icon" />
-                  </div>
-                  <span className="score-label">{box.name}</span>
+          {boxes.map(box => (
+            <div key={box.id} className="score-list-item">
+              
+              <div className="score-item-left">
+                <div className="score-icon-box">
+                  <Target size={16} className="score-target-icon" />
                 </div>
+                <span className="score-label">{box.name}</span>
+              </div>
 
-                {/* Lado Derecho: Historial de Valores Apilados */}
-                <div className="score-item-right">
-                  {box.entries && box.entries.length > 0 ? (
-                    box.entries.map((entry, index) => (
+              <div className="score-item-right">
+                {box.entries && box.entries.length > 0 ? (
+                  box.entries.map((entry, index) => {
+                    // 👇 ACÁ ESTÁ EL CAMBIO CLAVE:
+                    // Separamos el string "Valor Unidad - Valor Unidad" por el separador " - "
+                    const individualScores = entry.value.split(' - ');
+
+                    return (
                       <div 
                         key={entry.id || index} 
-                        className={`score-value ${index === 0 ? 'current' : 'history'}`}
+                        className={`score-entry-group ${index === 0 ? 'current' : 'history'}`}
                       >
-                        {entry.value} 
+                        {individualScores.map((score, sIndex) => (
+                          <div key={sIndex} className="score-value">
+                            {score}
+                          </div>
+                        ))}
                       </div>
-                    ))
-                  ) : (
-                    <div className="score-value empty">- -</div>
-                  )}
-                </div>
-
+                    );
+                  })
+                ) : (
+                  <div className="score-value empty">- -</div>
+                )}
               </div>
-            );
-          })}
+
+            </div>
+          ))}
         </div>
       </div>
 

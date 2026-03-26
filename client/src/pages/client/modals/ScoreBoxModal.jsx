@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from '../../../api/axios';
-import { useAlert } from '../../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
+import { useAlert } from '../../../context/AlertContext'; 
 import { X, Save } from 'lucide-react';
 import './ScoreBoxModal.css';
 
 function ScoreBoxModal({ planId, userId, onClose }) {
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -25,10 +25,13 @@ function ScoreBoxModal({ planId, userId, onClose }) {
           const unitsArray = box.measureUnit ? box.measureUnit.split(',') : [];
           
           unitsArray.forEach(unit => {
-            const regex = new RegExp(`([\\d.]+)\\s*${unit.trim()}`);
+            const trimmedUnit = unit.trim();
+            // 👇 CAMBIO: Regex más flexible para capturar texto antes de la unidad
+            // Captura todo hasta que encuentra el nombre de la unidad
+            const regex = new RegExp(`(.*?)\\s*${trimmedUnit}(?:\\s*-|$)`);
             const match = savedString.match(regex);
             if (match) {
-              initialInputs[box.id][unit.trim()] = match[1]; 
+              initialInputs[box.id][trimmedUnit] = match[1].trim(); 
             }
           });
         }
@@ -36,8 +39,6 @@ function ScoreBoxModal({ planId, userId, onClose }) {
       setInputs(initialInputs);
     } catch (error) {
       console.error(error);
-      // Opcional: mostrar error si no carga (lo comento porque el padre ya tiene una alerta)
-      // showAlert("Error al cargar las métricas.", "error"); 
     } finally {
       setLoading(false);
     }
@@ -55,7 +56,6 @@ function ScoreBoxModal({ planId, userId, onClose }) {
     }));
   };
 
-  // --- NUEVA LÓGICA: GUARDAR TODO JUNTO ---
   const handleSaveAll = async () => {
     setSavingAll(true);
     try {
@@ -88,7 +88,6 @@ function ScoreBoxModal({ planId, userId, onClose }) {
 
       if (savePromises.length > 0) {
         await Promise.all(savePromises);
-        // 👈 3. ALERTA DE ÉXITO 
         showAlert("¡Marcas actualizadas correctamente! 🏆", "success");
       }
       
@@ -96,7 +95,6 @@ function ScoreBoxModal({ planId, userId, onClose }) {
 
     } catch (error) {
       console.error(error);
-      // 👈 4. ALERTA DE ERROR
       showAlert("Hubo un error al guardar los resultados.", "error");
     } finally {
       setSavingAll(false);
@@ -136,9 +134,10 @@ function ScoreBoxModal({ planId, userId, onClose }) {
                           const unitLabel = u.trim();
                           return (
                             <div key={index} className="sb-input-group">
+                              {/* 👇 CAMBIO: type="text" y placeholder más genérico */}
                               <input 
-                                type="number" 
-                                placeholder="0" 
+                                type="text" 
+                                placeholder="Escribir..." 
                                 value={boxInputData[unitLabel] || ''}
                                 onChange={(e) => handleInputChange(box.id, unitLabel, e.target.value)}
                                 className="sb-input-multi"
