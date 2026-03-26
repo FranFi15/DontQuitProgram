@@ -76,7 +76,7 @@ function ClientChat() {
     // Abre la cámara después de un ratito corto
     setTimeout(() => {
       if(videoInputRef.current) videoInputRef.current.click();
-    }, 600);
+    }, 1500);
   };
 
   // 👇 MANEJADOR LIMPIO PARA EL BOTÓN DE IMAGEN
