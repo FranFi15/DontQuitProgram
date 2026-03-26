@@ -14,12 +14,14 @@ function ClientChat() {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   
-  // ESTADOS DE CARGA
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0); 
   
   const messagesEndRef = useRef(null);
-  const videoInputRef = useRef(null); // 👈 NUEVO: Referencia para abrir la cámara por código
+  
+  // 👇 REFERENCIAS SEPARADAS PARA LOS INPUTS OCULTOS
+  const videoInputRef = useRef(null); 
+  const imageInputRef = useRef(null);
 
   const ADMIN_ID = 41; 
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
@@ -66,18 +68,21 @@ function ClientChat() {
     }
   };
 
-  // 👇 NUEVO: Función que se ejecuta al TOCAR el ícono de video (antes de elegir el archivo)
-  const handleVideoIconClick = (e) => {
-    e.preventDefault(); // Evitamos que abra la cámara de golpe
+  // 👇 MANEJADOR LIMPIO PARA EL BOTÓN DE VIDEO
+  const handleVideoIconClick = () => {
     if (uploading) return;
-
-    // Le tiramos la alerta educativa al usuario
     showAlert("Recordá: Los videos deben durar máximo 30 segundos para enviarse rápido.", "info");
     
-    // Le damos medio segundo para que lea y después abrimos la cámara
+    // Abre la cámara después de un ratito corto
     setTimeout(() => {
-      videoInputRef.current.click();
+      if(videoInputRef.current) videoInputRef.current.click();
     }, 600);
+  };
+
+  // 👇 MANEJADOR LIMPIO PARA EL BOTÓN DE IMAGEN
+  const handleImageIconClick = () => {
+    if (uploading) return;
+    if(imageInputRef.current) imageInputRef.current.click();
   };
 
   const handleFileUpload = async (e, type) => {
@@ -131,7 +136,7 @@ function ClientChat() {
     } finally {
       setUploading(false);
       setUploadProgress(0); 
-      e.target.value = null;
+      e.target.value = null; // Limpiamos el input para poder subir el mismo archivo de nuevo si hace falta
     }
   };
 
@@ -185,7 +190,6 @@ function ClientChat() {
           );
         })}
 
-        {/* 👇 MEJORA: Burbuja de carga con tip visual incorporado */}
         {uploading && (
            <>
              <div className="pchat-row pchat-row-mine">
@@ -193,7 +197,6 @@ function ClientChat() {
                  <Loader2 className="spin" size={16}/> Subiendo archivo... {uploadProgress}%
                </div>
              </div>
-             {/* Textito de advertencia solo visible mientras sube */}
              {uploadProgress > 0 && uploadProgress < 100 && (
                <div className="pchat-row pchat-row-mine" style={{ marginTop: '-2px' }}>
                  <span style={{ fontSize: '0.65rem', color: '#9ca3af', width: '100%', textAlign: 'right', fontStyle: 'italic' }}>
@@ -210,28 +213,45 @@ function ClientChat() {
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
           
-          <label 
+          {/* 👇 INPUTS OCULTOS (Fuera de la vista y de los botones) 👇 */}
+          <input 
+            type="file" 
+            accept="video/mp4,video/x-m4v,video/*" 
+            capture="environment" 
+            style={{ display: 'none' }} // Usamos style en vez de hidden para asegurar compatibilidad
+            ref={videoInputRef} 
+            onChange={(e) => handleFileUpload(e, 'VIDEO')} 
+          />
+          <input 
+            type="file" 
+            accept="image/*" 
+            style={{ display: 'none' }}
+            ref={imageInputRef}
+            onChange={(e) => handleFileUpload(e, 'IMAGE')} 
+          />
+
+          {/* 👇 BOTONES VISIBLES (Sin la etiqueta label que causaba el loop) 👇 */}
+          <button 
+            type="button" // MUY IMPORTANTE: type="button" para que no envíe el formulario
             className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
             title="Enviar Video"
-            onClick={handleVideoIconClick} // 👈 NUEVO: Interceptamos el click
+            onClick={handleVideoIconClick} 
+            disabled={uploading}
+            style={{ background: 'none', border: 'none', padding: 0 }} // Limpiamos estilos de botón nativo
           >
-            {/* 👇 MEJORA HTML: Sugiere baja resolución y cámara trasera a los celulares modernos 👇 */}
-            <input 
-              type="file" 
-              accept="video/mp4,video/x-m4v,video/*" 
-              capture="environment" 
-              hidden 
-              ref={videoInputRef} // 👈 NUEVO: Le ponemos nombre para llamarlo desde el código
-              onChange={(e) => handleFileUpload(e, 'VIDEO')} 
-              disabled={uploading}
-            />
             <Video size={22} />
-          </label>
+          </button>
 
-          <label className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} title="Enviar Imagen">
-            <input type="file" accept="image/*" hidden onChange={(e) => handleFileUpload(e, 'IMAGE')} disabled={uploading}/>
+          <button 
+            type="button" 
+            className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
+            title="Enviar Imagen"
+            onClick={handleImageIconClick}
+            disabled={uploading}
+            style={{ background: 'none', border: 'none', padding: 0 }}
+          >
             <ImageIcon size={22} />
-          </label>
+          </button>
 
           <input 
             type="text" 
