@@ -67,18 +67,19 @@ function ClientChat() {
     }
   };
 
-  const handleVideoIconClick = () => {
-    // 👇 NUEVO: Si ya está subiendo, le avisamos que espere
+  const handleVideoIconClick = (e) => {
+    e.preventDefault(); // Evita comportamientos extraños del form
+    
     if (uploading) {
       return showAlert("Ya hay un archivo subiéndose. Por favor, esperá.", "warning");
     }
     
-    showAlert("Recordá: Los videos deben durar máximo 30 segundos para enviarse rápido.", "info");
+    // Mostramos la alerta, pero disparamos el click INMEDIATAMENTE
+    showAlert("Recordá: Los videos deben durar máximo 30 segundos.", "info");
     
-    // 2.5 segundos para que lea la advertencia
-    setTimeout(() => {
-      if(videoInputRef.current) videoInputRef.current.click();
-    }, 1500);
+    if(videoInputRef.current) {
+      videoInputRef.current.click(); // Sin setTimeout para que iOS lo acepte
+    }
   };
 
   const handleImageIconClick = () => {
