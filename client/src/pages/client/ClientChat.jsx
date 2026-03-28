@@ -221,41 +221,59 @@ function ClientChat() {
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
           
-          <input 
-            type="file" 
-            accept="video/mp4,video/x-m4v,video/*" 
-            capture="environment" 
-            style={{ display: 'none' }} 
-            ref={videoInputRef} 
-            onChange={(e) => handleFileUpload(e, 'VIDEO')} 
-          />
-          <input 
-            type="file" 
-            accept="image/*" 
-            style={{ display: 'none' }}
-            ref={imageInputRef}
-            onChange={(e) => handleFileUpload(e, 'IMAGE')} 
-          />
+         <input 
+  type="file" 
+  accept="video/*" 
+  capture="user"  
+  style={{ display: 'none' }} 
+  ref={videoInputRef} 
+  onChange={(e) => handleFileUpload(e, 'VIDEO')} 
+/>
+<input 
+  type="file" 
+  accept="image/*" 
+  style={{ display: 'none' }}
+  ref={imageInputRef}
+  onChange={(e) => handleFileUpload(e, 'IMAGE')} 
+/>
 
-          <button 
-            type="button" 
-            className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
-            title="Enviar Video"
-            onClick={handleVideoIconClick} 
-            style={{ background: 'none', border: 'none', padding: 0 }} 
-          >
-            <Video size={22} />
-          </button>
+         <button 
+  type="button" 
+  className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
+  onClick={(e) => {
+    e.preventDefault(); // Evitamos cualquier comportamiento del form
+    handleVideoIconClick();
+  }} 
+  style={{ 
+    background: 'transparent', 
+    border: 'none', 
+    padding: '10px', // Aumentamos el área táctil
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center'
+  }} 
+>
+  <Video size={24} color={uploading ? "#ccc" : "#6b7280"} />
+</button>
 
-          <button 
-            type="button" 
-            className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
-            title="Enviar Imagen"
-            onClick={handleImageIconClick}
-            style={{ background: 'none', border: 'none', padding: 0 }}
-          >
-            <ImageIcon size={22} />
-          </button>
+<button 
+  type="button" 
+  className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
+  onClick={(e) => {
+    e.preventDefault();
+    handleImageIconClick();
+  }}
+  style={{ 
+    background: 'transparent', 
+    border: 'none', 
+    padding: '10px', // Aumentamos el área táctil
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center'
+  }}
+>
+  <ImageIcon size={24} color={uploading ? "#ccc" : "#6b7280"} />
+</button>
 
           <input 
             type="text" 
