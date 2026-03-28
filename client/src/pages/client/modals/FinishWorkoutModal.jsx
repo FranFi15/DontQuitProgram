@@ -1,24 +1,25 @@
 import { useState } from 'react';
 import axios from '../../../api/axios';
-import { useAlert } from '../../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
-import { X, Send, Flame } from 'lucide-react';
+import { useAlert } from '../../../context/AlertContext'; 
+import { X, Send, Flame, Calendar } from 'lucide-react'; // Agregué el icono Calendar
 import './FinishWorkoutModal.css';
 
-function FinishWorkoutModal({ workoutTitle, userId, onClose, onSuccess }) {
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+// 1. Agregamos 'weekName' a las props
+function FinishWorkoutModal({ workoutTitle, weekName, userId, onClose, onSuccess }) {
+  const { showAlert } = useAlert(); 
   const [score, setScore] = useState(null);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (!score) {
-      // 👈 3. ALERTA DE VALIDACIÓN
       return showAlert("Por favor, selecciona qué tan difícil estuvo (1 al 10).", "error");
     }
 
     setLoading(true);
     try {
-      const messageContent = `🏋️ Entrenamiento completado: ${workoutTitle}\n🔥 Dificultad: ${score}/10\n📝 Notas: ${notes || 'Sin comentarios adicionales.'}`;
+      // 2. Incluimos la semana en el mensaje de chat
+      const messageContent = `🏋️ Entrenamiento completado: ${workoutTitle}\n📅 Semana: ${weekName || 'No especificada'}\n🔥 Dificultad: ${score}/10\n📝 Notas: ${notes || 'Sin comentarios adicionales.'}`;
 
       await axios.post('/chat', {
         senderId: userId,
@@ -27,13 +28,10 @@ function FinishWorkoutModal({ workoutTitle, userId, onClose, onSuccess }) {
         mediaType: 'TEXT'
       });
 
-      // ¡AQUÍ ESTÁ EL CAMBIO! Ejecutamos onSuccess en lugar de onClose.
-      // (La alerta de éxito "¡Excelente trabajo!" se mostrará desde el componente padre ClientWorkouts)
       onSuccess(); 
       
     } catch (error) {
       console.error(error);
-      // 👈 4. ALERTA DE ERROR DE RED
       showAlert("Hubo un error al enviar el reporte a tu coach.", "error");
     } finally {
       setLoading(false);
@@ -51,6 +49,10 @@ function FinishWorkoutModal({ workoutTitle, userId, onClose, onSuccess }) {
             <Flame size={32} color="#ff4500" />
           </div>
           <h2>¡Entrenamiento Terminado!</h2>
+          {/* 3. Mostramos la semana también en la interfaz para que el usuario la vea */}
+          <div className="fw-info-badge">
+             <Calendar size={14} /> {weekName}
+          </div>
           <p>¿Qué tan intenso estuvo el {workoutTitle}?</p>
         </div>
 

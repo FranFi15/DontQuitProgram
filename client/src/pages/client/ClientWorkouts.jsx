@@ -188,6 +188,7 @@ function ClientWorkouts() {
            {isFinishModalOpen && (
              <FinishWorkoutModal
                workoutTitle={selectedDayWorkout.title}
+               weekName={`Semana ${selectedWeek}`}
                userId={userId}
                onClose={() => setIsFinishModalOpen(false)}
                onSuccess={() => markAsCompleted(selectedDayWorkout.id)} 

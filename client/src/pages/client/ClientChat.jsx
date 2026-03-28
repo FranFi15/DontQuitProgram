@@ -18,9 +18,6 @@ function ClientChat() {
   const [uploadProgress, setUploadProgress] = useState(0); 
   
   const messagesEndRef = useRef(null);
-  
-  const videoInputRef = useRef(null); 
-  const imageInputRef = useRef(null);
 
   const ADMIN_ID = 41; 
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
@@ -67,44 +64,27 @@ function ClientChat() {
     }
   };
 
-  const handleVideoIconClick = (e) => {
-    e.preventDefault(); // Evita comportamientos extraños del form
-    
-    if (uploading) {
-      return showAlert("Ya hay un archivo subiéndose. Por favor, esperá.", "warning");
-    }
-    
-    // Mostramos la alerta, pero disparamos el click INMEDIATAMENTE
-    showAlert("Recordá: Los videos deben durar máximo 30 segundos.", "info");
-    
-    if(videoInputRef.current) {
-      videoInputRef.current.click(); // Sin setTimeout para que iOS lo acepte
-    }
-  };
-
-  const handleImageIconClick = () => {
-    // 👇 NUEVO: Si ya está subiendo, le avisamos que espere
-    if (uploading) {
-      return showAlert("Ya hay un archivo subiéndose. Por favor, esperá.", "warning");
-    }
-    
-    if(imageInputRef.current) imageInputRef.current.click();
-  };
-
+  // Función que se ejecuta DESPUÉS de elegir el archivo
   const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Validación de peso
     const limitMB = type === 'VIDEO' ? 100 : 20;
     if (file.size > limitMB * 1024 * 1024) {
+      e.target.value = null; // Limpiar el input si falla
       return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error'); 
     }
 
     setUploading(true);
     setUploadProgress(0); 
     
-    // 👇 NUEVO: Alerta de tranquilidad apenas arranca la subida
-    showAlert("Subiendo archivo... por favor no cierres esta pantalla.", "info");
+    // Alerta de que empezó la subida (y tip de 30 seg si es video)
+    if (type === 'VIDEO') {
+       showAlert("Subiendo video (Máximo recomendado: 30 seg). Por favor no cierres esta pantalla.", "info");
+    } else {
+       showAlert("Subiendo imagen... por favor no cierres esta pantalla.", "info");
+    }
     
     try {
       const formData = new FormData();
@@ -147,6 +127,15 @@ function ClientChat() {
       setUploadProgress(0); 
       e.target.value = null; 
     }
+  };
+
+  // Función para interceptar el click ANTES de abrir la galería (solo para mostrar alerta si ya está subiendo)
+  const handleLabelClick = (e) => {
+    if (uploading) {
+      e.preventDefault(); // Bloquea la apertura de la galería
+      showAlert("Ya hay un archivo subiéndose. Por favor, esperá.", "warning");
+    }
+    // Si NO está subiendo, NO hacemos e.preventDefault(), dejamos que el label haga su trabajo nativo y abra el input.
   };
 
   return (
@@ -222,59 +211,38 @@ function ClientChat() {
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
           
-         <input 
-  type="file" 
-  accept="video/*" 
-  capture="user"  
-  style={{ display: 'none' }} 
-  ref={videoInputRef} 
-  onChange={(e) => handleFileUpload(e, 'VIDEO')} 
-/>
-<input 
-  type="file" 
-  accept="image/*" 
-  style={{ display: 'none' }}
-  ref={imageInputRef}
-  onChange={(e) => handleFileUpload(e, 'IMAGE')} 
-/>
+          {/* 👇 SOLUCIÓN: Usamos label nativo que envuelve al input. Área de click grande. 👇 */}
+          <label 
+            className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
+            title="Enviar Video"
+            onClick={handleLabelClick}
+            style={{ padding: '10px', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          >
+            <input 
+              type="file" 
+              accept="video/*" 
+              style={{ display: 'none' }} 
+              onChange={(e) => handleFileUpload(e, 'VIDEO')} 
+              disabled={uploading}
+            />
+            <Video size={24} color={uploading ? "#ccc" : "#6b7280"} />
+          </label>
 
-         <button 
-  type="button" 
-  className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
-  onClick={(e) => {
-    e.preventDefault(); // Evitamos cualquier comportamiento del form
-    handleVideoIconClick();
-  }} 
-  style={{ 
-    background: 'transparent', 
-    border: 'none', 
-    padding: '10px', // Aumentamos el área táctil
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center'
-  }} 
->
-  <Video size={24} color={uploading ? "#ccc" : "#6b7280"} />
-</button>
-
-<button 
-  type="button" 
-  className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
-  onClick={(e) => {
-    e.preventDefault();
-    handleImageIconClick();
-  }}
-  style={{ 
-    background: 'transparent', 
-    border: 'none', 
-    padding: '10px', // Aumentamos el área táctil
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center'
-  }}
->
-  <ImageIcon size={24} color={uploading ? "#ccc" : "#6b7280"} />
-</button>
+          <label 
+            className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
+            title="Enviar Imagen"
+            onClick={handleLabelClick}
+            style={{ padding: '10px', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          >
+             <input 
+              type="file" 
+              accept="image/*" 
+              style={{ display: 'none' }}
+              onChange={(e) => handleFileUpload(e, 'IMAGE')} 
+              disabled={uploading}
+            />
+            <ImageIcon size={24} color={uploading ? "#ccc" : "#6b7280"} />
+          </label>
 
           <input 
             type="text" 
