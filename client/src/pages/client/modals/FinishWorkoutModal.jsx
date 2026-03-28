@@ -19,7 +19,7 @@ function FinishWorkoutModal({ workoutTitle, weekName, userId, onClose, onSuccess
     setLoading(true);
     try {
       // 2. Incluimos la semana en el mensaje de chat
-      const messageContent = `🏋️ Entrenamiento completado: ${workoutTitle}\n📅 Semana: ${weekName || 'No especificada'}\n🔥 Dificultad: ${score}/10\n📝 Notas: ${notes || 'Sin comentarios adicionales.'}`;
+      const messageContent = `🏋️ Entrenamiento completado: \n📅 Semana: ${weekName || 'No especificada'} - ${workoutTitle}\n🔥 Dificultad: ${score}/10\n📝 Notas: ${notes || 'Sin comentarios adicionales.'}`;
 
       await axios.post('/chat', {
         senderId: userId,
