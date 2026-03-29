@@ -3,7 +3,7 @@ import axios from '../../api/axios';
 import axiosClean from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext'; 
-import { Send, Video, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Send, Video, Image as ImageIcon, Loader2, ArrowDown } from 'lucide-react'; // 👈 Agregamos ArrowDown
 import { useNavigate } from 'react-router-dom';
 import './ClientChat.css';
 
@@ -17,11 +17,20 @@ function ClientChat() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0); 
   
+  // 👇 NUEVO: Estado para mostrar/ocultar el botón flotante
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null); // 👈 NUEVO: Referencia para el contenedor que hace scroll
 
   const ADMIN_ID = 41; 
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET; 
+
+  useEffect(() => {
+    showAlert("💡 Tip para videos: Grabá en 1080p y máximo 30 segundos para enviarlos más rápido.", "info");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); 
 
   const fetchMessages = async () => {
     try {
@@ -43,7 +52,7 @@ function ClientChat() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages.length, uploading]);
 
   const handleSendText = async (e) => {
     e.preventDefault();
@@ -64,24 +73,21 @@ function ClientChat() {
     }
   };
 
-  // Función que se ejecuta DESPUÉS de elegir el archivo
   const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validación de peso
     const limitMB = type === 'VIDEO' ? 100 : 20;
     if (file.size > limitMB * 1024 * 1024) {
-      e.target.value = null; // Limpiar el input si falla
+      e.target.value = null; 
       return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error'); 
     }
 
     setUploading(true);
     setUploadProgress(0); 
     
-    // Alerta de que empezó la subida (y tip de 30 seg si es video)
     if (type === 'VIDEO') {
-       showAlert("Subiendo video (Máximo recomendado: 30 seg). Por favor no cierres esta pantalla.", "info");
+       showAlert("Subiendo video. Por favor no cierres esta pantalla.", "info");
     } else {
        showAlert("Subiendo imagen... por favor no cierres esta pantalla.", "info");
     }
@@ -129,13 +135,26 @@ function ClientChat() {
     }
   };
 
-  // Función para interceptar el click ANTES de abrir la galería (solo para mostrar alerta si ya está subiendo)
   const handleLabelClick = (e) => {
     if (uploading) {
-      e.preventDefault(); // Bloquea la apertura de la galería
+      e.preventDefault(); 
       showAlert("Ya hay un archivo subiéndose. Por favor, esperá.", "warning");
     }
-    // Si NO está subiendo, NO hacemos e.preventDefault(), dejamos que el label haga su trabajo nativo y abra el input.
+  };
+
+  // 👇 NUEVO: Función que revisa si el usuario subió la pantalla
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    
+    // Si la distancia hasta el fondo es mayor a 150px, mostramos el botón
+    const isScrolledUp = scrollHeight - scrollTop - clientHeight > 150;
+    setShowScrollButton(isScrolledUp);
+  };
+
+  // 👇 NUEVO: Función para bajar de golpe al hacer clic en el botón
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -154,7 +173,12 @@ function ClientChat() {
         </div>
       </div>
 
-      <div className="pchat-messages-area">
+      {/* 👇 NUEVO: Le agregamos el ref y el evento onScroll al contenedor de mensajes */}
+      <div 
+        className="pchat-messages-area" 
+        ref={chatContainerRef} 
+        onScroll={handleScroll}
+      >
         {messages.length === 0 && !uploading && (
           <div className="pchat-empty-msg">
             <p>¡Hola! Envía un mensaje a Rocío para comenzar.</p>
@@ -195,23 +219,22 @@ function ClientChat() {
                  <Loader2 className="spin" size={16}/> Subiendo archivo... {uploadProgress}%
                </div>
              </div>
-             {uploadProgress > 0 && uploadProgress < 100 && (
-               <div className="pchat-row pchat-row-mine" style={{ marginTop: '-2px' }}>
-                 <span style={{ fontSize: '0.65rem', color: '#9ca3af', width: '100%', textAlign: 'right', fontStyle: 'italic' }}>
-                   *Los videos grabados en 1080p se enviarán más rápido.
-                 </span>
-               </div>
-             )}
            </>
         )}
 
         <div ref={messagesEndRef} />
       </div>
 
+      {/* 👇 NUEVO: El botón flotante que aparece condicionalmente */}
+      {showScrollButton && (
+        <button className="pchat-scroll-down-btn" onClick={scrollToBottom}>
+          <ArrowDown size={22} />
+        </button>
+      )}
+
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
           
-          {/* 👇 SOLUCIÓN: Usamos label nativo que envuelve al input. Área de click grande. 👇 */}
           <label 
             className={`pchat-attach-btn ${uploading ? 'disabled' : ''}`} 
             title="Enviar Video"
