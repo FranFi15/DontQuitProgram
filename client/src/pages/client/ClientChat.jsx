@@ -109,8 +109,11 @@ function ClientChat() {
         }
       );
       
-      // 👇 ACÁ ESTÁ EL ARREGLO: Guardamos la URL cruda sin modificarla
-      const uploadedUrl = cloudRes.data.secure_url;
+      // 👇 CAMBIO 1: Forzamos la extensión .mp4 para que todos los celulares lo puedan leer
+      let uploadedUrl = cloudRes.data.secure_url;
+      if (type === 'VIDEO') {
+        uploadedUrl = uploadedUrl.replace(/\.[^/.]+$/, ".mp4");
+      }
 
       await axios.post('/chat', {
         senderId: user.id,
@@ -199,8 +202,14 @@ function ClientChat() {
                 )}
                 {msg.mediaType === 'VIDEO' && (
                   <div className="pchat-media-container">
-                    {/* Al ser la URL cruda, el navegador sabrá cómo reproducirla nativamente */}
-                    <video src={msg.mediaUrl} controls className="pchat-media-video" />
+                    {/* 👇 CAMBIO 2: Agregamos playsInline y preload="metadata" para iPhones */}
+                    <video 
+                      src={msg.mediaUrl} 
+                      controls 
+                      playsInline 
+                      preload="metadata"
+                      className="pchat-media-video" 
+                    />
                   </div>
                 )}
 
