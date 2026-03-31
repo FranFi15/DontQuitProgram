@@ -1,19 +1,18 @@
 import { useEffect, useState, useRef } from 'react';
 import axios from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { useAlert } from '../../context/AlertContext'; // 👈 1. IMPORTAMOS EL CONTEXTO
+import { useAlert } from '../../context/AlertContext'; 
 import { Send, Paperclip, Search, Video, Image as ImageIcon, X, ArrowLeft } from 'lucide-react';
 import './AdminChat.css';
 
 function AdminChat() {
   const navigate = useNavigate();
-  const { showAlert } = useAlert(); // 👈 2. EXTRAEMOS LA FUNCIÓN
+  const { showAlert } = useAlert(); 
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   
-  // ESTADOS PARA ARCHIVOS
   const [uploading, setUploading] = useState(false);
   const [attachment, setAttachment] = useState(null); 
   const fileInputRef = useRef(null);
@@ -21,7 +20,6 @@ function AdminChat() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 1. CARGAR USUARIOS
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -29,14 +27,12 @@ function AdminChat() {
         setUsers(res.data);
       } catch (error) {
         console.error(error);
-        // 👈 3. ALERTA SI FALLA LA CARGA DE ALUMNOS
         showAlert("Error al cargar la lista de alumnos.", "error");
       }
     };
     fetchUsers();
   }, [showAlert]);
 
-  // 2. CARGAR CONVERSACIÓN
   useEffect(() => {
     if (selectedUser) {
       const fetchChat = async () => {
@@ -48,14 +44,13 @@ function AdminChat() {
           
           axios.put('/chat/read', { 
             senderId: selectedUser.id, 
-            receiverId: myId           
+            receiverId: myId          
           }).then(() => {
              setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, hasUnread: false } : u));
           }).catch(err => console.error("Error al marcar como leído:", err));
 
         } catch (error) {
           console.error(error);
-          // 👈 4. ALERTA SI FALLA EL HISTORIAL DE CHAT
           showAlert(`Error al cargar la conversación con ${selectedUser.name}.`, "error");
         }
       };
@@ -67,12 +62,10 @@ function AdminChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // 3. SUBIR ARCHIVO
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 👈 5. VALIDACIÓN DE PESO (Igual que en ClientChat)
     const isVideo = file.type.startsWith('video/');
     const limitMB = isVideo ? 100 : 20;
     if (file.size > limitMB * 1024 * 1024) {
@@ -91,7 +84,6 @@ function AdminChat() {
       setAttachment({ url: res.data.url, type: res.data.type });
     } catch (error) {
       console.error(error);
-      // 👈 6. ALERTA DE ERROR AL SUBIR
       showAlert("Error al subir el archivo.", "error");
     } finally {
       setUploading(false);
@@ -105,7 +97,6 @@ function AdminChat() {
     }
   };
 
-  // 4. ENVIAR MENSAJE
   const handleSend = async (e) => {
     e.preventDefault();
     if ((!newMessage.trim() && !attachment) || !selectedUser) return;
@@ -128,13 +119,19 @@ function AdminChat() {
       scrollToBottom();
     } catch (error) {
       console.error(error);
-      // 👈 7. ALERTA DE ERROR AL ENVIAR MENSAJE
       showAlert("Error al enviar el mensaje. Inténtalo de nuevo.", "error");
     }
   };
 
   const handleBackToList = () => {
     setSelectedUser(null);
+  };
+
+  // 👇 NUEVO: Función para curar los videos viejos/incompatibles en la vista de RO
+  const getFixedVideoUrl = (url) => {
+    if (!url) return url;
+    if (url.includes('f_mp4')) return url;
+    return url.replace('/upload/', '/upload/f_mp4,q_auto/');
   };
 
   return (
@@ -204,7 +201,13 @@ function AdminChat() {
                           {msg.mediaType === 'IMAGE' ? (
                             <img src={msg.mediaUrl} alt="adjunto" />
                           ) : (
-                            <video src={msg.mediaUrl} controls />
+                            // 👇 NUEVO: Parche de URL y atributos de compatibilidad
+                            <video 
+                              src={getFixedVideoUrl(msg.mediaUrl)} 
+                              controls 
+                              playsInline 
+                              preload="metadata"
+                            />
                           )}
                         </div>
                       )}
