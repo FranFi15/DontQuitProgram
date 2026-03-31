@@ -111,8 +111,10 @@ function ClientChat() {
       
       // 👇 CAMBIO 1: Forzamos la extensión .mp4 para que todos los celulares lo puedan leer
       let uploadedUrl = cloudRes.data.secure_url;
+
       if (type === 'VIDEO') {
-        uploadedUrl = uploadedUrl.replace(/\.[^/.]+$/, ".mp4");
+        const urlParts = uploadedUrl.split('/upload/');
+        uploadedUrl = `${urlParts[0]}/upload/f_mp4,q_auto/${urlParts[1]}`;
       }
 
       await axios.post('/chat', {
