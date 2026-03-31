@@ -122,11 +122,19 @@ function ClientChat() {
       
       fetchMessages();
       
-    } catch (error) {
-      if (error.response?.status === 403) {
-        showAlert(error.response.data.error, 'error');
+     } catch (error) {
+      console.error("Detalle del error:", error);
+      
+      if (error.response) {
+        // Cloudinary o tu backend respondieron con un error (ej: Archivo no soportado)
+        const detalle = error.response.data?.error?.message || error.response.data?.error || error.response.status;
+        showAlert(`Error en la nube: ${detalle}`, 'error');
+      } else if (error.request) {
+        // El celular envió el 100%, pero Cloudinary tardó mucho y el celular cortó (TIMEOUT)
+        showAlert("Tiempo de espera agotado. El video es muy pesado para tu conexión móvil.", 'error');
       } else {
-        showAlert("Error al enviar el archivo.", 'error');
+        // Un error rarísimo de React
+        showAlert(`Error: ${error.message}`, 'error');
       }
     } finally {
       setUploading(false);
