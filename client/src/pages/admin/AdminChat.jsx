@@ -66,6 +66,7 @@ function AdminChat() {
     const file = e.target.files[0];
     if (!file) return;
 
+    // 👈 100MB HABILITADOS
     const isVideo = file.type.startsWith('video/');
     const limitMB = isVideo ? 100 : 20;
     if (file.size > limitMB * 1024 * 1024) {
@@ -125,13 +126,6 @@ function AdminChat() {
 
   const handleBackToList = () => {
     setSelectedUser(null);
-  };
-
-  // 👇 NUEVO: Función para curar los videos viejos/incompatibles en la vista de RO
-  const getFixedVideoUrl = (url) => {
-    if (!url) return url;
-    if (url.includes('f_mp4')) return url;
-    return url.replace('/upload/', '/upload/f_mp4,q_auto/');
   };
 
   return (
@@ -201,9 +195,9 @@ function AdminChat() {
                           {msg.mediaType === 'IMAGE' ? (
                             <img src={msg.mediaUrl} alt="adjunto" />
                           ) : (
-                            // 👇 NUEVO: Parche de URL y atributos de compatibilidad
+                            // 👈 REPRODUCTOR SIMPLE Y ROBUSTO
                             <video 
-                              src={getFixedVideoUrl(msg.mediaUrl)} 
+                              src={msg.mediaUrl} 
                               controls 
                               playsInline 
                               preload="metadata"
