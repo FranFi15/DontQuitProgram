@@ -164,6 +164,16 @@ function ClientChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // 👇 NUEVO: Función para curar los videos viejos de la base de datos
+  const getFixedVideoUrl = (url) => {
+    if (!url) return url;
+    // Si la URL ya es de las nuevas (tiene f_mp4), la dejamos tranquila
+    if (url.includes('f_mp4')) return url;
+    
+    // Si es una URL vieja, le inyectamos la optimización para que Android y iPhone la puedan leer
+    return url.replace('/upload/', '/upload/f_mp4,q_auto/');
+  };
+
   return (
     <div className="pchat-container">
       
@@ -206,7 +216,7 @@ function ClientChat() {
                   <div className="pchat-media-container">
                     {/* 👇 CAMBIO 2: Agregamos playsInline y preload="metadata" para iPhones */}
                     <video 
-                      src={msg.mediaUrl} 
+                      src={getFixedVideoUrl(msg.mediaUrl)}
                       controls 
                       playsInline 
                       preload="metadata"
