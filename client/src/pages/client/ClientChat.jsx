@@ -3,7 +3,7 @@ import axios from '../../api/axios';
 import axiosClean from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext'; 
-import { Send, Video, Image as ImageIcon, Loader2, ArrowDown } from 'lucide-react'; // 👈 Agregamos ArrowDown
+import { Send, Video, Image as ImageIcon, Loader2, ArrowDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './ClientChat.css';
 
@@ -17,11 +17,10 @@ function ClientChat() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0); 
   
-  // 👇 NUEVO: Estado para mostrar/ocultar el botón flotante
   const [showScrollButton, setShowScrollButton] = useState(false);
   
   const messagesEndRef = useRef(null);
-  const chatContainerRef = useRef(null); // 👈 NUEVO: Referencia para el contenedor que hace scroll
+  const chatContainerRef = useRef(null); 
 
   const ADMIN_ID = 41; 
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
@@ -110,15 +109,8 @@ function ClientChat() {
         }
       );
       
-      let uploadedUrl = cloudRes.data.secure_url;
-
-      // 👇 NUEVO: Forzamos la compatibilidad del video
-      if (type === 'VIDEO') {
-        // 1. Le decimos a Cloudinary que adapte el formato y la calidad automáticamente
-        uploadedUrl = uploadedUrl.replace('/upload/', '/upload/f_auto,q_auto/');
-        // 2. Si el celular subió un .mov o .webm, lo obligamos a que se reproduzca como .mp4
-        uploadedUrl = uploadedUrl.replace(/\.[^/.]+$/, ".mp4");
-      }
+      // 👇 ACÁ ESTÁ EL ARREGLO: Guardamos la URL cruda sin modificarla
+      const uploadedUrl = cloudRes.data.secure_url;
 
       await axios.post('/chat', {
         senderId: user.id,
@@ -134,14 +126,11 @@ function ClientChat() {
       console.error("Detalle del error:", error);
       
       if (error.response) {
-        // Cloudinary o tu backend respondieron con un error (ej: Archivo no soportado)
         const detalle = error.response.data?.error?.message || error.response.data?.error || error.response.status;
         showAlert(`Error en la nube: ${detalle}`, 'error');
       } else if (error.request) {
-        // El celular envió el 100%, pero Cloudinary tardó mucho y el celular cortó (TIMEOUT)
         showAlert("Tiempo de espera agotado. El video es muy pesado para tu conexión móvil.", 'error');
       } else {
-        // Un error rarísimo de React
         showAlert(`Error: ${error.message}`, 'error');
       }
     } finally {
@@ -158,17 +147,14 @@ function ClientChat() {
     }
   };
 
-  // 👇 NUEVO: Función que revisa si el usuario subió la pantalla
   const handleScroll = () => {
     if (!chatContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
     
-    // Si la distancia hasta el fondo es mayor a 150px, mostramos el botón
     const isScrolledUp = scrollHeight - scrollTop - clientHeight > 150;
     setShowScrollButton(isScrolledUp);
   };
 
-  // 👇 NUEVO: Función para bajar de golpe al hacer clic en el botón
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -189,7 +175,6 @@ function ClientChat() {
         </div>
       </div>
 
-      {/* 👇 NUEVO: Le agregamos el ref y el evento onScroll al contenedor de mensajes */}
       <div 
         className="pchat-messages-area" 
         ref={chatContainerRef} 
@@ -214,6 +199,7 @@ function ClientChat() {
                 )}
                 {msg.mediaType === 'VIDEO' && (
                   <div className="pchat-media-container">
+                    {/* Al ser la URL cruda, el navegador sabrá cómo reproducirla nativamente */}
                     <video src={msg.mediaUrl} controls className="pchat-media-video" />
                   </div>
                 )}
@@ -241,7 +227,6 @@ function ClientChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 👇 NUEVO: El botón flotante que aparece condicionalmente */}
       {showScrollButton && (
         <button className="pchat-scroll-down-btn" onClick={scrollToBottom}>
           <ArrowDown size={22} />
