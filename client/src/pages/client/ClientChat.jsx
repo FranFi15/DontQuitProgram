@@ -110,7 +110,15 @@ function ClientChat() {
         }
       );
       
-      const uploadedUrl = cloudRes.data.secure_url;
+      let uploadedUrl = cloudRes.data.secure_url;
+
+      // 👇 NUEVO: Forzamos la compatibilidad del video
+      if (type === 'VIDEO') {
+        // 1. Le decimos a Cloudinary que adapte el formato y la calidad automáticamente
+        uploadedUrl = uploadedUrl.replace('/upload/', '/upload/f_auto,q_auto/');
+        // 2. Si el celular subió un .mov o .webm, lo obligamos a que se reproduzca como .mp4
+        uploadedUrl = uploadedUrl.replace(/\.[^/.]+$/, ".mp4");
+      }
 
       await axios.post('/chat', {
         senderId: user.id,
