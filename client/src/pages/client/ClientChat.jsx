@@ -104,7 +104,11 @@ function ClientChat() {
         }
       );
       
-      const uploadedUrl = cloudRes.data.secure_url;
+      const uploadedUrl = cloudRes.data?.secure_url;
+
+      if (!uploadedUrl) {
+        throw new Error("No se recibió la URL de Cloudinary");
+      }
 
       await axios.post('/chat', {
         senderId: user.id,
@@ -146,9 +150,18 @@ function ClientChat() {
 
   // 👇 Función para forzar la lectura del MP4 optimizado
   const getFixedVideoUrl = (url) => {
-    if (!url) return url;
+    // Si la url no existe o no es un string, devolvemos un string vacío
+    if (!url || typeof url !== 'string') return "";
+    
+    // Si ya está optimizada, la dejamos igual
     if (url.includes('f_mp4')) return url;
-    return url.replace('/upload/', '/upload/f_mp4,q_auto/');
+    
+    // Intentamos el reemplazo solo si existe la palabra /upload/
+    if (url.includes('/upload/')) {
+      return url.replace('/upload/', '/upload/f_mp4,q_auto/');
+    }
+    
+    return url;
   };
 
   return (

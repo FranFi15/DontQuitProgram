@@ -129,10 +129,19 @@ function AdminChat() {
   };
 
   // 👇 Función para inyectar f_mp4 en las URLs asíncronas
-  const getFixedVideoUrl = (url) => {
-    if (!url) return url;
+const getFixedVideoUrl = (url) => {
+    // Si la url no existe o no es un string, devolvemos un string vacío
+    if (!url || typeof url !== 'string') return "";
+    
+    // Si ya está optimizada, la dejamos igual
     if (url.includes('f_mp4')) return url;
-    return url.replace('/upload/', '/upload/f_mp4,q_auto/');
+    
+    // Intentamos el reemplazo solo si existe la palabra /upload/
+    if (url.includes('/upload/')) {
+      return url.replace('/upload/', '/upload/f_mp4,q_auto/');
+    }
+    
+    return url;
   };
 
   return (
