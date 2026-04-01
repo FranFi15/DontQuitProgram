@@ -1,133 +1,150 @@
-import { useEffect, useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
-import { useNavigate } from 'react-router-dom';
+import axiosClean from 'axios';
+import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext'; 
-import { Send, Paperclip, Search, Video, Image as ImageIcon, X, ArrowLeft } from 'lucide-react';
-import './AdminChat.css';
+import { Send, Video, Image as ImageIcon, Loader2, ArrowDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import './ClientChat.css';
 
-function AdminChat() {
-  const navigate = useNavigate();
+function ClientChat() {
+  const { user } = useAuth();
   const { showAlert } = useAlert(); 
-  const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [inputText, setInputText] = useState('');
   
   const [uploading, setUploading] = useState(false);
-  const [attachment, setAttachment] = useState(null); 
-  const fileInputRef = useRef(null);
+  const [uploadProgress, setUploadProgress] = useState(0); 
+  
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null); 
 
-  const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await axios.get('/chat/users'); 
-        setUsers(res.data);
-      } catch (error) {
-        console.error(error);
-        showAlert("Error al cargar la lista de alumnos.", "error");
-      }
-    };
-    fetchUsers();
-  }, [showAlert]);
+  const ADMIN_ID = 41; 
+  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
+  const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET; 
 
   useEffect(() => {
-    if (selectedUser) {
-      const fetchChat = async () => {
-        try {
-          const myId = 41; 
-          const res = await axios.get(`/chat/${myId}/${selectedUser.id}`);
-          setMessages(res.data);
-          scrollToBottom();
-          
-          axios.put('/chat/read', { 
-            senderId: selectedUser.id, 
-            receiverId: myId          
-          }).then(() => {
-             setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, hasUnread: false } : u));
-          }).catch(err => console.error("Error al marcar como leído:", err));
+    showAlert("💡 Tip para videos: Grabá máximo 30-40 segundos para enviarlos más rápido.", "info");
+  }, []); 
 
-        } catch (error) {
-          console.error(error);
-          showAlert(`Error al cargar la conversación con ${selectedUser.name}.`, "error");
-        }
-      };
-      fetchChat();
+  const fetchMessages = async () => {
+    try {
+      const res = await axios.get(`/chat/${user.id}/${ADMIN_ID}`);
+      setMessages(res.data);
+    } catch (error) {
+      console.error("Error cargando chat", error);
     }
-  }, [selectedUser, showAlert]);
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchMessages();
+      const interval = setInterval(fetchMessages, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length, uploading]);
+
+  const handleSendText = async (e) => {
+    e.preventDefault();
+    if (!inputText.trim()) return;
+
+    try {
+      await axios.post('/chat', {
+        senderId: user.id,
+        receiverId: ADMIN_ID,
+        content: inputText,
+        mediaUrl: null,
+        mediaType: 'TEXT'
+      });
+      setInputText('');
+      fetchMessages();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 👇 OPCIÓN RÁPIDA: Límite 40MB
+    const limitMB = type === 'VIDEO' ? 50 : 20;
+    if (file.size > limitMB * 1024 * 1024) {
+      e.target.value = null; 
+      return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error'); 
+    }
+
+    setUploading(true);
+    setUploadProgress(0); 
+    
+    showAlert(type === 'VIDEO' ? "Subiendo video..." : "Subiendo imagen...", "info");
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', UPLOAD_PRESET);
+
+      const resourceType = type === 'VIDEO' ? 'video' : 'image';
+      
+      const cloudRes = await axiosClean.post(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, 
+        formData,
+        {
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        }
+      );
+      
+      const uploadedUrl = cloudRes.data.secure_url;
+
+      await axios.post('/chat', {
+        senderId: user.id,
+        receiverId: ADMIN_ID,
+        content: null, 
+        mediaUrl: uploadedUrl,
+        mediaType: type
+      });
+      
+      fetchMessages();
+      
+     } catch (error) {
+      console.error("Error:", error);
+      showAlert("Error al subir el archivo.", 'error');
+    } finally {
+      setUploading(false);
+      setUploadProgress(0); 
+      e.target.value = null; 
+    }
+  };
+
+  const handleLabelClick = (e) => {
+    if (uploading) {
+      e.preventDefault(); 
+      showAlert("Espera a que termine la subida actual.", "warning");
+    }
+  };
+
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const isScrolledUp = scrollHeight - scrollTop - clientHeight > 150;
+    setShowScrollButton(isScrolledUp);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleFileSelect = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const isVideo = file.type.startsWith('video/');
-    const limitMB = isVideo ? 100 : 20;
-    if (file.size > limitMB * 1024 * 1024) {
-      return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error');
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    setUploading(true);
-    try {
-      const res = await axios.post('/upload', formData, {
-        withCredentials: false,
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setAttachment({ url: res.data.url, type: res.data.type });
-    } catch (error) {
-      console.error(error);
-      showAlert("Error al subir el archivo.", "error");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleRemoveAttachment = () => {
-    setAttachment(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""; 
-    }
-  };
-
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if ((!newMessage.trim() && !attachment) || !selectedUser) return;
-
-    try {
-      const payload = {
-        senderId: 41, 
-        receiverId: selectedUser.id,
-        content: newMessage,
-        mediaUrl: attachment?.url || null,
-        mediaType: attachment?.type || null
-      };
-
-      const res = await axios.post('/chat/', payload);
-      
-      setMessages([...messages, { ...res.data, sender: { role: 'ADMIN' } }]);
-      
-      setNewMessage("");
-      setAttachment(null);
-      scrollToBottom();
-    } catch (error) {
-      console.error(error);
-      showAlert("Error al enviar el mensaje. Inténtalo de nuevo.", "error");
-    }
-  };
-
-  const handleBackToList = () => {
-    setSelectedUser(null);
-  };
-
-  // 👇 NUEVO: Función para curar los videos viejos/incompatibles en la vista de RO
+  // 👇 Función para forzar la lectura del MP4 optimizado
   const getFixedVideoUrl = (url) => {
     if (!url) return url;
     if (url.includes('f_mp4')) return url;
@@ -135,152 +152,103 @@ function AdminChat() {
   };
 
   return (
-    <div className="chat-page-layout">
+    <div className="pchat-container">
       
-      <div className="detail-header">
-        <div>
-          <h1 className="page-title">MENSAJERÍA</h1>
+      <div className="pchat-header">
+        <div className="pchat-header-info">
+          <div className="pchat-avatar">
+            <img src="https://ui-avatars.com/api/?name=Rocio&background=000&color=fff" alt="Coach" />
+            <span className="pchat-online-dot"></span>
+          </div>
+          <div className="pchat-title-box">
+            <h2>Coach Ro</h2>
+            <p>Soporte Premium</p>
+          </div>
         </div>
       </div>
 
-      <div className={`chat-container ${selectedUser ? 'chat-active' : ''}`}>
-        
-        {/* SIDEBAR */}
-        <div className="chat-sidebar">
-          <div className="sidebar-search">
-            <Search size={16} className="search-icon"/>
-            <input 
-              placeholder="Buscar alumno..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="users-list">
-            {users
-              .filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()))
-              .map(u => (
-              <div 
-                key={u.id} 
-                className={`user-item ${selectedUser?.id === u.id ? 'active' : ''} ${u.hasUnread ? 'has-unread' : ''}`}
-                onClick={() => setSelectedUser(u)}
-              >
-                <div className="avatar-circle">
-                  {u.name.charAt(0)}
-                  {u.hasUnread && <span className="unread-dot"></span>}
-                </div>
+      <div className="pchat-messages-area" ref={chatContainerRef} onScroll={handleScroll}>
+        {messages.map((msg) => {
+          const isMine = msg.senderId === user.id;
+          return (
+            <div key={msg.id} className={`pchat-row ${isMine ? 'pchat-row-mine' : 'pchat-row-theirs'}`}>
+              <div className={`pchat-bubble ${isMine ? 'pchat-bubble-mine' : 'pchat-bubble-theirs'}`}>
                 
-                <div className="user-details">
-                  <span className="user-name">{u.name}</span>
-                  <span className="user-last-msg">
-                    {u.hasUnread ? 'Nuevo mensaje recibido' : 'Haz click para chatear'}
-                  </span>
-                </div>
+                {msg.mediaType === 'IMAGE' && (
+                  <div className="pchat-media-container">
+                    <img src={msg.mediaUrl} alt="adjunto" className="pchat-media-img" />
+                  </div>
+                )}
+                {msg.mediaType === 'VIDEO' && (
+                  <div className="pchat-media-container">
+                    <video 
+                      src={getFixedVideoUrl(msg.mediaUrl)}
+                      controls 
+                      playsInline 
+                      preload="metadata"
+                      className="pchat-media-video" 
+                    />
+                  </div>
+                )}
+
+                {msg.content && <p className="pchat-text">{msg.content}</p>}
+                
+                <span className="pchat-time">
+                  {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ÁREA DE CHAT */}
-        <div className="chat-main">
-          {selectedUser ? (
-            <>
-              <div className="chat-header">
-                <button className="back-to-list-btn" onClick={handleBackToList}>
-                  <ArrowLeft size={24} />
-                </button>
-                <h3>{selectedUser.name}</h3>
-              </div>
-
-              <div className="messages-area">
-                {messages.map((msg, index) => {
-                  const isMe = msg.senderId === 41;
-                  return (
-                    <div key={index} className={`message-bubble ${isMe ? 'me' : 'them'}`}>
-                      {msg.mediaUrl && (
-                        <div className="media-content">
-                          {msg.mediaType === 'IMAGE' ? (
-                            <img src={msg.mediaUrl} alt="adjunto" />
-                          ) : (
-                            // 👇 NUEVO: Parche de URL y atributos de compatibilidad
-                            <video 
-                              src={getFixedVideoUrl(msg.mediaUrl)} 
-                              controls 
-                              playsInline 
-                              preload="metadata"
-                            />
-                          )}
-                        </div>
-                      )}
-                      
-                      {msg.content && <p>{msg.content}</p>}
-                      
-                      <span className="msg-time">
-                        {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </span>
-                    </div>
-                  );
-                })}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* INPUT */}
-              <div className="chat-input-wrapper">
-                <form className="chat-input-area" onSubmit={handleSend}>
-                  {attachment && (
-                    <div className="attachment-preview">
-                      <span>
-                        {attachment.type === 'IMAGE' ? <ImageIcon size={14}/> : <Video size={14}/>} Archivo adjunto
-                      </span>
-                      <button 
-                        type="button" 
-                        onClick={handleRemoveAttachment} 
-                        className="remove-attachment-btn"
-                        title="Cancelar archivo"
-                      >
-                        <X size={16} /> Quitar
-                      </button>
-                    </div>
-                  )}
-
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleFileSelect} 
-                    style={{display:'none'}} 
-                    accept="image/*,video/*"
-                  />
-                  <button 
-                    type="button" 
-                    className="icon-btn" 
-                    onClick={() => fileInputRef.current.click()}
-                    disabled={uploading}
-                  >
-                    <Paperclip size={30} />
-                  </button>
-
-                  <input 
-                    type="text" 
-                    placeholder={uploading ? "Subiendo archivo..." : "Escribe un mensaje..."}
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    disabled={uploading}
-                  />
-                  
-                  <button type="submit" className="send-btn" disabled={uploading}>
-                    <Send size={18} />
-                  </button>
-                </form>
-              </div>
-            </>
-          ) : (
-            <div className="no-chat-selected">
-              <p>Selecciona un alumno para comenzar a chatear.</p>
             </div>
-          )}
-        </div>
+          );
+        })}
+
+        {uploading && (
+           <div className="pchat-row pchat-row-mine">
+             <div className="pchat-bubble pchat-bubble-mine pchat-uploading">
+               <Loader2 className="spin" size={16}/> Subiendo... {uploadProgress}%
+             </div>
+           </div>
+        )}
+
+        <div ref={messagesEndRef} />
       </div>
+
+      {showScrollButton && (
+        <button className="pchat-scroll-down-btn" onClick={scrollToBottom}>
+          <ArrowDown size={22} />
+        </button>
+      )}
+
+      <div className="pchat-input-wrapper">
+        <form className="pchat-form" onSubmit={handleSendText}>
+          
+          <label className="pchat-attach-btn" onClick={handleLabelClick} style={{ padding: '10px', cursor: 'pointer' }}>
+            <input type="file" accept="video/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'VIDEO')} disabled={uploading}/>
+            <Video size={24} color={uploading ? "#ccc" : "#6b7280"} />
+          </label>
+
+          <label className="pchat-attach-btn" onClick={handleLabelClick} style={{ padding: '10px', cursor: 'pointer' }}>
+             <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'IMAGE')} disabled={uploading}/>
+            <ImageIcon size={24} color={uploading ? "#ccc" : "#6b7280"} />
+          </label>
+
+          <input 
+            type="text" 
+            placeholder={uploading ? `Cargando... ${uploadProgress}%` : "Mensaje..."}
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            disabled={uploading}
+            className="pchat-text-input"
+          />
+          
+          <button type="submit" className={`pchat-send-btn ${inputText.trim() ? 'active' : ''}`} disabled={!inputText.trim() || uploading}>
+            <Send size={18} />
+          </button>
+
+        </form>
+      </div>
+
     </div>
   );
 }
 
-export default AdminChat;
+export default ClientChat;

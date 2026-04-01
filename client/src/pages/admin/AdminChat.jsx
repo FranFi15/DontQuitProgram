@@ -66,11 +66,11 @@ function AdminChat() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 👈 100MB HABILITADOS
+    // 👇 OPCIÓN RÁPIDA: Límite de 40MB para evitar rollbacks asíncronos
     const isVideo = file.type.startsWith('video/');
-    const limitMB = isVideo ? 100 : 20;
+    const limitMB = isVideo ? 50 : 20;
     if (file.size > limitMB * 1024 * 1024) {
-      return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB.`, 'error');
+      return showAlert(`El archivo es muy pesado. Máximo ${limitMB}MB para videos.`, 'error');
     }
 
     const formData = new FormData();
@@ -128,6 +128,13 @@ function AdminChat() {
     setSelectedUser(null);
   };
 
+  // 👇 Función para inyectar f_mp4 en las URLs asíncronas
+  const getFixedVideoUrl = (url) => {
+    if (!url) return url;
+    if (url.includes('f_mp4')) return url;
+    return url.replace('/upload/', '/upload/f_mp4,q_auto/');
+  };
+
   return (
     <div className="chat-page-layout">
       
@@ -139,7 +146,6 @@ function AdminChat() {
 
       <div className={`chat-container ${selectedUser ? 'chat-active' : ''}`}>
         
-        {/* SIDEBAR */}
         <div className="chat-sidebar">
           <div className="sidebar-search">
             <Search size={16} className="search-icon"/>
@@ -174,7 +180,6 @@ function AdminChat() {
           </div>
         </div>
 
-        {/* ÁREA DE CHAT */}
         <div className="chat-main">
           {selectedUser ? (
             <>
@@ -195,9 +200,8 @@ function AdminChat() {
                           {msg.mediaType === 'IMAGE' ? (
                             <img src={msg.mediaUrl} alt="adjunto" />
                           ) : (
-                            // 👈 REPRODUCTOR SIMPLE Y ROBUSTO
                             <video 
-                              src={msg.mediaUrl} 
+                              src={getFixedVideoUrl(msg.mediaUrl)} 
                               controls 
                               playsInline 
                               preload="metadata"
@@ -217,7 +221,6 @@ function AdminChat() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* INPUT */}
               <div className="chat-input-wrapper">
                 <form className="chat-input-area" onSubmit={handleSend}>
                   {attachment && (
@@ -229,7 +232,6 @@ function AdminChat() {
                         type="button" 
                         onClick={handleRemoveAttachment} 
                         className="remove-attachment-btn"
-                        title="Cancelar archivo"
                       >
                         <X size={16} /> Quitar
                       </button>
