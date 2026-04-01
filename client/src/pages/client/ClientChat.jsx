@@ -27,10 +27,12 @@ function ClientChat() {
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET; 
 
   useEffect(() => {
-    showAlert("💡 Tip para videos: Grabá máximo 30-40 segundos para enviarlos más rápido.", "info");
-  }, []); 
+    showAlert("💡 Tip: Los videos de hasta 30-40 seg. suben mucho más rápido.", "info");
+  }, [showAlert]); 
 
   const fetchMessages = async () => {
+    // 👇 Agregamos el user?.id para evitar que explote si el auth tarda en cargar
+    if (!user?.id) return; 
     try {
       const res = await axios.get(`/chat/${user.id}/${ADMIN_ID}`);
       setMessages(res.data);
@@ -45,6 +47,7 @@ function ClientChat() {
       const interval = setInterval(fetchMessages, 5000);
       return () => clearInterval(interval);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -53,7 +56,7 @@ function ClientChat() {
 
   const handleSendText = async (e) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || !user?.id) return;
 
     try {
       await axios.post('/chat', {
@@ -72,9 +75,8 @@ function ClientChat() {
 
   const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file || !user?.id) return;
 
-    // 👇 OPCIÓN RÁPIDA: Límite 40MB
     const limitMB = type === 'VIDEO' ? 50 : 20;
     if (file.size > limitMB * 1024 * 1024) {
       e.target.value = null; 
@@ -83,8 +85,6 @@ function ClientChat() {
 
     setUploading(true);
     setUploadProgress(0); 
-    
-    showAlert(type === 'VIDEO' ? "Subiendo video..." : "Subiendo imagen...", "info");
     
     try {
       const formData = new FormData();
@@ -107,9 +107,10 @@ function ClientChat() {
       const uploadedUrl = cloudRes.data?.secure_url;
 
       if (!uploadedUrl) {
-        throw new Error("No se recibió la URL de Cloudinary");
+        throw new Error("No se pudo obtener la URL de Cloudinary");
       }
 
+      // 👇 ACÁ ESTÁ LA LIMPIEZA: No hacemos replace ni split acá, mandamos la URL cruda.
       await axios.post('/chat', {
         senderId: user.id,
         receiverId: ADMIN_ID,
@@ -121,8 +122,8 @@ function ClientChat() {
       fetchMessages();
       
      } catch (error) {
-      console.error("Error:", error);
-      showAlert("Error al subir el archivo.", 'error');
+      console.error("Error en subida:", error);
+      showAlert("No se pudo subir el archivo. Intentá de nuevo.", 'error');
     } finally {
       setUploading(false);
       setUploadProgress(0); 
@@ -148,15 +149,14 @@ function ClientChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // 👇 Función para forzar la lectura del MP4 optimizado
+  // 👇 Función ultra segura (evita el error K.replace)
   const getFixedVideoUrl = (url) => {
-    // Si la url no existe o no es un string, devolvemos un string vacío
-    if (!url || typeof url !== 'string') return "";
+    if (!url || typeof url !== 'string' || url.length < 10) return "";
     
     // Si ya está optimizada, la dejamos igual
     if (url.includes('f_mp4')) return url;
     
-    // Intentamos el reemplazo solo si existe la palabra /upload/
+    // Solo intentamos el reemplazo si existe la palabra /upload/
     if (url.includes('/upload/')) {
       return url.replace('/upload/', '/upload/f_mp4,q_auto/');
     }
@@ -182,7 +182,8 @@ function ClientChat() {
 
       <div className="pchat-messages-area" ref={chatContainerRef} onScroll={handleScroll}>
         {messages.map((msg) => {
-          const isMine = msg.senderId === user.id;
+          // 👇 Chequeo de seguridad para el ID del usuario
+          const isMine = msg.senderId === user?.id;
           return (
             <div key={msg.id} className={`pchat-row ${isMine ? 'pchat-row-mine' : 'pchat-row-theirs'}`}>
               <div className={`pchat-bubble ${isMine ? 'pchat-bubble-mine' : 'pchat-bubble-theirs'}`}>
@@ -192,6 +193,7 @@ function ClientChat() {
                     <img src={msg.mediaUrl} alt="adjunto" className="pchat-media-img" />
                   </div>
                 )}
+                
                 {msg.mediaType === 'VIDEO' && (
                   <div className="pchat-media-container">
                     <video 
@@ -233,7 +235,6 @@ function ClientChat() {
 
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
-          
           <label className="pchat-attach-btn" onClick={handleLabelClick} style={{ padding: '10px', cursor: 'pointer' }}>
             <input type="file" accept="video/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'VIDEO')} disabled={uploading}/>
             <Video size={24} color={uploading ? "#ccc" : "#6b7280"} />
@@ -256,10 +257,8 @@ function ClientChat() {
           <button type="submit" className={`pchat-send-btn ${inputText.trim() ? 'active' : ''}`} disabled={!inputText.trim() || uploading}>
             <Send size={18} />
           </button>
-
         </form>
       </div>
-
     </div>
   );
 }
