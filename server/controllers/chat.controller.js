@@ -49,7 +49,7 @@ export const sendMessage = async (req, res) => {
         });
 
         if (mediaCount >= 3) {
-          return res.status(403).json({ error: "Límite semanal alcanzado." });
+          return res.status(403).json({ error: "Límite de 3 videos/imágenes semanales alcanzado." });
         }
       }
     }
