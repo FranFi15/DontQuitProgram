@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getWallPosts, createWallPost, approveAllWallPosts, deleteWallPost, togglePinWallPost} from '../controllers/wall.controller.js';
+import { getWallPosts, createWallPost, approveAllWallPosts, deleteWallPost, togglePinWallPost, markWallAsSeen} from '../controllers/wall.controller.js';
 import { verifyToken, isAdmin } from '../middlewares/auth.middleware.js';
 
 const router = Router();
@@ -10,5 +10,6 @@ router.put('/approve-all', approveAllWallPosts);
 
 router.delete('/:id', verifyToken, isAdmin, deleteWallPost);
 router.put('/:id/pin', verifyToken, isAdmin, togglePinWallPost);
+router.put('/seen', markWallAsSeen);
 
 export default router;

@@ -106,3 +106,19 @@ export const togglePinWallPost = async (req, res) => {
     res.status(500).json({ error: "Error al fijar el mensaje" });
   }
 };
+
+export const markWallAsSeen = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    // Actualizamos el timestamp del usuario
+    await prisma.user.update({
+      where: { id: parseInt(userId) },
+      data: { lastWallView: new Date() }
+    });
+
+    res.json({ message: "Muro marcado como visto" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al marcar muro" });
+  }
+};

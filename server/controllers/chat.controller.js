@@ -181,3 +181,62 @@ export const getChatUsers = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener usuarios del chat' });
   }
 };
+
+// Agrega esta función al final de chat.controller.js
+
+export const getClientBadges = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const uId = parseInt(userId);
+
+    if (isNaN(uId)) return res.status(400).json({ error: "ID inválido" });
+
+    // 1. Contar Mensajes de Chat no leídos (Enviados por Ro/Admin)
+    const unreadChat = await prisma.message.count({
+      where: {
+        receiverId: uId,
+        isRead: false
+      }
+    });
+
+    // 2. Contar Mensajes del Muro no vistos
+    // Primero buscamos qué plan tiene el usuario activo
+    const user = await prisma.user.findUnique({
+      where: { id: uId },
+      include: {
+        subscriptions: {
+          where: { isActive: true },
+          select: { planId: true }
+        }
+      }
+    });
+
+    let unreadWall = 0;
+    const activePlanId = user?.subscriptions[0]?.planId;
+
+    if (activePlanId) {
+      // Contamos posteos en su muro creados después de su última visita
+      // Nota: Para que esto sea exacto, necesitaríamos un campo 'lastWallView' en User.
+      // Si no lo tienes, podemos contar los posteos de las últimas 24hs que no sean de él.
+      const yesterday = new Date();
+      yesterday.setHours(yesterday.getHours() - 24);
+
+      unreadWall = await prisma.wallPost.count({
+        where: {
+          planId: activePlanId,
+          userId: { not: uId }, // Que no sean mensajes que escribió él mismo
+          createdAt: { gte: user.lastWallView || yesterday } 
+        }
+      });
+    }
+
+    res.json({
+      unreadChat,
+      unreadWall
+    });
+
+  } catch (error) {
+    console.error("Error en getClientBadges:", error);
+    res.status(500).json({ error: "Error al obtener badges" });
+  }
+};
