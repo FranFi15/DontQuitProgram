@@ -1,5 +1,5 @@
 .fw-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(4px); padding: 1rem; box-sizing: border-box; }
-.fw-modal-content { background: white; width: 100%; max-width: 400px; border-radius: 20px; position: relative; padding: 2rem 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; }
+.fw-modal-content { background: white; width: 100%; max-width: 400px; height: 600px; border-radius: 20px; position: relative; padding: 2rem 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; }
 .fw-close-btn { position: absolute; top: 15px; right: 15px; background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6b7280; cursor: pointer; transition: 0.2s;}
 .fw-close-btn:hover { background: #e5e7eb; color: #111; }
 .fw-header { margin-bottom: 1.5rem; }
