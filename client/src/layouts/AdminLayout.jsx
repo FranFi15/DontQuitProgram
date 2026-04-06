@@ -1,47 +1,69 @@
-import { useState, useEffect } from 'react'; 
+import { useState, useEffect, useRef } from 'react'; // 👈 Agregamos useRef
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import axios from '../api/axios';
-import { Users, Dumbbell, Calendar, LayoutDashboard, LogOut, MessageCircle, DollarSign, ClipboardList, MessageSquare, Tag, Ticket, Menu, X } from 'lucide-react'; // 👈 Importamos Menu y X
+import { Users, Dumbbell, Calendar, LayoutDashboard, LogOut, MessageCircle, DollarSign, ClipboardList, MessageSquare, Tag, Ticket, Menu, X } from 'lucide-react';
 import './AdminLayout.css'; 
 
 function AdminLayout() {
   const navigate = useNavigate();
-  const location = useLocation(); // Para saber cuándo cambia la ruta
+  const location = useLocation();
   
-  // --- ESTADOS ---
   const [badges, setBadges] = useState({ payments: 0, chat: 0, wall: 0 });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
 
-  const clearBadgeLocally = (type) => {
-    setBadges(prevBadges => ({
-      ...prevBadges,
-      [type]: 0
-    }));
+  // --- 1. REFERENCIAS PARA ALERTAS ---
+  const audioRef = useRef(new Audio('/assets/notification.mp3')); 
+  const prevBadgesRef = useRef({ payments: 0, chat: 0, wall: 0 });
+
+  // --- 2. FUNCIÓN PARA MOSTRAR BANNER Y SONIDO ---
+  const triggerNotification = (title, body) => {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body, icon: '/logob.png' });
+    }
+    audioRef.current.play().catch(() => console.log("Audio esperando interacción"));
   };
 
   const fetchBadges = async () => {
     try {
       const res = await axios.get('/payments/badges'); 
-      setBadges({ 
+      const newData = {
         payments: res.data.payments || 0,
         chat: res.data.chat || 0,
         wall: res.data.wall || 0
+      };
+
+      // --- 3. COMPARAR PARA ACTIVAR ALERTA ---
+      // Si hay más mensajes que antes y Ro no está en la pantalla de chat...
+      if (newData.chat > prevBadgesRef.current.chat && !location.pathname.includes('chat')) {
+        triggerNotification("Nuevo Mensaje", "Un alumno te escribió al chat.");
+      }
+      // Si hay nuevos pagos pendientes...
+      if (newData.payments > prevBadgesRef.current.payments && !location.pathname.includes('payments')) {
+        triggerNotification("Nuevo Pago", "Tenés un comprobante pendiente de revisión.");
+      }
+
+      // Actualizamos la "memoria" del contador
+      prevBadgesRef.current = newData;
+
+      setBadges({
+        payments: location.pathname.includes('payments') ? 0 : newData.payments,
+        chat: location.pathname.includes('chat') ? 0 : newData.chat,
+        wall: location.pathname.includes('wall') ? 0 : newData.wall
       });
+
     } catch (error) {
       console.error("Error buscando notificaciones", error);
     }
   };
 
   useEffect(() => {
+    if ("Notification" in window) Notification.requestPermission();
     fetchBadges(); 
     const interval = setInterval(fetchBadges, 15000); 
     return () => clearInterval(interval); 
-  }, []);
-
-  // 👈 NUEVO EFECTO: Si cambia la ruta (hace clic en un link), cerramos el menú en móvil
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
+
 
   const handleLogout = () => {
     navigate('/login');

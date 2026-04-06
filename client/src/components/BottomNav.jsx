@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom'; // 👈 Importante
+import { useState, useEffect, useRef } from 'react'; 
+import { NavLink, useLocation } from 'react-router-dom';
 import axios from '../api/axios';
 import { Home, Calendar, MessageCircle, User, MessageSquare, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext'; 
@@ -7,43 +7,70 @@ import './BottomNav.css';
 
 function BottomNav() {
   const { user } = useAuth(); 
-  const location = useLocation(); // 👈 Hook para detectar la URL actual
+  const location = useLocation();
   const [badges, setBadges] = useState({ chat: 0, wall: 0 });
+  
+  // 👇 REFERENCIAS PARA EL SONIDO Y EL CONTEO PREVIO
+  const audioRef = useRef(new Audio('/assets/notification.mp3')); // Asegurate de tener el archivo en public/assets/
+  const prevBadgesRef = useRef({ chat: 0, wall: 0 });
 
   const hasChatAccess = user?.subscription?.plan?.hasFollowUp;
+
+  // 1. SOLICITAR PERMISO AL INICIO
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  const showWebNotification = (title, body) => {
+    if (Notification.permission === "granted") {
+      new Notification(title, {
+        body: body,
+        icon: '/logob.png' // Tu logo
+      });
+    }
+    // Reproducir sonido siempre que la pestaña esté abierta
+    audioRef.current.play().catch(err => console.log("Audio bloqueado por el navegador hasta que el usuario interactúe"));
+  };
 
   const fetchBadges = async () => {
     if (!user?.id) return;
     try {
       const res = await axios.get(`/chat/badges/${user.id}`); 
-      
-      // Bloqueamos el badge si ya estamos en la ruta para que no "vuelva" 
-      // a aparecer por un delay del servidor mientras navegamos.
+      const newChatCount = res.data.unreadChat || 0;
+      const newWallCount = res.data.unreadWall || 0;
+
+      // 2. COMPARAR SI HAY ALGO NUEVO (Si el número subió)
+      if (location.pathname !== '/app/chat' && newChatCount > prevBadgesRef.current.chat) {
+        showWebNotification("Nuevo mensaje", "Ro te envió un mensaje al chat.");
+      }
+      if (location.pathname !== '/app/wall' && newWallCount > prevBadgesRef.current.wall) {
+        showWebNotification("Nuevo mensaje en el Muro.");
+      }
+
+      // Actualizamos la referencia del conteo previo
+      prevBadgesRef.current = { chat: newChatCount, wall: newWallCount };
+
       setBadges({
-        chat: location.pathname.includes('/app/chat') ? 0 : (res.data.unreadChat || 0),
-        wall: location.pathname.includes('/app/wall') ? 0 : (res.data.unreadWall || 0)
+        chat: location.pathname.includes('chat') ? 0 : newChatCount,
+        wall: location.pathname.includes('wall') ? 0 : newWallCount
       });
     } catch (error) {
       console.error("Error badges", error);
     }
   };
 
-  // 👇 LIMPIEZA INSTANTÁNEA: Si el usuario cambia a Muro o Chat, borramos el punto rojo localmente
   useEffect(() => {
-    if (location.pathname === '/app/wall') {
-      setBadges(prev => ({ ...prev, wall: 0 }));
-    }
-    if (location.pathname === '/app/chat') {
-      setBadges(prev => ({ ...prev, chat: 0 }));
-    }
+    if (location.pathname === '/app/wall') setBadges(prev => ({ ...prev, wall: 0 }));
+    if (location.pathname === '/app/chat') setBadges(prev => ({ ...prev, chat: 0 }));
   }, [location.pathname]);
 
   useEffect(() => {
     fetchBadges();
     const interval = setInterval(fetchBadges, 20000);
     return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, location.pathname]); 
+  }, [user, location.pathname]);
 
   const handleLockedClick = (e) => {
     e.preventDefault();
