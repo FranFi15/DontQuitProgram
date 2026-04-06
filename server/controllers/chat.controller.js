@@ -218,14 +218,16 @@ export const getClientBadges = async (req, res) => {
       // Contamos posteos en su muro creados después de su última visita
       // Nota: Para que esto sea exacto, necesitaríamos un campo 'lastWallView' en User.
       // Si no lo tienes, podemos contar los posteos de las últimas 24hs que no sean de él.
-      const yesterday = new Date();
-      yesterday.setHours(yesterday.getHours() - 24);
+     const referenceDate = user.lastWallView || new Date(0); 
 
       unreadWall = await prisma.wallPost.count({
         where: {
           planId: activePlanId,
-          userId: { not: uId }, // Que no sean mensajes que escribió él mismo
-          createdAt: { gte: user.lastWallView || yesterday } 
+          userId: { not: uId },
+          createdAt: { 
+            // 👇 CAMBIO CLAVE: 'gt' es strictly Greater Than (estrictamente mayor)
+            gt: referenceDate 
+          }
         }
       });
     }
