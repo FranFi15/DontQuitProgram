@@ -279,9 +279,9 @@
 
 .cstore-file-upload-box {
   display: block; border: 2px dashed #d1d5db; border-radius: 12px;
-  padding: 2rem 1rem; text-align: center; cursor: pointer; margin-bottom: 1.5rem; transition: all 0.2s;
+  padding: 2rem 1rem; text-align: center; cursor: pointer; margin-bottom: 1.5rem; transition: all 0.2s;color: #111;
 }
-.cstore-file-upload-box:hover { border-color: #111; background: #f9fafb; }
+.cstore-file-upload-box:hover { border-color: #111; background: #f9fafb;  }
 .cstore-file-prompt span { color: #6b7280; font-size: 0.9rem; font-weight: 600; display: block; margin-top: 10px;}
 .cstore-file-success span { color: #10b981; font-size: 0.85rem; font-weight: 700; display: block; word-break: break-all; margin-top: 10px;}
 
@@ -297,3 +297,150 @@
 @keyframes cstore-animate-slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes cstore-animate-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes cstoreFadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+/* client/src/pages/client/ClientStore.css */
+
+.cstore-page {
+  padding: 1.5rem;
+  padding-bottom: 100px;
+  background-color: #f3f4f6; /* Un gris un poco más suave */
+  min-height: 100vh;
+}
+
+.cstore-header { text-align: center; margin-bottom: 2.5rem; }
+.cstore-header h1 { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: -1px; margin-bottom: 5px; }
+
+/* CONTENEDOR DE PASOS */
+.cstore-step-container {
+  max-width: 800px;
+  margin: 0 auto 2.5rem auto;
+  text-align: center;
+}
+
+.cstore-step-title {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #000000; /* Color de acento para pasos */
+  margin-bottom: 1.2rem;
+  letter-spacing: 1px;
+}
+
+/* GRILLA DE CATEGORÍAS */
+.cstore-category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.cstore-cat-card {
+  padding: 12px 24px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.cstore-cat-card:hover { border-color: #222222; transform: translateY(-2px); }
+.cstore-cat-card.active { background: #000000; border-color: #383838; color: white; box-shadow: 0 4px 12px rgba(82, 82, 82, 0.3); }
+
+/* SELECTOR DE SEGUIMIENTO (Píldoras) */
+.cstore-followup-selector {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.cstore-pill {
+  padding: 8px 18px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cstore-pill.active { background: #111; color: white; border-color: #111; }
+
+/* BUSCADOR MINI */
+.cstore-search-mini {
+  max-width: 300px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 8px 15px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  gap: 10px;
+}
+
+.cstore-search-mini input { border: none; outline: none; width: 100%; font-size: 0.9rem; font-weight: 500; }
+
+/* GRILLA DE PLANES (Ajustada) */
+.cstore-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.cstore-plan-card {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s;
+}
+
+.cstore-plan-card:hover { transform: scale(1.02); }
+.cstore-premium-border { border: 2px solid #10b981; }
+
+.cstore-plan-title { font-size: 1.3rem; font-weight: 900; margin: 10px 0 5px 0; }
+.cstore-plan-duration { color: #6366f1; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; }
+.cstore-plan-desc { color: #6b7280; font-size: 0.9rem; flex: 1; margin-bottom: 1.5rem; }
+
+.cstore-plan-price-box {
+  background: #f9fafb;
+  padding: 1.2rem;
+  border-radius: 15px;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.cstore-new-price { font-size: 1.8rem; font-weight: 900; color: #111; display: block; }
+.cstore-intl-price-tag { color: #6b7280; font-weight: 600; font-size: 0.85rem; }
+
+.cstore-main-buy-btn {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #111;
+  color: white;
+  font-weight: 800;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ANIMACIONES */
+.cstore-animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.cstore-animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* RESTO DEL CSS (Modal) se mantiene similar al tuyo anterior... */

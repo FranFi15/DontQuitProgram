@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext'; 
-import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe, Activity } from 'lucide-react';
+import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe, Activity, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import './ClientStore.css';
@@ -15,9 +15,10 @@ function ClientStore() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Filtros
+  // Filtros de Pasos
+  const [selectedCategory, setSelectedCategory] = useState(null); // 👈 Empieza en null
+  const [followUpFilter, setFollowUpFilter] = useState('ALL'); 
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
 
   // Pagos
   const [planToBuy, setPlanToBuy] = useState(null); 
@@ -37,27 +38,19 @@ function ClientStore() {
     const fetchData = async () => {
       try {
         const resPlans = await axios.get('/plans');
-        
-        // Filtramos los activos Y QUE CUESTEN MÁS DE $0
         const activePaidPlans = resPlans.data
-        .filter(p => p.isActive && p.price > 0)
-        .sort((a, b) => a.id - b.id);
+          .filter(p => p.isActive && p.price > 0)
+          .sort((a, b) => a.id - b.id);
         setPlans(activePaidPlans);
 
         const resBank = await axios.get('/settings/bank');
         setBankInfo(resBank.data);
-        const uniqueCategories = [
-          ...new Set(
-            activePaidPlans
-              .filter(p => p.planType && p.planType.name)
-              .map(p => p.planType.name)
-          )
-        ];
+        
+        const uniqueCategories = [...new Set(activePaidPlans.filter(p => p.planType?.name).map(p => p.planType.name))];
         setCategories(uniqueCategories);
-
       } catch (error) {
         console.error("Error cargando la tienda", error);
-        showAlert("Error al cargar la tienda. Por favor, recarga la página.", "error");
+        showAlert("Error al cargar la tienda.", "error");
       } finally {
         setLoading(false);
       }
@@ -65,84 +58,47 @@ function ClientStore() {
     fetchData();
   }, [showAlert]);
 
-  const formatPriceARS = (price) => {
-    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(price);
-  };
+  const formatPriceARS = (price) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(price);
+  const getFinalPrice = (price, discount) => discount ? price - (price * (discount / 100)) : price;
 
-  const getFinalPrice = (price, discount) => {
-    if (!discount) return price;
-    return price - (price * (discount / 100));
-  };
-
+  // Lógica de Filtrado final
   const filteredPlans = plans.filter(plan => {
-    const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (plan.description && plan.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const planCategoryName = plan.planType?.name; 
-    const matchesCategory = selectedCategory === 'ALL' || planCategoryName === selectedCategory;
-
-    return matchesSearch && matchesCategory;
+    const matchesCategory = plan.planType?.name === selectedCategory;
+    const matchesFollowUp =  (followUpFilter === 'WITH' ? plan.hasFollowUp : !plan.hasFollowUp);
+    const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesFollowUp && matchesSearch;
   });
 
   const handleMercadoPagoPayment = async () => {
     setLoadingMP(true); 
     try {
       const res = await axios.post('/payments/mp/create_preference', {
-        title: planToBuy.title,
-        price: planToBuy.price, 
-        planId: planToBuy.id,
-        userId: user.id
+        title: planToBuy.title, price: planToBuy.price, planId: planToBuy.id, userId: user.id
       });
       window.location.href = res.data.init_point;
-    } catch (error) {
-      console.error(error);
-      showAlert("Error conectando con Mercado Pago.", "error");
-    } finally {
-      setLoadingMP(false);
-    }
+    } catch (error) { showAlert("Error con Mercado Pago.", "error"); }
+    finally { setLoadingMP(false); }
   };
 
   const handleConfirmTransfer = async (e) => {
     e.preventDefault();
-    if (!receiptFile) return showAlert("Por favor, selecciona la foto del comprobante.", "error");
-
+    if (!receiptFile) return showAlert("Selecciona el comprobante.", "error");
     setUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', receiptFile);
       formData.append('upload_preset', UPLOAD_PRESET);
-
-      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: formData
-      });
-      
+      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
       const cloudData = await cloudRes.json();
-      if (!cloudRes.ok) throw new Error(cloudData.error?.message || "Error en Cloudinary");
-      
-      const uploadedUrl = cloudData.secure_url;
       const finalPrice = getFinalPrice(planToBuy.price, planToBuy.transferDiscount);
-
-      await axios.post('/payments/transfer', {
-        userId: user.id,
-        planId: planToBuy.id,
-        amount: finalPrice,
-        receiptUrl: uploadedUrl
-      });
-
-      showAlert("¡Comprobante enviado! 🚀 Ro lo verificará pronto.", "success");
-      setReceiptFile(null);
+      await axios.post('/payments/transfer', { userId: user.id, planId: planToBuy.id, amount: finalPrice, receiptUrl: cloudData.secure_url });
+      showAlert("¡Enviado! Ro lo verificará pronto.", "success");
       setPlanToBuy(null);
-      setPaymentMethod(null);
-    } catch (error) {
-      console.error(error);
-      showAlert("Error al procesar la transferencia.", "error");
-    } finally {
-      setUploading(false);
-    }
+    } catch (error) { showAlert("Error en transferencia.", "error"); }
+    finally { setUploading(false); }
   };
 
-  if (loading) return <div className="cstore-loader">Cargando la tienda de ...</div>;
+  if (loading) return <div className="cstore-loader">Cargando tienda...</div>;
 
   return (
     <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD" }}>
@@ -150,186 +106,129 @@ function ClientStore() {
         
         <header className="cstore-header">
           <h1>Tienda de Planes</h1>
-          <p>Alcanza tu mejor versión con asesoría profesional.</p>
+          <p>Encontrá tu entrenamiento ideal en pocos pasos.</p>
         </header>
 
-        {/* BARRA DE FILTROS */}
-        <div className="cstore-filters-container">
-          <div className="cstore-search-box">
-            <Search size={18} className="cstore-search-icon" />
-            <input 
-              type="text" 
-              placeholder="Buscar plan por nombre..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          <select 
-            className="cstore-category-select" 
-            value={selectedCategory} 
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            <option value="ALL">Todas las Categorías</option>
-            {categories.map((cat, idx) => (
-              <option key={idx} value={cat}>{cat}</option>
-            ))}
-          </select>
+        {/* PASO 1: CATEGORÍAS */}
+        <div className="cstore-step-container">
+            <h2 className="cstore-step-title">1. Seleccioná tu Categoria</h2>
+            <div className="cstore-category-grid">
+                {categories.map((cat, idx) => (
+                    <button 
+                        key={idx} 
+                        className={`cstore-cat-card ${selectedCategory === cat ? 'active' : ''}`}
+                        onClick={() => {
+                            setSelectedCategory(cat);
+                            setFollowUpFilter('ALL');
+                        }}
+                    >
+                        {cat}
+                    </button>
+                ))}
+            </div>
         </div>
 
-        <div className="cstore-grid">
-          {filteredPlans.length === 0 ? (
-            <p className="cstore-empty-msg">No hay planes que coincidan con tu búsqueda.</p>
-          ) : (
-            filteredPlans.map(plan => {
-              const hasDiscount = plan.transferDiscount > 0;
-              const finalPrice = getFinalPrice(plan.price, plan.transferDiscount);
-
-              return (
-                <div key={plan.id} className={`cstore-plan-card ${plan.hasFollowUp ? 'cstore-premium-border' : ''}`}>
-                  {hasDiscount && (
-                    <div className="cstore-discount-badge">
-                      <Tag size={14} /> {plan.transferDiscount}% OFF Trans
-                    </div>
-                  )}
-                  
-                  {/* TAGS DE INFORMACIÓN DEL PLAN (Categoría + Seguimiento) */}
-                  <div className="cstore-plan-tags-row">
-                    {plan.planType && <span className="cstore-plan-category-tag">{plan.planType.name}</span>}
-                    {plan.hasFollowUp && (
-                      <span className="cstore-plan-followup-tag">
-                        <Activity size={12}/> Seguimiento 1 a 1
-                      </span>
-                    )}
-                  </div>
-                  
-                  <h2 className="cstore-plan-title">{plan.title}</h2>
-                  <p className="cstore-plan-duration">Duración: {plan.duration} {plan.duration === 1 ? 'Semana' : 'Semanas'}</p>
-                  <p className="cstore-plan-desc">{plan.description || "Plan personalizado para tus objetivos."}</p>
-                  
-                  <div className="cstore-plan-price-box">
-                    {hasDiscount ? (
-                      <>
-                        <span className="cstore-new-price">{formatPriceARS(plan.price)}</span>
-                      </>
-                    ) : (
-                      <span className="cstore-new-price">{formatPriceARS(plan.price)}</span>
-                    )}
-                    {plan.internationalPrice > 0 && (
-                        <span className="cstore-intl-price-tag">o USD ${plan.internationalPrice}</span>
-                    )}
-                  </div>
-
-                  <button 
-                    className="cstore-buy-btn cstore-main-buy-btn" 
-                    onClick={() => { setPlanToBuy(plan); setPaymentMethod(null); }}
-                  >
-                    <ShoppingBag size={18} /> Comprar Ahora
-                  </button>
+        {/* PASO 2: SEGUIMIENTO (Solo si hay categoría elegida) */}
+        {selectedCategory && (
+            <div className="cstore-step-container cstore-animate-fade-in">
+                <h2 className="cstore-step-title">2. ¿Querés seguimiento de Ro?</h2>
+                <div className="cstore-followup-selector">
+                    <button className={`cstore-pill ${followUpFilter === 'WITH' ? 'active' : ''}`} onClick={() => setFollowUpFilter('WITH')}>Con Seguimiento</button>
+                    <button className={`cstore-pill ${followUpFilter === 'WITHOUT' ? 'active' : ''}`} onClick={() => setFollowUpFilter('WITHOUT')}>Sin Seguimiento</button>
                 </div>
-              );
-            })
-          )}
-        </div>
+                
+                <div className="cstore-search-mini">
+                    <Search size={16} />
+                    <input placeholder="Buscar por nombre..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                </div>
+            </div>
+        )}
 
-        {/* MODAL DE COMPRA */}
+        {/* PASO 3: LISTADO DE PLANES */}
+        {selectedCategory && (
+            <div className="cstore-results-container cstore-animate-slide-up">
+                <div className="cstore-grid">
+                    {filteredPlans.length === 0 ? (
+                        <p className="cstore-empty-msg">No hay planes para esta selección.</p>
+                    ) : (
+                        filteredPlans.map(plan => (
+                            <div key={plan.id} className={`cstore-plan-card ${plan.hasFollowUp ? 'cstore-premium-border' : ''}`}>
+                                {plan.transferDiscount > 0 && <div className="cstore-discount-badge"><Tag size={14}/> {plan.transferDiscount}% OFF</div>}
+                                <div className="cstore-plan-tags-row">
+                                    <span className="cstore-plan-category-tag">{plan.planType.name}</span>
+                                    {plan.hasFollowUp && <span className="cstore-plan-followup-tag"><Activity size={12}/> 1 a 1</span>}
+                                </div>
+                                <h2 className="cstore-plan-title">{plan.title}</h2>
+                                <p className="cstore-plan-duration">{plan.duration} Semanas</p>
+                                <p className="cstore-plan-desc">{plan.description}</p>
+                                <div className="cstore-plan-price-box">
+                                    <span className="cstore-new-price">{formatPriceARS(plan.price)}</span>
+                                    {plan.internationalPrice > 0 && <span className="cstore-intl-price-tag">o USD ${plan.internationalPrice}</span>}
+                                </div>
+                                <button className="cstore-main-buy-btn" onClick={() => { setPlanToBuy(plan); setPaymentMethod(null); }}>
+                                    <ShoppingBag size={18} /> Comprar
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        )}
+
+        {/* MODAL (Se mantiene igual pero optimizado) */}
         {planToBuy && (
           <div className="cstore-modal-overlay">
-            <div className="cstore-modal-content cstore-animate-slide-up">
-              
+            <div className="cstore-modal-content">
               <div className="cstore-modal-header">
-                <h3>Elige tu método de pago</h3>
-                <button onClick={() => { setPlanToBuy(null); setPaymentMethod(null); }} className="cstore-close-modal-btn">
-                  <X size={24} />
-                </button>
+                <h3>Método de Pago</h3>
+                <button onClick={() => setPlanToBuy(null)} className="cstore-close-modal-btn"><X size={24} /></button>
               </div>
-
               <div className="cstore-modal-body">
-                
-                {!paymentMethod && (
+                {!paymentMethod ? (
                   <div className="cstore-payment-options-grid">
-                    <p className="cstore-payment-plan-target">Adquiriendo: <strong>{planToBuy.title}</strong></p>
-
                     <button className="cstore-pay-option-btn cstore-mp" onClick={handleMercadoPagoPayment} disabled={loadingMP}>
-                      {loadingMP ? <Loader2 className="cstore-spin" size={20} /> : <CreditCard size={20} />}
-                      <div className="cstore-po-text">
-                        <strong>Mercado Pago</strong>
-                        <span>Tarjetas o dinero en cuenta (ARS)</span>
-                      </div>
+                      {loadingMP ? <Loader2 className="cstore-spin" /> : <CreditCard />}
+                      <div className="cstore-po-text"><strong>Mercado Pago</strong><span>ARS</span></div>
                     </button>
-
                     <button className="cstore-pay-option-btn cstore-transfer" onClick={() => setPaymentMethod('TRANSFER')}>
-                      <Landmark size={20} />
-                      <div className="cstore-po-text">
-                        <strong>Transferencia Bancaria</strong>
-                        <span>{planToBuy.transferDiscount ? `¡Aplica el ${planToBuy.transferDiscount}% OFF de descuento!` : 'Alias / CBU (ARS)'}</span>
-                      </div>
+                      <Landmark />
+                      <div className="cstore-po-text"><strong>Transferencia</strong><span>{planToBuy.transferDiscount}% OFF</span></div>
                     </button>
-
                     {planToBuy.internationalPrice > 0 && (
-                      <div className="cstore-pay-option-paypal">
-                        <div className="cstore-po-title"><Globe size={16}/> Internacional (USD)</div>
-                        <PayPalButtons 
-                            style={{ layout: "horizontal", color: "gold", shape: "rect", height: 45 }}
-                            createOrder={async () => {
-                                const res = await axios.post('/payments/paypal/create-order', {
-                                    title: planToBuy.title, price: planToBuy.internationalPrice 
-                                });
-                                return res.data.id; 
-                            }}
-                            onApprove={async (data) => {
-                                try {
-                                    const res = await axios.post('/payments/paypal/capture-order', {
-                                        orderID: data.orderID, userId: user.id, planId: planToBuy.id
-                                    });
-                                    if (res.data.success) {
-                                        showAlert("¡Pago exitoso! Acceso activado.", "success");
-                                        setPlanToBuy(null);
-                                        navigate("/app/home");
-                                    }
-                                } catch (error) { 
-                                    showAlert("Error al procesar PayPal.", "error"); 
-                                }
-                            }}
-                        />
-                      </div>
+                        <div className="cstore-pay-option-paypal">
+                            <PayPalButtons 
+                                style={{ layout: "horizontal" }} 
+                                createOrder={async () => {
+                                    const res = await axios.post('/payments/paypal/create-order', { title: planToBuy.title, price: planToBuy.internationalPrice });
+                                    return res.data.id;
+                                }}
+                                onApprove={async (data) => {
+                                    const res = await axios.post('/payments/paypal/capture-order', { orderID: data.orderID, userId: user.id, planId: planToBuy.id });
+                                    if (res.data.success) { showAlert("Pago exitoso", "success"); setPlanToBuy(null); navigate("/app/home"); }
+                                }}
+                            />
+                        </div>
                     )}
                   </div>
-                )}
-
-                {paymentMethod === 'TRANSFER' && (
-                  <div className="cstore-transfer-flow-container cstore-animate-fade-in">
-                    <button className="cstore-back-pay-btn" onClick={() => setPaymentMethod(null)}>← Volver a métodos</button>
-                    
+                ) : (
+                  <div className="cstore-transfer-flow-container">
+                    <button className="cstore-back-pay-btn" onClick={() => setPaymentMethod(null)}>← Volver</button>
                     <div className="cstore-bank-data-box">
-                      <p><span>Alias:</span> <strong>{bankInfo.alias}</strong></p>
-                      <p><span>CBU:</span> <strong>{bankInfo.cbu}</strong></p>
-                      <p><span>Titular:</span> {bankInfo.name}</p>
-                      <div className="cstore-transfer-total-highlight">
-                        Total: {formatPriceARS(getFinalPrice(planToBuy.price, planToBuy.transferDiscount))}
-                      </div>
+                      <p>Alias: <strong>{bankInfo.alias}</strong></p>
+                      <p>CBU: <strong>{bankInfo.cbu}</strong></p>
+                      <div className="cstore-transfer-total-highlight">Total: {formatPriceARS(getFinalPrice(planToBuy.price, planToBuy.transferDiscount))}</div>
                     </div>
-
                     <label className="cstore-file-upload-box">
-                      <input type="file" accept="image/*" hidden onChange={(e) => setReceiptFile(e.target.files[0])} disabled={uploading} />
-                      {receiptFile ? (
-                        <div className="cstore-file-success"><CheckCircle size={24} /> <span>{receiptFile.name}</span></div>
-                      ) : (
-                        <div className="cstore-file-prompt"><UploadCloud size={24} /> <span>Subir comprobante</span></div>
-                      )}
+                      <input type="file" accept="image/*" hidden onChange={(e) => setReceiptFile(e.target.files[0])} />
+                      {receiptFile ? <div className="cstore-file-success"><span>{receiptFile.name}</span></div> : <span>Subir comprobante</span>}
                     </label>
-
-                    <button className="cstore-confirm-transfer-btn" onClick={handleConfirmTransfer} disabled={!receiptFile || uploading}>
-                      {uploading ? <Loader2 className="cstore-spin" /> : 'Confirmar envío'}
-                    </button>
+                    <button className="cstore-confirm-transfer-btn" onClick={handleConfirmTransfer} disabled={!receiptFile || uploading}>Confirmar envío</button>
                   </div>
                 )}
-
               </div>
             </div>
           </div>
         )}
-
       </div>
     </PayPalScriptProvider>
   );
