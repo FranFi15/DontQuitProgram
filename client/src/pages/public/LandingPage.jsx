@@ -20,6 +20,8 @@ function LandingPage() {
   // Sub-filtro individual por categoría
   const [subFilters, setSubFilters] = useState({}); 
 
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [followUpFilter, setFollowUpFilter] = useState(null);
 
   const freePlanCategory = categories.find(cat => 
     plans.some(p => p.price === 0 && p.planTypeId === cat.id)
@@ -81,6 +83,14 @@ function LandingPage() {
 
     return () => clearTimeout(timer);
   }, [loading, plans, activeFilter, subFilters]);
+
+  const filteredPlans = plans.filter(p => {
+    if (!selectedCategory || !followUpFilter) return false; 
+    const cat = categories.find(c => c.id === p.planTypeId);
+    const matchesCategory = cat?.name === selectedCategory;
+    const matchesFollowUp = followUpFilter === 'WITH' ? p.hasFollowUp : !p.hasFollowUp;
+    return matchesCategory && matchesFollowUp;
+  });
 
   // 4. Función de Scroll Suave al catálogo general
   const scrollToPlans = () => {
@@ -219,159 +229,64 @@ function LandingPage() {
       </section>
 
       {/* --- SECCIÓN CATÁLOGO --- */}
-      <section id="catalogo-section" className="catalog-section">
-        <div className="catalog-header reveal">
-          <h2>Elegí tu Programa</h2>
-          <p>Diferentes niveles y objetivos, con la misma metodología.</p>
-        </div>
+    <section id="catalogo-section" className="lnd-catalog-section">
 
         {loading ? (
-          <div className="catalog-loading">Cargando programas disponibles...</div>
+          <div className="catalog-loading">Cargando...</div>
         ) : (
-          <>
-            {categories.length > 0 && (
-              <div className="catalog-filters reveal">
-                
-                
-                {categories.map(cat => {
-                  const hasPlans = plans.some(p => p.planTypeId === cat.id);
-                  if (!hasPlans) return null;
+          <div className="lnd-funnel-container">
+            
+            {/* PASO 1: CATEGORÍAS */}
+            <div className="lnd-step-box">
+              <h3>Elige tu categoria</h3>
+              <div className="lnd-category-row">
+                {categories.map((cat) => (
+                  <button 
+                    key={cat.id} 
+                    className={`lnd-cat-btn ${selectedCategory === cat.name ? 'active' : ''}`}
+                    onClick={() => { setSelectedCategory(cat.name); setFollowUpFilter(null); }}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                  return (
-                    <button 
-                      key={`filter-${cat.id}`}
-                      className={`filter-btn ${activeFilter === cat.id ? 'active' : ''}`}
-                      onClick={() => setActiveFilter(cat.id)}
-                    >
-                      {cat.name}
-                    </button>
-                  );
-                })}
+            {/* PASO 2: SEGUIMIENTO */}
+            {selectedCategory && (
+              <div className="lnd-step-box reveal active">
+                <h3>¿Con o Sin Seguimiento?</h3>
+                <div className="lnd-toggle-group">
+                  <button className={`lnd-toggle-btn ${followUpFilter === 'WITH' ? 'active' : ''}`} onClick={() => setFollowUpFilter('WITH')}>
+                    Con Seguimiento
+                  </button>
+                  <button className={`lnd-toggle-btn ${followUpFilter === 'WITHOUT' ? 'active' : ''}`} onClick={() => setFollowUpFilter('WITHOUT')}>
+                    Solo Planificación
+                  </button>
+                </div>
               </div>
             )}
 
-            <div className="categories-wrapper">
-              {categories
-                .filter(category => activeFilter === 'ALL' || category.id === activeFilter)
-                .map(category => {
-                  const allCategoryPlans = plans.filter(p => p.planTypeId === category.id);
-                  if (allCategoryPlans.length === 0) return null;
-
-                  const currentSubFilter = subFilters[category.id] || 'ALL';
-                  
-                  const hasFollowUpPlans = allCategoryPlans.some(p => p.hasFollowUp);
-                  const hasNoFollowUpPlans = allCategoryPlans.some(p => !p.hasFollowUp);
-                  const showSubFilters = hasFollowUpPlans && hasNoFollowUpPlans;
-
-                  const displayedPlans = allCategoryPlans.filter(p => {
-                    if (currentSubFilter === 'WITH') return p.hasFollowUp === true;
-                    if (currentSubFilter === 'WITHOUT') return p.hasFollowUp === false;
-                    return true; 
-                  });
-
-                  if (displayedPlans.length === 0) return null; 
-
-                  return (
-                    <div key={category.id} className="category-block">
-                      <div className="category-info reveal">
-                        <h3>{category.name}</h3>
-                        {category.description && <p>{category.description}</p>}
-                        
-                        {showSubFilters && (
-                          <div className="subfilter-container">
-                            <button 
-                              className={`subfilter-btn ${currentSubFilter === 'WITH' ? 'active' : ''}`}
-                              onClick={() => handleSubFilterChange(category.id, 'WITH')}
-                            >
-                              Con Seguimiento
-                            </button>
-                            <button 
-                              className={`subfilter-btn ${currentSubFilter === 'WITHOUT' ? 'active' : ''}`}
-                              onClick={() => handleSubFilterChange(category.id, 'WITHOUT')}
-                            >
-                              Sin Seguimiento
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="plans-grid-landing">
-                        {displayedPlans.map(plan => {
-                          const isFree = plan.price === 0; 
-
-                          return (
-                            <div key={plan.id} className={`plan-card-landing reveal ${isFree ? 'free-plan-card' : ''}`}>
-                              
-                              <div className="plan-card-header">
-                                <h4>{plan.title}</h4>
-                                <span className="plan-duration">{plan.duration} Semanas</span>
-                              </div>
-
-                              <div className="plan-card-price">
-                                {isFree ? (
-                                  <span className="price-free">¡GRATIS!</span>
-                                ) : (
-                                  <>
-                                    <span className="price-ars">${plan.price.toLocaleString()}</span>
-                                    {plan.internationalPrice > 0 && (
-                                      <span className="price-usd">/ {plan.internationalPrice} USD</span>
-                                    )}
-                                  </>
-                                )}
-                              </div>
-
-                              <p className="plan-description">
-                                {plan.description || "Planificación estructurada para llevar tu nivel al máximo."}
-                              </p>
-
-                              <div className="plan-features">
-                                <div className="feature-item">
-                                  <CheckCircle2 size={16} className="text-yellow" />
-                                  <span>Acceso a la App Exclusiva</span>
-                                </div>
-                                <div className="feature-item">
-                                  <CheckCircle2 size={16} className="text-yellow" />
-                                  <span>Videos Demostrativos</span>
-                                </div>
-                                <div className="feature-item">
-                                  <CheckCircle2 size={16} className="text-yellow" />
-                                  <span>Registro de Métricas</span>
-                                </div>
-                                
-                                {plan.hasFollowUp && (
-                                  <div className="feature-item">
-                                    {plan.outOfStock ? (
-                                      <>
-                                        <AlertCircle size={16} className="text-red" />
-                                        <span className="text-red font-bold">Sin cupos de corrección</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <CheckCircle2 size={16} className="text-yellow" />
-                                        <span className="text-highlight">Corrección y Seguimiento 1 a 1</span>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-
-                              <button 
-                                className={`btn-buy-plan ${isFree ? 'btn-free-plan' : ''}`}
-                                onClick={() => handleBuyClick(plan.id)}
-                                disabled={plan.hasFollowUp && plan.outOfStock}
-                              >
-                                {(plan.hasFollowUp && plan.outOfStock) ? 'Agotado' : (isFree ? 'Empezar Prueba Gratis' : 'Quiero empezar')}
-                              </button>
-
-                            </div>
-                          );
-                        })}
-                      </div>
+            {/* PASO 3: PLANES */}
+            {selectedCategory && followUpFilter && (
+              <div className="lnd-results-grid reveal active">
+                {filteredPlans.length === 0 ? (
+                  <p className="lnd-no-results">No hay planes disponibles para esta combinación.</p>
+                ) : (
+                  filteredPlans.map(plan => (
+                    <div key={plan.id} className="lnd-plan-card">
+                      <h4>{plan.title}</h4>
+                      <div className="lnd-price">${plan.price.toLocaleString()}</div>
+                      <p>{plan.description}</p>
+                      <button className="lnd-buy-btn" onClick={() => navigate(`/checkout/${plan.id}`)}>
+                        Elegir Plan
+                      </button>
                     </div>
-                  )
-              })}
-            </div>
-          </>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         )}
       </section>
         

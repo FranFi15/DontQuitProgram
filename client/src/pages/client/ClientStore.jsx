@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext'; 
-import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe, Activity, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, Tag, UploadCloud, X, CheckCircle, Loader2, Search, CreditCard, Landmark, Globe, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import './ClientStore.css';
@@ -16,8 +16,8 @@ function ClientStore() {
   const [loading, setLoading] = useState(true);
 
   // Filtros de Pasos
-  const [selectedCategory, setSelectedCategory] = useState(null); // 👈 Empieza en null
-  const [followUpFilter, setFollowUpFilter] = useState('ALL'); 
+  const [selectedCategory, setSelectedCategory] = useState(null); 
+  const [followUpFilter, setFollowUpFilter] = useState(null); // 👈 CAMBIADO: Empieza en null
   const [searchTerm, setSearchTerm] = useState('');
 
   // Pagos
@@ -64,7 +64,7 @@ function ClientStore() {
   // Lógica de Filtrado final
   const filteredPlans = plans.filter(plan => {
     const matchesCategory = plan.planType?.name === selectedCategory;
-    const matchesFollowUp =  (followUpFilter === 'WITH' ? plan.hasFollowUp : !plan.hasFollowUp);
+    const matchesFollowUp = (followUpFilter === 'WITH' ? plan.hasFollowUp : !plan.hasFollowUp);
     const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesFollowUp && matchesSearch;
   });
@@ -103,7 +103,6 @@ function ClientStore() {
   return (
     <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD" }}>
       <div className="cstore-page">
-        
         <header className="cstore-header">
           <h1>Tienda de Planes</h1>
           <p>Encontrá tu entrenamiento ideal en pocos pasos.</p>
@@ -119,7 +118,7 @@ function ClientStore() {
                         className={`cstore-cat-card ${selectedCategory === cat ? 'active' : ''}`}
                         onClick={() => {
                             setSelectedCategory(cat);
-                            setFollowUpFilter('ALL');
+                            setFollowUpFilter(null); // Reseteamos seguimiento al cambiar categoría
                         }}
                     >
                         {cat}
@@ -128,7 +127,7 @@ function ClientStore() {
             </div>
         </div>
 
-        {/* PASO 2: SEGUIMIENTO (Solo si hay categoría elegida) */}
+        {/* PASO 2: SEGUIMIENTO (Solo aparece si seleccionó Paso 1) */}
         {selectedCategory && (
             <div className="cstore-step-container cstore-animate-fade-in">
                 <h2 className="cstore-step-title">2. ¿Querés seguimiento de Ro?</h2>
@@ -136,17 +135,17 @@ function ClientStore() {
                     <button className={`cstore-pill ${followUpFilter === 'WITH' ? 'active' : ''}`} onClick={() => setFollowUpFilter('WITH')}>Con Seguimiento</button>
                     <button className={`cstore-pill ${followUpFilter === 'WITHOUT' ? 'active' : ''}`} onClick={() => setFollowUpFilter('WITHOUT')}>Sin Seguimiento</button>
                 </div>
-                
-                <div className="cstore-search-mini">
-                    <Search size={16} />
-                    <input placeholder="Buscar por nombre..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                </div>
             </div>
         )}
 
-        {/* PASO 3: LISTADO DE PLANES */}
-        {selectedCategory && (
+        {/* PASO 3: LISTADO DE PLANES (Solo aparece si seleccionó Paso 1 Y Paso 2) */}
+        {selectedCategory && followUpFilter && (
             <div className="cstore-results-container cstore-animate-slide-up">
+                <div className="cstore-search-mini" style={{ marginBottom: '2rem' }}>
+                    <Search size={16} />
+                    <input placeholder="Buscar por nombre..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                </div>
+
                 <div className="cstore-grid">
                     {filteredPlans.length === 0 ? (
                         <p className="cstore-empty-msg">No hay planes para esta selección.</p>
@@ -175,7 +174,7 @@ function ClientStore() {
             </div>
         )}
 
-        {/* MODAL (Se mantiene igual pero optimizado) */}
+        {/* MODAL DE PAGO */}
         {planToBuy && (
           <div className="cstore-modal-overlay">
             <div className="cstore-modal-content">
