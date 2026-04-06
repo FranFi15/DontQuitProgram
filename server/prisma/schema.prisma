@@ -32,6 +32,8 @@ model User {
   birthDate DateTime?
   sex       String?  
 
+lastWallView     DateTime?
+
   // Relaciones
   subscriptions    Subscription[]
   personalRecords  PersonalRecord[]
