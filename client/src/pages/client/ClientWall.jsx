@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // 👈 Agregamos useRef
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext'; 
-import { MessageSquare, Send, Users, Pin } from 'lucide-react'; // 👈 Agregamos el ícono Pin
+import { MessageSquare, Send, Users, Pin, Activity } from 'lucide-react';
 import './ClientWall.css';
 
 function ClientWall() {
@@ -14,6 +14,25 @@ function ClientWall() {
   const [posts, setPosts] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loadingPosts, setLoadingPosts] = useState(false);
+
+  const textareaRef = useRef(null); // 👇 REF para el auto-resize
+
+  // 1. Efecto para auto-ajustar el alto del textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [newMessage]);
+
+  // 2. Marcar muro como visto apenas entra o cambia de pestaña
+  useEffect(() => {
+    if (user?.id && selectedPlanId) {
+      // Avisamos al backend para borrar el punto rojo de notificaciones
+      axios.put('/wall/seen', { userId: user.id })
+        .catch(err => console.error("Error al marcar muro como visto", err));
+    }
+  }, [user, selectedPlanId]);
 
   useEffect(() => {
     if (!user) return;
@@ -35,7 +54,6 @@ function ClientWall() {
   useEffect(() => {
     if (!selectedPlanId) return;
     fetchPosts();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPlanId]);
 
   const fetchPosts = async () => {
@@ -43,6 +61,9 @@ function ClientWall() {
     try {
       const res = await axios.get(`/wall/${selectedPlanId}`);
       setPosts(res.data);
+      if (user?.id) {
+      await axios.put('/wall/seen', { userId: user.id });
+    }
     } catch (error) {
       console.error(error);
       showAlert("Error al cargar los mensajes del muro.", "error");
@@ -65,7 +86,7 @@ function ClientWall() {
       fetchPosts(); 
     } catch (error) {
       console.error(error);
-      showAlert("Error al enviar el mensaje. Inténtalo de nuevo.", "error");
+      showAlert("Error al enviar el mensaje.", "error");
     }
   };
 
@@ -74,7 +95,6 @@ function ClientWall() {
     return date.toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
   };
 
-  // 👇 Buscamos si hay un mensaje fijado
   const pinnedPost = posts.find(p => p.isPinned);
 
   return (
@@ -108,7 +128,6 @@ function ClientWall() {
 
           <div className="wall-chat-container">
             
-            {/* 👇 BANNER DE MENSAJE FIJADO PARA EL CLIENTE 👇 */}
             {pinnedPost && (
               <div className="client-pinned-banner animate-enter">
                 <div className="client-pinned-icon">
@@ -133,7 +152,6 @@ function ClientWall() {
               ) : (
                 posts.map(post => {
                   const isCoach = post.user.role === 'ADMIN'; 
-
                   return (
                     <div key={post.id} className={`wall-bubble-row ${post.userId === user.id ? 'wall-mine' : 'wall-theirs'}`}>
                       
@@ -153,7 +171,6 @@ function ClientWall() {
                         <p className="wall-bubble-text">{post.content}</p>
                         <span className="wall-bubble-time">{formatTime(post.createdAt)}</span>
                       </div>
-
                     </div>
                   );
                 })
@@ -162,13 +179,16 @@ function ClientWall() {
 
             <div className="wall-input-wrapper">
               <form onSubmit={handleSend} className="wall-chat-form">
-                <input
-                  type="text"
-                  placeholder={`Escribe al equipo de ${plans.find(p=>p.planId === selectedPlanId)?.planName}...`}
+                {/* 👇 CAMBIO: Usamos Textarea con Ref para crecimiento automático */}
+                <textarea
+                  ref={textareaRef}
+                  rows="1"
+                  placeholder="Escribe algo al equipo..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
+                  className="wall-textarea-input"
                 />
-                <button type="submit" disabled={!newMessage.trim()}>
+                <button type="submit" disabled={!newMessage.trim()} className="wall-send-btn">
                   <Send size={20} />
                 </button>
               </form>

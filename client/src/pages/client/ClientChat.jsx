@@ -16,17 +16,46 @@ function ClientChat() {
   
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null); 
+  const textareaRef = useRef(null); // 👇 REF para el auto-resize
+
   const ADMIN_ID = 41; 
 
+  // 1. Tip de bienvenida
   useEffect(() => {
     showAlert("💡 Tip: Los videos de hasta 30-40 seg. suben mucho más rápido.", "info");
   }, [showAlert]); 
+
+  // 2. EFECTO PARA AUTO-AJUSTAR EL ALTO DEL TEXTAREA
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [inputText]);
+
+  // 3. Lógica para marcar mensajes como LEÍDOS (Limpia el punto rojo)
+  const markMessagesAsRead = async () => {
+    if (!user?.id) return;
+    try {
+      // Marcamos como leídos los mensajes que mandó Ro (ADMIN_ID) al alumno (user.id)
+      await axios.put('/chat/read', { 
+        senderId: ADMIN_ID, 
+        receiverId: user.id 
+      });
+    } catch (error) {
+      console.error("Error al marcar como leído", error);
+    }
+  };
 
   const fetchMessages = async () => {
     if (!user?.id) return; 
     try {
       const res = await axios.get(`/chat/${user.id}/${ADMIN_ID}`);
       setMessages(res.data);
+      // Si hay mensajes nuevos mientras el usuario está en la pantalla, los marcamos como leídos
+      if (res.data.some(m => m.senderId === ADMIN_ID && !m.isRead)) {
+        markMessagesAsRead();
+      }
     } catch (error) {
       console.error("Error cargando chat", error);
     }
@@ -35,6 +64,7 @@ function ClientChat() {
   useEffect(() => {
     if (user) {
       fetchMessages();
+      markMessagesAsRead(); // Marcamos como leídos apenas entra
       const interval = setInterval(fetchMessages, 5000);
       return () => clearInterval(interval);
     }
@@ -61,7 +91,6 @@ function ClientChat() {
     setUploadProgress(0); 
     
     try {
-      // 👇 USAMOS TU BACKEND (Igual que el AdminChat)
       const res = await axios.post('/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
@@ -71,7 +100,6 @@ function ClientChat() {
       });
       
       const uploadedUrl = res.data?.url;
-
       if (!uploadedUrl) throw new Error("Servidor no devolvió URL");
 
       await axios.post('/chat', {
@@ -168,8 +196,21 @@ function ClientChat() {
              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'IMAGE')} disabled={uploading}/>
             <ImageIcon size={24} color={uploading ? "#ccc" : "#6b7280"} />
           </label>
-          <input type="text" placeholder={uploading ? `Cargando... ${uploadProgress}%` : "Mensaje..."} value={inputText} onChange={(e) => setInputText(e.target.value)} disabled={uploading} className="pchat-text-input" />
-          <button type="submit" className="pchat-send-btn" disabled={!inputText.trim() || uploading}><Send size={18} /></button>
+
+          {/* 👇 CAMBIO: Textarea auto-ajustable (Enter para bajar renglón) */}
+          <textarea 
+            ref={textareaRef}
+            rows="1"
+            placeholder={uploading ? `Cargando... ${uploadProgress}%` : "Mensaje..."} 
+            value={inputText} 
+            onChange={(e) => setInputText(e.target.value)} 
+            disabled={uploading} 
+            className="pchat-textarea-input" 
+          />
+
+          <button type="submit" className="pchat-send-btn" disabled={!inputText.trim() || uploading}>
+            <Send size={18} />
+          </button>
         </form>
       </div>
     </div>

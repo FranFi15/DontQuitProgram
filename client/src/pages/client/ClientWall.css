@@ -278,3 +278,52 @@
   line-height: 1.4;
   word-break: break-word; /* Para que el texto baje de línea si es largo */
 }
+.wall-chat-form {
+  display: flex;
+  align-items: flex-end; /* Mantiene el botón de enviar abajo mientras el texto crece */
+  gap: 10px;
+  background: white;
+  padding: 10px;
+  border-radius: 15px;
+}
+
+.wall-textarea-input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+  outline: none;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  font-family: inherit;
+  resize: none; /* Quita el triángulo de resize manual */
+  max-height: 150px; /* Limita el crecimiento en móviles */
+  overflow-y: auto;
+  transition: border-color 0.2s;
+}
+
+.wall-textarea-input:focus {
+  border-color: #111;
+  background: white;
+}
+
+.wall-send-btn {
+  background-color: #111;
+  color: white;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+
+.wall-send-btn:disabled {
+  background-color: #e5e7eb;
+  cursor: not-allowed;
+}
