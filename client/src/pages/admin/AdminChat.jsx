@@ -44,7 +44,7 @@ function AdminChat() {
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const limitMB = file.type.startsWith('video/') ? 50 : 20;
+    const limitMB = file.type.startsWith('video/') ? 70 : 20;
     if (file.size > limitMB * 1024 * 1024) return showAlert(`Máximo ${limitMB}MB.`, 'error');
 
     const formData = new FormData();

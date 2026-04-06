@@ -39,7 +39,9 @@ function ClientStore() {
         const resPlans = await axios.get('/plans');
         
         // Filtramos los activos Y QUE CUESTEN MÁS DE $0
-        const activePaidPlans = resPlans.data.filter(p => p.isActive && p.price > 0);
+        const activePaidPlans = resPlans.data
+        .filter(p => p.isActive && p.price > 0)
+        .sort((a, b) => a.id - b.id);
         setPlans(activePaidPlans);
 
         const resBank = await axios.get('/settings/bank');

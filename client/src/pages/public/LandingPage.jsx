@@ -20,10 +20,7 @@ function LandingPage() {
   // Sub-filtro individual por categoría
   const [subFilters, setSubFilters] = useState({}); 
 
-  // 👈 NUEVO: Buscamos si existe alguna categoría que tenga planes gratis
-  // Buscamos si alguna de las categorías tiene la palabra "FREE" o "GRATIS" en el nombre, 
-  // o si simplemente querés guiarte por los planes cuyo precio es 0.
-  // En este caso, buscaremos si hay AL MENOS UN plan gratis, y encontraremos su categoría.
+
   const freePlanCategory = categories.find(cat => 
     plans.some(p => p.price === 0 && p.planTypeId === cat.id)
   );
@@ -46,7 +43,12 @@ function LandingPage() {
           axios.get('/plans')
         ]);
         setCategories(catsRes.data);
-        setPlans(plansRes.data.filter(p => p.isActive));
+        
+        const sortedPlans = plansRes.data
+          .filter(p => p.isActive)
+          .sort((a, b) => a.id - b.id);
+        setPlans(sortedPlans);
+
       } catch (error) {
         console.error("Error al cargar el catálogo:", error);
       } finally {
@@ -229,12 +231,7 @@ function LandingPage() {
           <>
             {categories.length > 0 && (
               <div className="catalog-filters reveal">
-                <button 
-                  className={`filter-btn ${activeFilter === 'ALL' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('ALL')}
-                >
-                  Todos
-                </button>
+                
                 
                 {categories.map(cat => {
                   const hasPlans = plans.some(p => p.planTypeId === cat.id);
