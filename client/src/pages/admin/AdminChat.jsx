@@ -14,9 +14,18 @@ function AdminChat() {
   const [attachment, setAttachment] = useState(null); 
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null); // 👇 REF para el textarea
   const [searchTerm, setSearchTerm] = useState("");
 
   const MY_ID = 41;
+
+  // 👇 EFECTO PARA AUTO-AJUSTAR EL ALTO
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [newMessage]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -105,7 +114,7 @@ function AdminChat() {
           {selectedUser ? (
             <>
               <div className="chat-header">
-                <button onClick={() => setSelectedUser(null)}><ArrowLeft size={24} /></button>
+                <button onClick={() => setSelectedUser(null)} className="back-to-list-btn"><ArrowLeft size={24} /></button>
                 <h3>{selectedUser.name}</h3>
               </div>
               <div className="messages-area">
@@ -118,17 +127,41 @@ function AdminChat() {
                       </div>
                     )}
                     {msg.content && <p>{msg.content}</p>}
+                    <span className="msg-time">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
               </div>
+
               <div className="chat-input-wrapper">
                 <form className="chat-input-area" onSubmit={handleSend}>
-                  {attachment && <div className="attachment-preview"><span>Adjunto listo</span><button type="button" onClick={() => setAttachment(null)}><X size={16}/></button></div>}
+                  {attachment && (
+                    <div className="attachment-preview">
+                      <span>Adjunto listo</span>
+                      <button type="button" onClick={() => setAttachment(null)} className="remove-attachment-btn"><X size={16}/></button>
+                    </div>
+                  )}
+                  
                   <input type="file" ref={fileInputRef} onChange={handleFileSelect} style={{display:'none'}} accept="image/*,video/*"/>
-                  <button type="button" onClick={() => fileInputRef.current.click()} disabled={uploading}><Paperclip size={30} /></button>
-                  <input type="text" placeholder={uploading ? "Subiendo..." : "Escribe..."} value={newMessage} onChange={(e) => setNewMessage(e.target.value)} disabled={uploading}/>
-                  <button type="submit" className="send-btn" disabled={uploading}><Send size={18} /></button>
+                  
+                  <button type="button" className="icon-btn" onClick={() => fileInputRef.current.click()} disabled={uploading}>
+                    <Paperclip size={30} />
+                  </button>
+
+                  {/* 👇 CAMBIO: Textarea auto-ajustable */}
+                  <textarea
+                    ref={textareaRef}
+                    rows="1"
+                    placeholder={uploading ? "Subiendo..." : "Escribe un mensaje..."}
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    disabled={uploading}
+                    className="chat-input-textarea"
+                  />
+                  
+                  <button type="submit" className="send-btn" disabled={uploading || (!newMessage.trim() && !attachment)}>
+                    <Send size={18} />
+                  </button>
                 </form>
               </div>
             </>

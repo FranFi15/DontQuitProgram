@@ -280,7 +280,8 @@
 .chat-page-layout .chat-input-area {
   display: flex !important;
   flex-direction: row !important;
-  align-items: center !important;
+  /* 👇 Alineamos los botones al final (abajo) cuando el textarea crezca */
+  align-items: flex-end !important; 
   justify-content: flex-start !important; 
   gap: 15px;
   padding: 1.2rem 2rem;
@@ -289,55 +290,27 @@
   margin: 0;
 }
 
-.chat-page-layout .attachment-preview {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  width: 100%;
-  background: #f0fdf4;
-  padding: 12px 2rem;
-  border-top: 1px solid #e5e7eb;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #166534;
-}
-
-.chat-page-layout .remove-attachment-btn {
-  background: transparent;
-  color: #dc2626;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 800;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.chat-page-layout .remove-attachment-btn:hover { background: #fee2e2; }
-
-.chat-page-layout .chat-input-area input[type="text"] {
-  flex-grow: 1 !important; 
-  width: 100% !important;
+/* 👇 ESTILO NUEVO PARA EL TEXTAREA */
+.chat-input-textarea {
+  flex-grow: 1;
   min-width: 0;
-  padding: 1rem 1.5rem;
-  border-radius: 99px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 18px; /* Un poco menos redondeado para que luzca mejor al crecer */
   border: 1px solid #e5e7eb;
   outline: none;
   background: #f9fafb;
   font-size: 0.95rem;
-  transition: all 0.2s;
+  line-height: 1.4;
+  font-family: inherit;
+  resize: none; /* Quita el triángulo de resize */
+  max-height: 200px; /* Evita que crezca infinito y tape el chat */
+  overflow-y: auto;
+  transition: border-color 0.2s, background 0.2s;
   box-sizing: border-box;
-  margin: 0;
+  margin-bottom: 4px; /* Un pequeño ajuste para alinear con el centro de los botones */
 }
 
-.chat-page-layout .chat-input-area input[type="text"]:focus {
+.chat-input-textarea:focus {
   border-color: #111;
   background: white;
   box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
@@ -355,9 +328,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0; 
+  margin-bottom: 5px; /* Alineación con el primer renglón del textarea */
 }
-
-.chat-page-layout .icon-btn:hover { background: #f3f4f6; color: #111; }
 
 .chat-page-layout .send-btn {
   background: #111;
@@ -372,6 +344,7 @@
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;
   flex-shrink: 0; 
+  margin-bottom: 2px; /* Alineación al fondo */
 }
 
 .chat-page-layout .send-btn:hover { background: #333; transform: scale(1.05); }

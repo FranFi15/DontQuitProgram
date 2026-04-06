@@ -159,40 +159,58 @@
 
 /* INPUT AREA (Footer del box) */
 .chat-input-wrapper {
-  padding: 1.5rem;
+  padding: 1.2rem 1.5rem;
   background: white;
   border-top: 1px solid #e5e7eb;
 }
 
 .chat-form {
   display: flex;
+  /* 👇 Alineamos el botón de enviar al fondo mientras el texto crece */
+  align-items: flex-end; 
   gap: 10px;
   max-width: 100%;
 }
 
-.chat-form input {
+/* 👇 NUEVA CLASE PARA EL TEXTAREA AUTO-AJUSTABLE */
+.wall-input-textarea {
   flex: 1;
-  padding: 0.8rem 1rem;
+  padding: 0.8rem 1.2rem;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 12px; /* Un poco más cuadrado para que se vea bien al crecer */
   outline: none;
   font-size: 0.95rem;
-  background: #fff;
+  background: #f9fafb;
   color: #111;
-  min-width: 0; /* Previene desbordamiento en flexbox */
+  min-width: 0;
+  resize: none; /* Quita el triángulo de resize manual */
+  max-height: 250px; /* Evita que tape todo el muro si escribe un testamento */
+  overflow-y: auto;
+  line-height: 1.5;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
 }
-.chat-form input:focus { border-color: #000; }
+
+.wall-input-textarea:focus {
+  border-color: #000;
+  background: #fff;
+}
 
 .send-btn-admin {
-  background-color: #000; /* Botón Negro Admin */
+  background-color: #000;
   color: white;
   width: 46px;
+  height: 46px; /* Altura fija */
   flex-shrink: 0;
   border: none;
-  border-radius: 6px; /* Igual a .new-user-btn */
+  border-radius: 8px;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
   transition: background-color 0.2s;
+  margin-bottom: 2px; /* Pequeño ajuste para alinear con el fondo del texto */
 }
 .send-btn-admin:hover { background-color: #333; }
 .send-btn-admin:disabled { background-color: #e5e7eb; cursor: not-allowed; }
