@@ -1,5 +1,43 @@
-.fw-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(4px); padding: 1rem; box-sizing: border-box; }
-.fw-modal-content { background: white; width: 100%; max-width: 400px; height: 600px; border-radius: 20px; position: relative; padding: 2rem 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; }
+.fw-modal-overlay { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; /* Fallback para navegadores viejos */
+  height: 100dvh; /* 👈 MAGIA 1: Dynamic Viewport Height. Calcula el alto real en Safari */
+  background: rgba(0,0,0,0.6); 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  z-index: 3000; 
+  backdrop-filter: blur(4px); 
+  padding: 1rem; 
+  box-sizing: border-box; 
+}
+
+.fw-modal-content { 
+  background: white; 
+  width: 100%; 
+  max-width: 400px; 
+  max-height: 85dvh; /* 👈 MAGIA 2: Nunca va a ser más alto que el 85% de la pantalla */
+  overflow-y: auto; /* 👈 Permite scrollear por dentro si el celu es muy chiquito */
+  border-radius: 20px; 
+  position: relative; 
+  /* 👇 MAGIA 3: env(safe-area-inset-bottom) le suma el espacio de la barrita de iPhone */
+  padding: 2rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom)); 
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
+  text-align: center; 
+  box-sizing: border-box;
+}
+
+/* Para que la barrita de scroll dentro del modal no quede fea */
+.fw-modal-content::-webkit-scrollbar {
+  width: 4px;
+}
+.fw-modal-content::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
 .fw-close-btn { position: absolute; top: 15px; right: 15px; background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6b7280; cursor: pointer; transition: 0.2s;}
 .fw-close-btn:hover { background: #e5e7eb; color: #111; }
 .fw-header { margin-bottom: 1.5rem; }
