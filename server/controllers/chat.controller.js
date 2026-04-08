@@ -1,41 +1,32 @@
 import prisma from '../db.js';
 
+// --- ENVIAR MENSAJE ---
 export const sendMessage = async (req, res) => {
   try {
     const { senderId, receiverId, content, mediaUrl, mediaType } = req.body;
-
     const sId = parseInt(senderId);
     const rId = parseInt(receiverId);
 
-    if (isNaN(sId) || isNaN(rId)) {
-      return res.status(400).json({ error: "IDs inválidos." });
-    }
+    if (isNaN(sId) || isNaN(rId)) return res.status(400).json({ error: "IDs inválidos." });
 
-    // --- 1. VALIDAR REMITENTE ---
     const sender = await prisma.user.findUnique({ where: { id: sId } });
     if (!sender) return res.status(404).json({ error: "Usuario no encontrado" });
 
+    // Validaciones para ATLETAS (Ro es ADMIN y no tiene límites)
     if (sender.role !== 'ADMIN') {
-      // --- 2. VALIDAR PLAN (A PRUEBA DE FALLOS) ---
-      // Traemos el plan entero en vez de filtrar adentro de Prisma para evitar errores si la BD está desactualizada
       const userSub = await prisma.subscription.findFirst({
         where: {
           userId: sId,
           isActive: true,
-          OR: [
-            { endDate: { gt: new Date() } },
-            { endDate: null } 
-          ]
+          OR: [{ endDate: { gt: new Date() } }, { endDate: null }]
         },
-        include: { plan: true } // Traemos la data del plan a JavaScript
+        include: { plan: true }
       });
 
-      // Validamos en JavaScript
       if (!userSub || userSub.plan?.hasFollowUp !== true) {
         return res.status(403).json({ error: "Tu plan no incluye chat." });
       }
 
-      // --- 3. LÍMITE MULTIMEDIA ---
       if (mediaType === 'VIDEO' || mediaType === 'IMAGE') {
         const dateLimit = new Date();
         dateLimit.setDate(dateLimit.getDate() - 7); 
@@ -49,14 +40,10 @@ export const sendMessage = async (req, res) => {
         });
 
         if (mediaCount >= 3) {
-          return res.status(403).json({ error: "Límite de 3 videos/imágenes semanales alcanzado." });
+          return res.status(403).json({ error: "Límite semanal alcanzado (3)." });
         }
       }
     }
-
-    // --- 4. PREVENCIÓN DE ERROR DE TIPO ---
-    // Si envían 'TEXT', lo convertimos a null para que Prisma no explote esperando una imagen/video
-    const safeMediaType = mediaType === 'TEXT' ? null : mediaType;
 
     const newMessage = await prisma.message.create({
       data: {
@@ -64,25 +51,21 @@ export const sendMessage = async (req, res) => {
         receiverId: rId,
         content: content || "",
         mediaUrl: mediaUrl || null,
-        mediaType: safeMediaType,
+        mediaType: mediaType === 'TEXT' ? null : mediaType,
         isRead: false
       }
     });
 
     res.json(newMessage);
-
   } catch (error) {
-    console.error("🚨 Error crítico en sendMessage:", error);
-    // 👇 Esto nos va a devolver exactamente qué le molestó a Prisma
     res.status(500).json({ error: 'Error interno', details: error.message });
   }
 };
 
-
+// --- OBTENER CONVERSACIÓN ---
 export const getConversation = async (req, res) => {
   try {
     const { userId1, userId2 } = req.params;
-    
     const u1 = parseInt(userId1);
     const u2 = parseInt(userId2);
 
@@ -96,118 +79,94 @@ export const getConversation = async (req, res) => {
         ]
       },
       orderBy: { createdAt: 'asc' }, 
-      include: {
-        sender: { select: { name: true, role: true } } 
-      }
+      include: { sender: { select: { name: true, role: true } } }
     });
 
     res.json(messages);
   } catch (error) {
-    console.error("🚨 Error en getConversation:", error);
     res.status(500).json({ error: 'Error al obtener chat' });
   }
 };
 
-
+// --- MARCAR COMO LEÍDO ---
 export const markAsRead = async (req, res) => {
   try {
     const { senderId, receiverId } = req.body;
-    
     const sId = parseInt(senderId);
     const rId = parseInt(receiverId);
 
-    if (isNaN(sId) || isNaN(rId)) return res.json({ message: "IDs inválidos" });
-
     await prisma.message.updateMany({
-      where: {
-        senderId: sId,
-        receiverId: rId,
-        isRead: false
-      },
+      where: { senderId: sId, receiverId: rId, isRead: false },
       data: { isRead: true }
     });
 
-    res.json({ message: 'Mensajes leídos' });
+    res.json({ message: 'Leído' });
   } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar estado' });
+    res.status(500).json({ error: 'Error al actualizar' });
   }
 };
 
-
+// --- LISTA DE USUARIOS PARA RO (ADMIN) ---
 export const getChatUsers = async (req, res) => {
   try {
-    const today = new Date();
-
     const users = await prisma.user.findMany({
       where: {
         role: 'ATLETA',
         subscriptions: {
           some: {
             isActive: true,
-            OR: [
-              { endDate: { gt: today } },
-              { endDate: null }
-            ]
+            OR: [{ endDate: { gt: new Date() } }, { endDate: null }]
           }
         }
       },
-      // Hacemos un include para traernos todo y filtrarlo más seguro en JS
       include: {
         subscriptions: {
           where: { isActive: true },
           include: { plan: true }
         },
+        // 👇 Contamos cuántos mensajes mandó este usuario a Ro (41) que están sin leer
         sentMessages: {
-          where: { receiverId: 41, isRead: false },
-          take: 1 
+          where: { 
+            receiverId: 41, 
+            isRead: false 
+          }
         }
       }
     });
 
-    // Filtramos en JS para no romper Prisma
     const formattedUsers = users
       .filter(u => u.subscriptions.some(sub => sub.plan?.hasFollowUp === true))
       .map(user => ({
         id: user.id,
         name: user.name,
-        hasUnread: user.sentMessages.length > 0 
+        // Mandamos el conteo real para el frontend
+        unreadCount: user.sentMessages.length 
       }));
 
-    formattedUsers.sort((a, b) => (b.hasUnread === a.hasUnread ? 0 : b.hasUnread ? 1 : -1));
+    // Ordenamos: Los que tienen mensajes sin leer (unreadCount > 0) van arriba
+    formattedUsers.sort((a, b) => b.unreadCount - a.unreadCount);
 
     res.json(formattedUsers);
   } catch (error) {
-    console.error("🚨 Error en getChatUsers:", error);
-    res.status(500).json({ error: 'Error al obtener usuarios del chat' });
+    res.status(500).json({ error: 'Error al obtener usuarios' });
   }
 };
 
-// Agrega esta función al final de chat.controller.js
-
+// --- BADGES PARA EL CLIENTE (ALUMNO) ---
 export const getClientBadges = async (req, res) => {
   try {
     const { userId } = req.params;
     const uId = parseInt(userId);
-
     if (isNaN(uId)) return res.status(400).json({ error: "ID inválido" });
 
-    // 1. Contar Mensajes de Chat no leídos (Enviados por Ro/Admin)
     const unreadChat = await prisma.message.count({
-      where: {
-        receiverId: uId,
-        isRead: false
-      }
+      where: { receiverId: uId, isRead: false }
     });
 
-    // 2. Contar Mensajes del Muro no vistos
-    // Primero buscamos qué plan tiene el usuario activo
     const user = await prisma.user.findUnique({
       where: { id: uId },
       include: {
-        subscriptions: {
-          where: { isActive: true },
-          select: { planId: true }
-        }
+        subscriptions: { where: { isActive: true }, select: { planId: true } }
       }
     });
 
@@ -215,30 +174,19 @@ export const getClientBadges = async (req, res) => {
     const activePlanId = user?.subscriptions[0]?.planId;
 
     if (activePlanId) {
-      // Contamos posteos en su muro creados después de su última visita
-      // Nota: Para que esto sea exacto, necesitaríamos un campo 'lastWallView' en User.
-      // Si no lo tienes, podemos contar los posteos de las últimas 24hs que no sean de él.
-     const referenceDate = user.lastWallView || new Date(0); 
-
+      // Usamos el GT que arreglamos para evitar que el punto rojo vuelva
+      const referenceDate = user.lastWallView || new Date(0); 
       unreadWall = await prisma.wallPost.count({
         where: {
           planId: activePlanId,
           userId: { not: uId },
-          createdAt: { 
-            // 👇 CAMBIO CLAVE: 'gt' es strictly Greater Than (estrictamente mayor)
-            gt: referenceDate 
-          }
+          createdAt: { gt: referenceDate } 
         }
       });
     }
 
-    res.json({
-      unreadChat,
-      unreadWall
-    });
-
+    res.json({ unreadChat, unreadWall });
   } catch (error) {
-    console.error("Error en getClientBadges:", error);
-    res.status(500).json({ error: "Error al obtener badges" });
+    res.status(500).json({ error: "Error badges" });
   }
 };
