@@ -120,3 +120,51 @@ export const markWallAsSeen = async (req, res) => {
     res.status(500).json({ error: "Error interno" });
   }
 };
+
+export const approvePostsByPlan = async (req, res) => {
+  try {
+    const { planId } = req.params; // 👈 Recibimos el ID del plan
+    await prisma.wallPost.updateMany({
+      where: { 
+        planId: parseInt(planId),
+        status: 'PENDING' 
+      },
+      data: { status: 'APPROVED' }
+    });
+    res.json({ message: "Mensajes de este plan aprobados" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al aprobar mensajes del plan" });
+  }
+};
+
+// 2. Necesitamos que Ro reciba la lista de planes con el conteo de pendientes
+// Podés poner esto en tu controlador de planes o aquí mismo
+export const getPlansWithStatus = async (req, res) => {
+  try {
+    const plans = await prisma.plan.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        title: true,
+        _count: {
+          select: {
+            wallPosts: {
+              where: { status: 'PENDING' }
+            }
+          }
+        }
+      }
+    });
+
+    // Formateamos para que el front entienda fácil 'hasNew'
+    const formatted = plans.map(p => ({
+      id: p.id,
+      title: p.title,
+      hasNew: p._count.wallPosts > 0
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    res.status(500).json({ error: "Error" });
+  }
+};

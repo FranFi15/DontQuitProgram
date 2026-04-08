@@ -16,9 +16,8 @@ function AdminWall() {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null); 
 
-  const textareaRef = useRef(null); // 👇 REF para el auto-resize
+  const textareaRef = useRef(null);
 
-  // 👇 EFECTO PARA AJUSTAR EL ALTO AUTOMÁTICAMENTE
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -26,21 +25,51 @@ function AdminWall() {
     }
   }, [newMessage]);
 
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        axios.put('/wall/approve-all').catch(err => console.error("Error limpiando notificaciones:", err));
-        const res = await axios.get('/plans'); 
-        const activePlans = res.data.filter(p => p.isActive !== false); 
-        setPlans(activePlans);
-        if (activePlans.length > 0) setSelectedPlanId(activePlans[0].id);
-      } catch (error) {
-        console.error("Error cargando planes", error);
-        showAlert("Error al cargar la lista de planes.", "error");
+  // 1. CARGA DE PLANES CON BADGES
+  const fetchPlans = async () => {
+    try {
+      // Usamos la ruta que trae el pendingCount por cada plan
+      const res = await axios.get('/wall/admin/plans-badges'); 
+      const activePlans = res.data; 
+      setPlans(activePlans);
+      
+      // Si es la primera vez que carga, seleccionamos el primero
+      if (activePlans.length > 0 && !selectedPlanId) {
+        handleSelectPlan(activePlans[0].id, activePlans);
       }
-    };
+    } catch (error) {
+      console.error("Error cargando planes", error);
+    }
+  };
+
+  // 2. FUNCIÓN PARA SELECCIONAR PLAN Y LIMPIAR SU BADGE
+  const handleSelectPlan = async (planId, currentPlans = plans) => {
+    setSelectedPlanId(planId);
+    
+    // Buscamos si ese plan tiene mensajes pendientes
+    const plan = currentPlans.find(p => p.id === planId);
+    
+    if (plan && plan.pendingCount > 0) {
+      try {
+        // Aprobamos solo los mensajes de ESTE plan
+        await axios.put(`/wall/approve-plan/${planId}`);
+        
+        // Actualizamos el estado local para borrar el punto rojo al instante
+        setPlans(prev => prev.map(p => 
+          p.id === planId ? { ...p, pendingCount: 0 } : p
+        ));
+      } catch (err) {
+        console.error("Error al aprobar mensajes del plan", err);
+      }
+    }
+  };
+
+  useEffect(() => {
     fetchPlans();
-  }, [showAlert]);
+    // Polling cada 30 segundos para que Ro vea si entran mensajes nuevos en otros muros
+    const interval = setInterval(fetchPlans, 30000);
+    return () => clearInterval(interval);
+  }, [selectedPlanId]); // Dependencia mínima para no loopear
 
   useEffect(() => {
     if (!selectedPlanId) return;
@@ -128,10 +157,13 @@ function AdminWall() {
             {plans.map(plan => (
               <button
                 key={plan.id}
-                onClick={() => setSelectedPlanId(plan.id)}
-                className={`wall-tab-pill ${selectedPlanId === plan.id ? 'active' : ''}`}
+                onClick={() => handleSelectPlan(plan.id)}
+                // 👇 CLASE DINÁMICA para resaltar si hay pendientes
+                className={`wall-tab-pill ${selectedPlanId === plan.id ? 'active' : ''} ${plan.pendingCount > 0 ? 'has-pending' : ''}`}
               >
                 {plan.title}
+                {/* 👇 PUNTO ROJO si hay mensajes nuevos */}
+                {plan.pendingCount > 0 && <span className="admin-wall-dot" />}
               </button>
             ))}
           </div>
@@ -180,7 +212,6 @@ function AdminWall() {
 
             <div className="chat-input-wrapper">
               <form onSubmit={handleSend} className="chat-form">
-                {/* 👇 CAMBIO: Textarea auto-ajustable */}
                 <textarea
                   ref={textareaRef}
                   rows="1"
@@ -198,6 +229,7 @@ function AdminWall() {
         </>
       )}
 
+      {/* ... (Modal de eliminación queda igual) ... */}
       {postToDelete && (
         <div className="modal-overlay">
           <div className="modal-content animate-enter" style={{ maxWidth: '450px', padding: '30px', textAlign: 'center', width: '90%' }}>

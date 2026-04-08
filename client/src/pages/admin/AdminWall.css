@@ -375,3 +375,32 @@
 .action-bubble-btn:hover { color: #111; background-color: #f3f4f6; }
 .action-bubble-btn.delete:hover { color: #ef4444; background-color: #fee2e2; }
 .action-bubble-btn.pinned-active { color: #2563eb; } /* Si está fijado, el pin queda azul */
+
+.wall-tab-pill.has-pending {
+  border-color: #ef4444; /* Rojo */
+  color: #ef4444;
+}
+
+.admin-wall-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  margin-left: 8px;
+  box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Si la pestaña está activa, el rojo puede ser más discreto o blanco */
+.wall-tab-pill.active.has-pending {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
