@@ -156,15 +156,16 @@ export const getPlansWithStatus = async (req, res) => {
       }
     });
 
-    // Formateamos para que el front entienda fácil 'hasNew'
+    // --- CAMBIO AQUÍ ---
     const formatted = plans.map(p => ({
       id: p.id,
       title: p.title,
-      hasNew: p._count.wallPosts > 0
+      pendingCount: p._count.wallPosts 
     }));
 
     res.json(formatted);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error" });
   }
 };

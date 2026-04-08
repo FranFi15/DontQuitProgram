@@ -404,3 +404,40 @@
   color: #fff;
   border-color: #000;
 }
+
+/* AdminWall.css */
+
+/* Cuando el plan tiene mensajes PENDING */
+.wall-tab-pill.has-pending {
+  border-color: #ef4444; /* Rojo intenso */
+  color: #ef4444;
+  background-color: #fef2f2; /* Un fondo rosado muy sutil */
+  position: relative;
+}
+
+/* El globito con el número dentro del botón */
+.wall-badge-count {
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* Animación para que el botón "llame" a Ro */
+.wall-tab-pill.has-pending:not(.active) {
+  animation: border-pulse 2s infinite;
+}
+
+@keyframes border-pulse {
+  0% { border-color: #ef4444; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { border-color: #ef4444; box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { border-color: #ef4444; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}

@@ -154,19 +154,26 @@ function AdminWall() {
       ) : (
         <>
           <div className="wall-tabs-container">
-            {plans.map(plan => (
-              <button
-                key={plan.id}
-                onClick={() => handleSelectPlan(plan.id)}
-                // 👇 CLASE DINÁMICA para resaltar si hay pendientes
-                className={`wall-tab-pill ${selectedPlanId === plan.id ? 'active' : ''} ${plan.pendingCount > 0 ? 'has-pending' : ''}`}
-              >
-                {plan.title}
-                {/* 👇 PUNTO ROJO si hay mensajes nuevos */}
-                {plan.pendingCount > 0 && <span className="admin-wall-dot" />}
-              </button>
-            ))}
-          </div>
+  {plans.map(plan => (
+    <button
+      key={plan.id}
+      onClick={() => handleSelectPlan(plan.id)}
+      className={`wall-tab-pill 
+        ${selectedPlanId === plan.id ? 'active' : ''} 
+        ${plan.pendingCount > 0 ? 'has-pending' : ''}` // 👈 Aplicamos la clase si hay pendientes
+      }
+    >
+      {plan.title}
+      
+      {/* 👇 Si hay mensajes, mostramos el circulito con el número */}
+      {plan.pendingCount > 0 && (
+        <span className="wall-badge-count">
+          {plan.pendingCount}
+        </span>
+      )}
+    </button>
+  ))}
+</div>
 
           <div className="admin-chat-box">
             {pinnedPost && (
