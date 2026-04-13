@@ -52,44 +52,53 @@
 
 .sb-multi-inputs {
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap; 
   gap: 10px;
 }
 
 .sb-input-group {
   display: flex;
-  align-items: center;
+  align-items: stretch; /* 👈 MAGIA AQUÍ */
   background: white;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: 12px; /* Un poco más curvo, queda más moderno */
   overflow: hidden;
-  flex: 1;
-  min-width: 100px;
+  transition: all 0.2s ease;
 }
 
+/* 3. Cuando Ro hace click en el input, resaltamos TODO el borde del grupo */
+.sb-input-group:focus-within {
+  border-color: #111;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
+
+/* 4. Ajustes del campo de texto */
 .sb-input-multi {
-  width: 100%;
-  padding: 12px 10px;
+  flex: 1; /* Mejor que width: 100% para evitar desbordes */
+  width: 0; 
+  padding: 14px 16px;
   border: none;
-  text-align: center;
-  font-weight: 800;
-  font-size: 1.1rem;
+  text-align: left; /* Alineado a la izq suele leerse mejor cuando hay un "placeholder" */
+  font-weight: 700;
+  font-size: 1.05rem;
   color: #111;
   outline: none;
   background: transparent;
 }
-.sb-input-multi:focus { background: #f3f4f6; }
 
+/* 5. Ajustes de la etiqueta gris (KG, CM, etc.) */
 .sb-unit-label {
-  background: #e5e7eb;
-  color: #4b5563;
+  background: #f3f4f6; /* Gris muy suave y limpio */
+  color: #6b7280;
   font-weight: 800;
   font-size: 0.75rem;
-  padding: 0 12px;
-  height: 100%;
+  padding: 0 16px;
   display: flex;
   align-items: center;
+  justify-content: center;
   text-transform: uppercase;
+  border-left: 1px solid #e5e7eb; /* 👈 Línea divisoria sutil entre el input y la unidad */
 }
 
 .empty-msg {

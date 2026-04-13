@@ -79,11 +79,12 @@
 }
 
 .score-label {
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   color: #1f2937;
   font-weight: 800;
   text-transform: uppercase;
   line-height: 1.2;
+  width: 50%;
 }
 
 /* Lado Derecho */
@@ -103,8 +104,8 @@
 
 /* Resultado más nuevo */
 .score-value.current {
-  font-weight: 900; 
-  font-size: 1rem; 
+  font-weight: 200; 
+  font-size: 0.2rem; 
   color: #000; 
 }
 
@@ -148,11 +149,11 @@
   font-family: 'Inter', sans-serif;
   white-space: nowrap; 
   color: #000;
-  font-weight: 900;;
+  font-weight: 600;;
 }
 
 .score-value.current {
   font-weight: 900;
-  font-size: 1rem;
+  font-size: 0.2rem;
   color: #000;
 }
