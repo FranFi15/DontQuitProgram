@@ -2,10 +2,31 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  overflow: hidden;
-  margin-top: 0;
-  width: 900px;
+ overflow-y: auto;          
+  max-height: 35vh;   
+  width: 100%;               
+  max-width: 900px;         
+  position: relative;
 }
+
+.client-score-viewer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.client-score-viewer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.client-score-viewer::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 8px;
+}
+
+.client-score-viewer::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
 
 /* HEADER DE LA TABLA */
 .score-table-header {
@@ -14,6 +35,9 @@
   padding: 12px 16px;
   background: #f9fafb; 
   border-bottom: 1px solid #e5e7eb;
+  position: sticky;         
+  top: 0;                    
+  z-index: 10;
 }
 
 .score-table-header span {
@@ -75,9 +99,9 @@
 
 /* ESTILOS DE LOS RESULTADOS (Nuevos vs Viejos) */
 .current-val {
-  font-weight: 800;
+  font-weight: 400;
   color: #111; 
-  font-size: 0.9rem;
+  font-size: 0.5rem;
 }
 
 .history-val {

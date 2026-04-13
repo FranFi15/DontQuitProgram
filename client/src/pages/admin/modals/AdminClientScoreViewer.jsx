@@ -75,9 +75,10 @@ function AdminClientScoreViewer({ planId, userId }) {
                   <div 
                     key={entry.id || index}
                     style={{
-                      fontWeight: index === 0 ? '800' : '500',
+                      fontWeight: index === 0 ? '600' : '400',
+                      fontSize: index === 0 ? '0.8rem' : '0.75rem',
                       color: index === 0 ? '#111' : '#6b7280',
-                      marginBottom: '10px' // 👈 Esto asegura que haya espacio hacia abajo
+                      marginBottom: '10px' 
                     }}
                   >
                     {entry.value}
