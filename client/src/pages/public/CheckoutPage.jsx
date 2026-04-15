@@ -14,6 +14,8 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  
+
 
   // Método de pago por defecto
   const [paymentMethod, setPaymentMethod] = useState('mercadopago'); 
@@ -26,11 +28,14 @@ function CheckoutPage() {
     phone: ''
   });
   const [receipt, setReceipt] = useState(null);
+  const [bankInfo, setBankInfo] = useState({ alias: '', cbu: '', name: '' });
 
   // Cargar los datos del plan elegido
   useEffect(() => {
     const fetchPlan = async () => {
       try {
+        const resBank = await axios.get('/settings/bank');
+        setBankInfo(resBank.data)
         const res = await axios.get(`/plans/${planId}`);
         setPlan(res.data);
       } catch (err) {
@@ -49,6 +54,7 @@ function CheckoutPage() {
   const discountAmount = (isTransfer && hasTransferDiscount) ? (plan.price * plan.transferDiscount) / 100 : 0;
   const finalPrice = plan ? plan.price - discountAmount : 0;
 
+  
   // Manejo de inputs de texto
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -278,9 +284,9 @@ function CheckoutPage() {
                       <div className="bank-details-box">
                         <p>Transferí <strong style={{color: '#10b981'}}>${finalPrice.toLocaleString()} ARS</strong> a:</p>
                         <div className="bank-info">
-                          <span><strong>Alias:</strong> DONTQUIT.PROGRAM</span>
-                          <span><strong>CBU/CVU:</strong> 0000003100000000000000</span>
-                          <span><strong>Titular:</strong> Rocio Boxall</span>
+                          <span><strong>Alias:</strong> {bankInfo.alias}</span>
+                          <span><strong>CBU/CVU:</strong> {bankInfo.cbu}</span>
+                          <span><strong>Titular:</strong> {bankInfo.name}</span>
                         </div>
                       </div>
 
