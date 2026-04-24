@@ -189,7 +189,14 @@ function ClientChat() {
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
           <label className="pchat-attach-btn" style={{ padding: '10px', cursor: 'pointer' }}>
-            <input type="file" accept="video/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'VIDEO')} disabled={uploading}/>
+            <input 
+  type="file" 
+  accept="video/mp4,video/x-m4v,video/*" 
+  capture="environment" 
+  style={{ display: 'none' }} 
+  onChange={(e) => handleFileUpload(e, 'VIDEO')} 
+  disabled={uploading}
+/>
             <Video size={24} color={uploading ? "#ccc" : "#6b7280"} />
           </label>
           <label className="pchat-attach-btn" style={{ padding: '10px', cursor: 'pointer' }}>
