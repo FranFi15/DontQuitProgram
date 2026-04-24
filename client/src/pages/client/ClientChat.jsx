@@ -37,7 +37,6 @@ function ClientChat() {
   const markMessagesAsRead = async () => {
     if (!user?.id) return;
     try {
-      // Marcamos como leídos los mensajes que mandó Ro (ADMIN_ID) al alumno (user.id)
       await axios.put('/chat/read', { 
         senderId: ADMIN_ID, 
         receiverId: user.id 
@@ -204,7 +203,6 @@ function ClientChat() {
             <ImageIcon size={24} color={uploading ? "#ccc" : "#6b7280"} />
           </label>
 
-          {/* 👇 CAMBIO: Textarea auto-ajustable (Enter para bajar renglón) */}
           <textarea 
             ref={textareaRef}
             rows="1"
