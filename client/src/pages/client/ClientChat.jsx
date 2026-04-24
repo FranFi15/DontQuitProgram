@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext'; 
-import { Send, Video, Image as ImageIcon, Loader2, ArrowDown } from 'lucide-react';
+// 👇 Importamos el ícono de Camera
+import { Send, Video, Image as ImageIcon, Loader2, Camera } from 'lucide-react';
 import './ClientChat.css';
 
 function ClientChat() {
@@ -16,16 +17,14 @@ function ClientChat() {
   
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null); 
-  const textareaRef = useRef(null); // 👇 REF para el auto-resize
+  const textareaRef = useRef(null); 
 
   const ADMIN_ID = 41; 
 
-  // 1. Tip de bienvenida
   useEffect(() => {
     showAlert("💡 Tip: Los videos de hasta 30-40 seg. suben mucho más rápido.", "info");
   }, [showAlert]); 
 
-  // 2. EFECTO PARA AUTO-AJUSTAR EL ALTO DEL TEXTAREA
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -33,7 +32,6 @@ function ClientChat() {
     }
   }, [inputText]);
 
-  // 3. Lógica para marcar mensajes como LEÍDOS (Limpia el punto rojo)
   const markMessagesAsRead = async () => {
     if (!user?.id) return;
     try {
@@ -51,7 +49,6 @@ function ClientChat() {
     try {
       const res = await axios.get(`/chat/${user.id}/${ADMIN_ID}`);
       setMessages(res.data);
-      // Si hay mensajes nuevos mientras el usuario está en la pantalla, los marcamos como leídos
       if (res.data.some(m => m.senderId === ADMIN_ID && !m.isRead)) {
         markMessagesAsRead();
       }
@@ -63,7 +60,7 @@ function ClientChat() {
   useEffect(() => {
     if (user) {
       fetchMessages();
-      markMessagesAsRead(); // Marcamos como leídos apenas entra
+      markMessagesAsRead(); 
       const interval = setInterval(fetchMessages, 5000);
       return () => clearInterval(interval);
     }
@@ -73,9 +70,17 @@ function ClientChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length, uploading]);
 
-  const handleFileUpload = async (e, type) => {
+  // 👇 ACTUALIZADO: Detecta si es foto o video cuando viene del botón "Cámara"
+  const handleFileUpload = async (e, providedType) => {
     const file = e.target.files[0];
     if (!file || !user?.id) return;
+
+    let type = providedType;
+    
+    // Si viene del botón Cámara ('AUTO'), miramos qué formato tiene el archivo
+    if (providedType === 'AUTO') {
+      type = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
+    }
 
     const limitMB = type === 'VIDEO' ? 50 : 20;
     if (file.size > limitMB * 1024 * 1024) {
@@ -100,13 +105,12 @@ function ClientChat() {
       
       const uploadedUrl = res.data?.url;
       if (!uploadedUrl) throw new Error("Servidor no devolvió URL");
-
       await axios.post('/chat', {
         senderId: user.id,
         receiverId: ADMIN_ID,
         content: null, 
         mediaUrl: uploadedUrl,
-        mediaType: type
+        mediaType: type // Enviamos el tipo correcto al backend
       });
       
       fetchMessages();
@@ -187,20 +191,42 @@ function ClientChat() {
 
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
-          <label className="pchat-attach-btn" style={{ padding: '10px', cursor: 'pointer' }}>
+          
+          {/* 👇 BOTÓN 1: CÁMARA EN VIVO (Usa capture="environment") */}
+          <label className="pchat-attach-btn" style={{ padding: '8px 4px', cursor: 'pointer' }}>
             <input 
-  type="file" 
-  accept="video/mp4,video/x-m4v,video/*" 
-  capture="environment" 
-  style={{ display: 'none' }} 
-  onChange={(e) => handleFileUpload(e, 'VIDEO')} 
-  disabled={uploading}
-/>
-            <Video size={24} color={uploading ? "#ccc" : "#6b7280"} />
+              type="file" 
+              accept="image/*,video/*" 
+              capture="environment" 
+              style={{ display: 'none' }} 
+              onChange={(e) => handleFileUpload(e, 'AUTO')} 
+              disabled={uploading}
+            />
+            <Camera size={22} color={uploading ? "#ccc" : "#6b7280"} />
           </label>
-          <label className="pchat-attach-btn" style={{ padding: '10px', cursor: 'pointer' }}>
-             <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'IMAGE')} disabled={uploading}/>
-            <ImageIcon size={24} color={uploading ? "#ccc" : "#6b7280"} />
+
+          {/* 👇 BOTÓN 2: GALERÍA DE VIDEOS (Sin capture) */}
+          <label className="pchat-attach-btn" style={{ padding: '8px 4px', cursor: 'pointer' }}>
+            <input 
+              type="file" 
+              accept="video/*" 
+              style={{ display: 'none' }} 
+              onChange={(e) => handleFileUpload(e, 'VIDEO')} 
+              disabled={uploading}
+            />
+            <Video size={22} color={uploading ? "#ccc" : "#6b7280"} />
+          </label>
+
+          {/* 👇 BOTÓN 3: GALERÍA DE IMÁGENES (Sin capture) */}
+          <label className="pchat-attach-btn" style={{ padding: '8px 4px', cursor: 'pointer' }}>
+             <input 
+               type="file" 
+               accept="image/*" 
+               style={{ display: 'none' }} 
+               onChange={(e) => handleFileUpload(e, 'IMAGE')} 
+               disabled={uploading}
+              />
+            <ImageIcon size={22} color={uploading ? "#ccc" : "#6b7280"} />
           </label>
 
           <textarea 
