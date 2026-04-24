@@ -193,7 +193,7 @@ function ClientChat() {
           <label className="pchat-attach-btn" style={{ padding: '8px 4px', cursor: 'pointer' }}>
             <input 
               type="file" 
-              accept="video/*,image/*" 
+              accept="video/*" 
               capture="environment" 
               style={{ display: 'none' }} 
               onChange={handleFileUpload} 
