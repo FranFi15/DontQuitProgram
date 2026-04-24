@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext'; 
-// 👇 Importamos el ícono de Camera
-import { Send, Video, Image as ImageIcon, Loader2, Camera } from 'lucide-react';
+// 👇 Usaremos Camera (para grabar) y ImageIcon (para la galería)
+import { Send, Image as ImageIcon, Loader2, Camera } from 'lucide-react';
 import './ClientChat.css';
 
 function ClientChat() {
@@ -70,19 +70,15 @@ function ClientChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length, uploading]);
 
-  // 👇 ACTUALIZADO: Detecta si es foto o video cuando viene del botón "Cámara"
-  const handleFileUpload = async (e, providedType) => {
+  // 👇 ACTUALIZADO: Detección automática del tipo de archivo
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !user?.id) return;
 
-    let type = providedType;
-    
-    // Si viene del botón Cámara ('AUTO'), miramos qué formato tiene el archivo
-    if (providedType === 'AUTO') {
-      type = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
-    }
+    // Magia pura: leemos si es video o foto directamente del archivo
+    const mediaType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
 
-    const limitMB = type === 'VIDEO' ? 50 : 20;
+    const limitMB = mediaType === 'VIDEO' ? 50 : 20;
     if (file.size > limitMB * 1024 * 1024) {
       e.target.value = null; 
       return showAlert(`Archivo muy pesado. Máximo ${limitMB}MB.`, 'error'); 
@@ -105,12 +101,13 @@ function ClientChat() {
       
       const uploadedUrl = res.data?.url;
       if (!uploadedUrl) throw new Error("Servidor no devolvió URL");
+
       await axios.post('/chat', {
         senderId: user.id,
         receiverId: ADMIN_ID,
         content: null, 
         mediaUrl: uploadedUrl,
-        mediaType: type // Enviamos el tipo correcto al backend
+        mediaType: mediaType // Enviamos el tipo detectado automáticamente
       });
       
       fetchMessages();
@@ -192,40 +189,28 @@ function ClientChat() {
       <div className="pchat-input-wrapper">
         <form className="pchat-form" onSubmit={handleSendText}>
           
-          {/* 👇 BOTÓN 1: CÁMARA EN VIVO (Usa capture="environment") */}
+          {/* 👇 BOTÓN 1: CÁMARA (Grabar video o foto en vivo) */}
           <label className="pchat-attach-btn" style={{ padding: '8px 4px', cursor: 'pointer' }}>
             <input 
               type="file" 
-              accept="image/*,video/*" 
+              accept="video/*,image/*" 
               capture="environment" 
               style={{ display: 'none' }} 
-              onChange={(e) => handleFileUpload(e, 'AUTO')} 
+              onChange={handleFileUpload} 
               disabled={uploading}
             />
             <Camera size={22} color={uploading ? "#ccc" : "#6b7280"} />
           </label>
 
-          {/* 👇 BOTÓN 2: GALERÍA DE VIDEOS (Sin capture) */}
+          {/* 👇 BOTÓN 2: GALERÍA (Archivos guardados: Fotos y Videos) */}
           <label className="pchat-attach-btn" style={{ padding: '8px 4px', cursor: 'pointer' }}>
             <input 
               type="file" 
-              accept="video/*" 
+              accept="image/*,video/*" 
               style={{ display: 'none' }} 
-              onChange={(e) => handleFileUpload(e, 'VIDEO')} 
+              onChange={handleFileUpload} 
               disabled={uploading}
             />
-            <Video size={22} color={uploading ? "#ccc" : "#6b7280"} />
-          </label>
-
-          {/* 👇 BOTÓN 3: GALERÍA DE IMÁGENES (Sin capture) */}
-          <label className="pchat-attach-btn" style={{ padding: '8px 4px', cursor: 'pointer' }}>
-             <input 
-               type="file" 
-               accept="image/*" 
-               style={{ display: 'none' }} 
-               onChange={(e) => handleFileUpload(e, 'IMAGE')} 
-               disabled={uploading}
-              />
             <ImageIcon size={22} color={uploading ? "#ccc" : "#6b7280"} />
           </label>
 
